@@ -375,7 +375,7 @@ int scan_r_squid(struct scan_struct *ss)
 
   int len;
 
-  len = recv(ss->fd, RECVBUFF, 512, MSG_NOSIGNAL);
+  len = recv(ss->fd, RECVBUFF, 512, 0);
   RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
 	
   if(len <= 0)
@@ -458,7 +458,7 @@ int scan_r_socks4(struct scan_struct *ss)
 
    int len;
 
-   len = recv(ss->fd, RECVBUFF, 512, MSG_NOSIGNAL);
+   len = recv(ss->fd, RECVBUFF, 512, 0);
    RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
    
    if(len < 8)
@@ -519,7 +519,7 @@ int scan_r_socks5(struct scan_struct *ss)
 
    int len;
 
-   len = recv(ss->fd, RECVBUFF, 512, MSG_NOSIGNAL);
+   len = recv(ss->fd, RECVBUFF, 512, 0);
    RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
 
    /* Version is 5 and method is 0 (no auth) */
@@ -552,7 +552,7 @@ int scan_r_wingate(struct scan_struct *ss)
 {
    int len;
 
-   len = recv(ss->fd, RECVBUFF, 512, MSG_NOSIGNAL);
+   len = recv(ss->fd, RECVBUFF, 512, 0);
    RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
    
    if(!strncasecmp(RECVBUFF, "WinGate>", 8) ||

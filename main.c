@@ -58,6 +58,9 @@ int main()
  
     sigaction(SIGALRM, &ALARMACTION, 0);
 
+    /* Ignore SIGPIPE */
+    signal(SIGPIPE, SIG_IGN);
+
     alarm(1);
 
     while(1)     
