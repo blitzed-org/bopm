@@ -1,3 +1,311 @@
+2002-02-15 23:21  andy
+
+	* bopm.conf.sample:
+
+	bopm.conf.sample:
+		Added docs and examples for EXCLUDE option.
+	
+2002-02-15 04:57  andy
+
+	* Makefile.in, config.c, config.h, extern.h, irc.c, irc.h, match.c,
+	match.h, scan.c:
+
+	
+	match.c, match.h:
+	IRC wildcard matching functions from dancer-hybrid.  match()
+	handles string matching and collapse() shortens a wildcard string
+	as far as possible.
+	
+	config.h:
+	Added new config type; TYPE_LIST.  Multiple parameters of this
+	type are put into a linked list.
+	
+	Added missing config_memfail() prototype.
+	
+	config.c:
+	Added new config option EXCLUDE.  This is a list of wildcard
+	strings against which the host and IP address of connecting users
+	will be matched.  A user which matches any entry will not be
+	scanned.
+	
+	Makefile.in:
+	Added new objects and dependencies for match.[cho]
+	
+	irc.c, irc.h:
+	Added do_connect() function to avoid duplication.  This function
+	checks the users host and IP address against the EXCLUDE list and
+	provided there are no matches proceeds to do a DNSBL check and
+	proxy scan.
+	
+	The above patch was contributed by Rob Levin/lilo @ OPN
+	
+2002-02-15 00:56  andy
+
+	* Makefile.in, misc.c, opercmd.c, scan.c, stats.c:
+
+	Makefile.in, misc.c, stats.c:
+		Forogt to include the autoconfiscated header
+	
+	opercmd.c, scan.c:
+		Small tidyup.
+	
+2002-02-14 05:56  andy
+
+	* INSTALL, README:
+
+	README:
+		Updated mailing list info, credits, etc.
+	INSTALL:
+		Largely rewritten installation instructions and a blurb about
+		TARGET_STRING
+	
+2002-02-14 05:17  andy
+
+	* acconfig.h, configure, configure.in, irc.c, options.h,
+	setup.h.in:
+
+	configure.in, options.h:
+		Added configure option --with-unreal to replace the UNREAL
+		definition that was in options.h
+	acconfig.h:
+		Make autoheader work for --with-unreal
+	irc.c:
+		WITH_UNREAL instead of UNREAL
+	
+2002-02-14 05:06  andy
+
+	* acconfig.h, configure, configure.in, setup.h.in:
+
+	configure.in:
+		Added support for --with-select configure option so that people
+		can force use of select() whether they have poll() or not.
+	acconfig.h:
+		This makes autoheader work (which is used to make setup.h.in from
+		configure.in) now that WITH_SELECT is added.
+	
+2002-02-14 01:51  andy
+
+	* configure, configure.in, options.h, scan.c, setup.h.in:
+
+	configure.in:
+		Check for sys/poll.h
+	options.h:
+		We'll use poll() if sys/poll.h was found
+	scan.c:
+		Alter for autoconfiscated sys/poll.h check.
+	
+2002-02-13 23:52  andy
+
+	* configure, configure.in, dnsbl.c, setup.h.in:
+
+	configure.in:
+		Add a check for bigendian systems.
+	dnsbl.c:
+		If we're on a bigendian system this'll be backwards.
+	
+2002-02-13 22:28  andy
+
+	* Makefile.in, configure:
+
+	OK, so we do need to distribute configure.
+	
+2002-02-13 22:15  strtok
+
+	* scan.c, scan.h:
+
+	Added byte counter to teach connection, and adjusted manual check output to be be more informative
+	
+2002-02-13 20:50  andy
+
+	* bopchecker.c, irc.c, scan.c:
+
+	bopchecker.c, irc.c, scan.c:
+		Use AC_HEADER_TIME and AC_CHECK_HEADERS(sys/time.h) to check how to
+		handle time.h and sys/time.h (if there even if a sys/time.h, if it
+		can be included with time.h)
+	
+2002-02-13 20:32  andy
+
+	* bopchecker.c:
+
+	bopchecker.c:
+		Another STDC_HEADERS check
+	
+2002-02-13 20:28  andy
+
+	* config.c:
+
+	config.c:
+		Typo fix.
+	
+2002-02-13 20:26  andy
+
+	* Makefile.in, config.c, dnsbl.c, irc.c, log.c, main.c, opercmd.c,
+	scan.c:
+
+	Makefile.in:
+		Add a distclean target.  We may want to distribute the configure
+		script at some point instead of just configure.in and expect people
+		to use autoconf; we'll have to remember to change this then.
+	
+	config.c, dnsbl.c, irc.c, log.c, main.c, opercmd.c, scan.c:
+		Take account of AC_HEADER_STDC check.
+	
+2002-02-13 20:12  andy
+
+	* main.c:
+
+	main.c:
+		Handle AC_TYPE_SIGNAL check.
+	
+2002-02-13 19:58  andy
+
+	* setup.h.in:
+
+	setup.h.in:
+		/me reads as far as "autoheader" in the autoconf manual.
+	
+2002-02-13 19:24  andy
+
+	* Makefile, Makefile.in, configure.in, setup.h.in:
+
+	First stab at autoconfiscation (euheue)
+	
+2002-02-13 16:51  andy
+
+	* bopchecker.c:
+
+	bopchecker.c:
+		bopchecker needs a target string as well now.
+	
+2002-02-13 05:40  strtok
+
+	* scan.c:
+
+	Pad scan_struct->data + 1 byte on malloc to leave room for null terminator (was causing buffer overrun)
+	
+2002-02-12 23:02  andy
+
+	* config.c:
+
+	config.c:
+		Really doesn't need to be that verbose :)
+		Remember I use -d and -dd a lot when helping people set up BOPM -
+		I really don't need 2 pages of config options flying by.
+	
+2002-02-12 21:42  strtok
+
+	* version.h:
+
+	VERSION for this release will be 2.0
+	
+2002-02-12 21:17  strtok
+
+	* scan.c:
+
+	Wingate write function now actually sends data
+	
+2002-02-12 21:07  strtok
+
+	* scan.c, scan.h:
+
+	Cleaned out code no longer needed
+	
+2002-02-12 20:57  strtok
+
+	* bopm.conf.sample:
+
+	Added TARGET_STRING to config file
+	
+2002-02-12 20:54  strtok
+
+	* config.c, extern.h, options.h, scan.c, scan.h:
+
+	No longer use individual read functions for each protocol, now search for
+	a TARGET_STRING within the data. (set in conf)
+	
+2002-02-12 19:19  strtok
+
+	* bopm.conf.sample, options.h, scan.c, scan.h:
+
+	options.h USE_POLL and MAXPOLL for use of poll() as opposed to select() in
+	          scan.c. If USE_POLL is defined, the scanner will use poll(), if not
+	          select() is used as before
+	
+2002-02-12 06:10  strtok
+
+	* bopm.conf.sample, config.c, extern.h, misc.c, scan.c, scan.h:
+
+	bopm.conf.sample: Added config parameter FDLIMIT (default 512), which is maximum number
+	    of file descriptors that can be open at any time (for scanning).
+	config.c: Added -d debug output of set config parameters
+	misc.c: Fixed bug involving clean()
+	scan.c: Added scan_establish() code to socket()/connect() to a socket, connections
+	        are now queued if the FDLIMIT cap is reached.
+	
+2002-02-10 15:37  andy
+
+	* README:
+
+	README:
+		Credits for recent patches.
+	
+2002-02-10 15:25  andy
+
+	* scan.c:
+
+	scan.c:
+		Improved HTTP handling.  Seems to work (have tested against all
+		known HTTP false positives seen so far, plus 2 known open proxies).
+		Ideas and pseudocode from jpayne@blitzed.org.
+	
+2002-02-10 14:34  andy
+
+	* irc.c, irc.h, main.c:
+
+	irc.c:
+	irc.h:
+		Added a MSGLEN #define so that networks which use different sized
+		IRC buffers can be made to work easily.
+	
+	main.c:
+		Changed umask to something more sensible.
+	
+	Both the above from shasta@irc.pl.
+	
+2002-02-07 17:23  andy
+
+	* bopm.conf.sample, dnsbl.c:
+
+	dnsbl.c:
+		Need to check against DNSBL_ZONE with a dot on the end, because
+		otherwise it will try the search domains in /etc/resolv.conf, and may
+		even find a match!  Reported and fixed by asmodeus@irc.gr
+	
+	bopm.conf.sample:
+		Gotcha about putting your own dot at the end of the zone.
+	
+2002-02-04 22:39  andy
+
+	* bopchecker.c:
+
+	bopchecker.c:
+		Extra #include needed, reported by shasta@irc.pl
+	
+2002-02-04 18:12  andy
+
+	* stats.c:
+
+	stats.c:
+		Added simple connects/minute reading.
+	
+2002-02-01 06:17  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Updated for next realese.
+	
 2002-02-01 06:16  andy
 
 	* README:
