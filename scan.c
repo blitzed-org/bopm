@@ -117,6 +117,34 @@ void scan_connect(char *ip)
 
 }
 
+/*  Pass one cycle to the proxy scanner so it can do neccessary functions 
+ *  like testing for sockets to be written to and read from.
+ */
+
+
+void scan_cycle()
+{
+   scan_checkwrite();
+   scan_checkread();
+}
+
+
+/*  Test for sockets to be written to.
+ *
+ */
+
+void scan_checkwrite()
+{
+}
+
+
+/*  Test for sockets to be read from.
+ *
+ */ 
+
+void scan_checkread()
+{
+}
 
 /* Link struct to connection list 
  */

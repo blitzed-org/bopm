@@ -21,11 +21,17 @@ along with this program; if not, write to the Free Software
 */
 
 #include <stdio.h>
-#include "config.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
+#include "config.h"
 #include "extern.h"
 #include "irc.h"
 #include "log.h"
+#include "scan.h"
 
 int main()
 {
@@ -41,6 +47,7 @@ int main()
     while(1)     
      {
 	irc_cycle();
+        scan_cycle();
      }
     
     log_close();

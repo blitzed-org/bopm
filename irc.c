@@ -76,7 +76,7 @@ void irc_cycle()
         }
 
       IRC_TIMEOUT.tv_sec  = 0;
-      IRC_TIMEOUT.tv_usec = 500000;   /* block .5 seconds to avoid excessive CPU use on select() */
+      IRC_TIMEOUT.tv_usec = 50000;   /* block .05 seconds to avoid excessive CPU use on select() */
            
       FD_ZERO(&IRC_FDSET);
       FD_SET(IRC_FD, &IRC_FDSET);

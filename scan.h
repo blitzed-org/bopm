@@ -1,6 +1,7 @@
 #ifndef SCAN_H
 #define SCAN_H
 
+
     typedef int (*scan_function) (int);
     typedef struct protocol_hash protocol_hash;
     typedef struct scan_struct scan_struct;
@@ -26,7 +27,9 @@
 
      void scan_connect(char *ip);
      void scan_add(scan_struct *newconn);
-
+     void scan_cycle();
+     void scan_checkread();
+     void scan_checkwrite();
 
      int scan_squid(int fd);
 
