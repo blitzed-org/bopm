@@ -109,6 +109,7 @@ MODE                    { return MODE;         }
 NAME                    { return NAME;         }
 NEGCACHE                { return NEGCACHE;     }
 NICK                    { return NICK;         }
+NICKSERV                { return NICKSERV;     }
 OPER                    { return OPER;         }
 OPM                     { return OPM;          }
 OPTIONS                 { return OPTIONS;      }

@@ -99,6 +99,7 @@ void config_setup()
    IRCItem->away = DupString("I'm a bot, don't message me");
    IRCItem->mode = DupString("+cs");
    IRCItem->nick = DupString("bopm");
+   IRCItem->nickserv = DupString("");
    IRCItem->password = DupString("");
    IRCItem->port = 6667;
    IRCItem->oper = DupString("undefined");

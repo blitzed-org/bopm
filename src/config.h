@@ -28,6 +28,7 @@ struct IRCConf
 
    char *vhost;
 
+   char *nickserv;
    char *oper;
    char *mode;
    char *away;

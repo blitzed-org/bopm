@@ -7,77 +7,79 @@ BOPM sample configuration
 options {
 	pidfile = "bopm.pid";
 
-        /* Maximum amount of nodes in the negative cache */
+	/* Maximum amount of nodes in the negative cache */
 	negcache = 3600;
 
-        /* Amount of file descriptors to allocate to asynchronous DNS */
+	/* Amount of file descriptors to allocate to asynchronous DNS */
 	dns_fdlimit = 5;
 };
 
 
 IRC {
-        /* Ip to bind to (THIS MUST BE AN IP!) */
-        #vhost = "0.0.0.0";
+	/* Ip to bind to (THIS MUST BE AN IP!) */
+	#vhost = "0.0.0.0";
 
 	nick = "MyBopm";
 
-        realname = "Blitzed Open Proxy Monitor";
-        username = "bopm";
+	realname = "Blitzed Open Proxy Monitor";
+	username = "bopm";
 
-        server = "myserver.blitzed.org";
-        port = 6667;
+	server = "myserver.blitzed.org";
+	port = 6667;
+	
+	#nickserv = "nickserv :identify password";
 
-        oper = "bopm operpass";
+	oper = "bopm operpass";
 
  
-        mode = "+cs";
-        /* Bahamut +F */
-        #mode = "+Fcs";      
+	mode = "+cs";
+	/* Bahamut +F */
+	#mode = "+Fcs";      
 
-        away = "I'm a bot, don't message me.";
+	away = "I'm a bot, don't message me.";
 
-        channel {
-           name = "#bopm";
-           #key = "somekey";
-        };
+	channel {
+	   name = "#bopm";
+	   #key = "somekey";
+	};
 
-        /*
-        channel {
-           name = "#other channel";
-        }; */
+	/*
+	channel {
+	   name = "#other channel";
+	}; */
        
-        /* 
-           connregex is a POSIX regular expression used to parse connection (+c) 
-           notices from the ircd. The complexity of the expression should be kept
-           to a minimum.
-           
-           Items in order MUST be:
-           nick user host IP
+	/* 
+	   connregex is a POSIX regular expression used to parse connection (+c) 
+	   notices from the ircd. The complexity of the expression should be kept
+	   to a minimum.
+	   
+	   Items in order MUST be:
+	   nick user host IP
 
-           BOPM will not work with ircds which do not send an IP in the connection
-           notice
-        */
+	   BOPM will not work with ircds which do not send an IP in the connection
+	   notice
+	*/
 
-        /* Hybrid / Bahamut */
-        connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
+	/* Hybrid / Bahamut */
+	connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
 
-        /* Kline format
+	/* Kline format
 
-           %n     Users nick
-           %u     Users username
-           %h     Users irc hostname
-           %i     Users IP address
+	   %n     Users nick
+	   %u     Users username
+	   %h     Users irc hostname
+	   %i     Users IP address
 
-        */
+	*/
 
-        kline = "KLINE *@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
+	kline = "KLINE *@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
 };
 
 
 OPM {
        /* Blacklist zones to check IPs against */
 	blacklist = "opm.blitzed.org";
-        #blacklist = "opm.myhost.org";
+	#blacklist = "opm.myhost.org";
 
 	#dnsbl_from = "mybopm@myserver.org";
 	#dnsbl_to = "reports@somehost.org";
@@ -87,75 +89,75 @@ OPM {
 
 scanner {
 
-        /* Unique name of this scanner */
-        name="default";
+	/* Unique name of this scanner */
+	name="default";
 
-        protocol = HTTP:80;
-        protocol = HTTP:8080;
-        protocol = HTTP:3128;
+	protocol = HTTP:80;
+	protocol = HTTP:8080;
+	protocol = HTTP:3128;
 
-        protocol = SOCKS4:1080;
-        protocol = SOCKS5:1080;
+	protocol = SOCKS4:1080;
+	protocol = SOCKS5:1080;
 
-        protocol = ROUTER:23;
-        protocol = WINGATE:23;
+	protocol = ROUTER:23;
+	protocol = WINGATE:23;
 
-        protocol = HTTPPOST:80;
+	protocol = HTTPPOST:80;
 
-        /* IP this scanner will bind to */
-        #vhost = "127.0.0.1";
+	/* IP this scanner will bind to */
+	#vhost = "127.0.0.1";
 
-        /* Maximum file descriptors this scanner can use */
-        fd = 512;
+	/* Maximum file descriptors this scanner can use */
+	fd = 512;
 
-        /* Maximum data read from a proxy before considering it closed */
-        max_read = 4096;
+	/* Maximum data read from a proxy before considering it closed */
+	max_read = 4096;
 
-        /* Amount of time (in seconds) before a test is considered timed out */
-        timeout = 30;
+	/* Amount of time (in seconds) before a test is considered timed out */
+	timeout = 30;
 
-        /* Target IP to tell the proxy to connect to */
-        target_ip     = "127.0.0.1";
+	/* Target IP to tell the proxy to connect to */
+	target_ip     = "127.0.0.1";
 
-        /* Target port to tell the proxy to connect to */
-        target_port   = 6667;
+	/* Target port to tell the proxy to connect to */
+	target_port   = 6667;
 
-        /* 
-           String target IP:PORT will send back to verify 
-           Multiple target strings are allowed.
-        */
+	/* 
+	   String target IP:PORT will send back to verify 
+	   Multiple target strings are allowed.
+	*/
 
-        /* Usually first line sent to client on connection to ircd */                                                            
-        target_string = "Looking up your hostname...";
+	/* Usually first line sent to client on connection to ircd */                                                            
+	target_string = "Looking up your hostname...";
 
-        /* Catch throttled proxies on hybrid */
-        target_string = "ERROR :Trying to reconnect too fast.";
+	/* Catch throttled proxies on hybrid */
+	target_string = "ERROR :Trying to reconnect too fast.";
 };
 
 scanner {
 
-        /* unique name of this scanner */
-        name = "extended";
+	/* unique name of this scanner */
+	name = "extended";
 
-        protocol = HTTP:8001;
-        protocol = HTTP:8002;
-        protocol = HTTPPOST:8080;
-        protocol = HTTPPOST:3128;
+	protocol = HTTP:8001;
+	protocol = HTTP:8002;
+	protocol = HTTPPOST:8080;
+	protocol = HTTPPOST:3128;
 
-        /* IP this scanner will bind to */
-        #vhost = "127.0.0.1";
+	/* IP this scanner will bind to */
+	#vhost = "127.0.0.1";
 
-        /* Maximum file descriptors this scanner can use */
-        fd = 128;
+	/* Maximum file descriptors this scanner can use */
+	fd = 128;
 
-        /* Target IP to tell the proxy to connect to */
-        target_ip     = "127.0.0.1";
+	/* Target IP to tell the proxy to connect to */
+	target_ip     = "127.0.0.1";
 
-        /* Target port to tell the proxy to connect to */
-        target_port   = 6667;
+	/* Target port to tell the proxy to connect to */
+	target_port   = 6667;
 
-        /* String target IP:PORT will send back to verify */
-        target_string = "Looking up your hostname...";
+	/* String target IP:PORT will send back to verify */
+	target_string = "Looking up your hostname...";
 };
 
 user {

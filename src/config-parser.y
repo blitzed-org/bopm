@@ -50,6 +50,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token NAME
 %token NEGCACHE
 %token NICK
+%token NICKSERV
 %token OPER
 %token OPM
 %token OPTIONS
@@ -132,6 +133,7 @@ irc_item: irc_away      |
           irc_connregex |
           irc_kline     |
           irc_nick      |
+			 irc_nickserv  |
           irc_mode      |
           irc_oper      |
           irc_password  |
@@ -165,6 +167,12 @@ irc_nick: NICK '=' STRING ';'
 {
    MyFree(IRCItem->nick);
    IRCItem->nick = DupString($3);
+};
+
+irc_nickserv: NICKSERV '=' STRING ';'
+{
+   MyFree(IRCItem->nickserv);
+   IRCItem->nickserv = DupString($3);
 };
 
 irc_oper: OPER '=' STRING ';'
