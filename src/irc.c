@@ -529,7 +529,7 @@ static void irc_parse(void)
 
    pos = IRC_RAW;
 
-   while(pos = strchr(pos, ' ') && parc < 17)
+   while((pos = strchr(pos, ' ')) && parc <= 17)
    {
 
       /* Avoid excessive spaces and end of IRC_RAW */
