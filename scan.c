@@ -133,6 +133,8 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
                  
 	    if(conn_notice)
 	       newconn->conn_notice = strdup(conn_notice);
+	    else
+	       newconn->conn_notice = 0;
 
             newconn->protocol = &(SCAN_PROTOCOLS[i]); /* Give struct a link to information about the protocol
                                                          it will be handling. */
@@ -703,7 +705,7 @@ void do_manual_check(struct command *c)
    if(CONF_DNSBL_ZONE)
       dnsbl_check(ip, "*", "*", c->param);
 
-   scan_connect(ip, c->param, "*", "*", 1, NULL);    /* Scan using verbose */
+   scan_connect(ip, c->param, "*", "*", 1, 0);    /* Scan using verbose */
                                            
 }
 
