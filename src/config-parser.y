@@ -103,7 +103,8 @@ config_items: irc_entry     |
 
 options_entry: OPTIONS '{' options_items '}' ';';
 
-options_items: options_items options_item |
+options_items: /* Empty */                |
+               options_items options_item |
                options_item;
 
 options_item: options_negcache |
@@ -132,7 +133,7 @@ options_scanlog: SCANLOG '=' STRING ';'
 {
    MyFree(OptionsItem->scanlog);
    OptionsItem->scanlog = DupString($3);
-}
+};
 
 /*************************** IRC BLOCK ***************************/
 
@@ -459,7 +460,8 @@ scanner_protocol: PROTOCOL '=' PROTOCOLTYPE ':' NUMBER ';'
 
 opm_entry: OPM '{' opm_items  '}' ';' ;
 
-opm_items: opm_items opm_item |
+opm_items: /* Empty */        |        
+           opm_items opm_item |
            opm_item;
 
 opm_item: opm_blacklist  |
@@ -500,7 +502,8 @@ opm_sendmail: SENDMAIL '=' STRING ';'
 
 exempt_entry: EXEMPT '{' exempt_items  '}' ';' ;
 
-exempt_items: exempt_items exempt_item |
+exempt_items: /* Empty */              |
+              exempt_items exempt_item |
               exempt_item;
 
 exempt_item: exempt_mask  |
