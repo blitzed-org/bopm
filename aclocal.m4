@@ -1,4 +1,4 @@
-# aclocal.m4t generated automatically by aclocal 1.6.2 -*- Autoconf -*-
+# aclocal.m4 generated automatically by aclocal 1.6.3 -*- Autoconf -*-
 
 # Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2002
 # Free Software Foundation, Inc.
@@ -216,7 +216,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],[am__api_version="1.6"])
 # Call AM_AUTOMAKE_VERSION so it can be traced.
 # This function is AC_REQUIREd by AC_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-	 [AM_AUTOMAKE_VERSION([1.6.2])])
+	 [AM_AUTOMAKE_VERSION([1.6.3])])
 
 # Helper functions for option handling.                    -*- Autoconf -*-
 
@@ -870,4 +870,37 @@ AC_DEFUN([AM_MAINTAINER_MODE],
   AC_SUBST(MAINT)dnl
 ]
 )
+
+
+# Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+# serial 3
+
+AC_PREREQ(2.50)
+
+# AM_PROG_LEX
+# -----------
+# Autoconf leaves LEX=: if lex or flex can't be found.  Change that to a
+# "missing" invocation, for better error output.
+AC_DEFUN([AM_PROG_LEX],
+[AC_REQUIRE([AM_MISSING_HAS_RUN])dnl
+AC_REQUIRE([AC_PROG_LEX])dnl
+if test "$LEX" = :; then
+  LEX=${am_missing_run}flex
+fi])
 

@@ -1,0 +1,123 @@
+/*
+
+BOPM sample configuration for Blitzed Admins.  For explanations of what all
+the directives do, please see bopm.conf.sample.
+
+*/
+
+options {
+	pidfile = "/some/path/bopm.pid";
+	dns_fdlimit = 64;
+#       scanlog = "/some/path/scan.log";
+};
+
+
+IRC {
+#	vhost = "0.0.0.0";
+	nick = "servernamebopm";
+	realname = "Blitzed Open Proxy Monitor";
+	username = "bopm";
+	server = "servername.blitzed.org";
+	port = 6667;
+        nickserv = "nickserv :identify bopm-nick-password";
+	oper = "bopm operpass";
+        mode = "+Fc-h";
+	away = "I'm a bot.  Your messages will be ignored.";
+
+	channel {
+           /*
+            * This is where all of Blitzed's bopms are.  The name "#wg" is
+            * left over from the days of dalnet's wgmon.  Please don't put
+            * your bopm into any other channels as it spews out some sensitive
+            * info from time to time.
+	   name = "#wg";
+
+           /*
+            * Make sure your bopm is set to ID to its nick, and that it has
+            * access enough in #wg to use the chanserv invite command.
+            */
+           invite = "chanserv :invite #wg";
+	};
+
+	/* Hybrid / Bahamut / Unreal (in HCN mode) */
+	connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
+
+	/*
+         * "kline" controls the command used when an open proxy is confirmed.
+         *
+	 *  %n     User's nick
+	 *  %u     User's username
+	 *  %h     User's irc hostname
+	 *  %i     User's IP address
+         *
+	 */
+	kline = "KLINE *@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
+};
+
+
+OPM {
+        blacklist = "opm.blitzed.org";
+        dnsbl_from = "yournick@blitzed.org";
+        dnsbl_to = "bopm@reports.blitzed.org";
+        sendmail = "/usr/sbin/sendmail";
+};
+
+scanner {
+	name="blitzed";
+
+        /*
+         * An extensive range of ports and protocols.  If any non-blitzed
+         * admins are reading this, you might not want to use this many if you
+         * have a very busy server.  This is 20 FDs per user.
+         */
+	protocol = HTTP:80;
+	protocol = HTTP:81;
+	protocol = HTTP:3128;
+	protocol = HTTP:6588;
+	protocol = HTTP:8000;
+	protocol = HTTP:8001;
+	protocol = HTTP:8080;
+	protocol = HTTP:8081;
+
+	protocol = SOCKS4:1080;
+	protocol = SOCKS5:1080;
+
+	protocol = ROUTER:23;
+
+	protocol = WINGATE:23;
+
+	protocol = HTTPPOST:80;
+	protocol = HTTPPOST:81;
+	protocol = HTTPPOST:3128;
+	protocol = HTTPPOST:6588;
+	protocol = HTTPPOST:8000;
+	protocol = HTTPPOST:8001;
+	protocol = HTTPPOST:8080;
+	protocol = HTTPPOST:8081;
+
+#       vhost = "127.0.0.1";
+
+        /* Should be OK for Blitzed even with this many protocols. */
+	fd = 512;
+
+	max_read = 4096;
+	timeout = 30;
+
+        /* Don't forget to change this to the public IP of your server! */
+        target_ip     = "127.0.0.1";
+	target_port   = 6667;
+
+        /* Don't forget to change this to have your FULL server name here! */
+        target_string = ":somese.rv.er.blitzed.org NOTICE AUTH :*** Looking up your hostname...";
+	target_string = "ERROR :Your host is trying to (re)connect too fast -- throttled.";
+};
+
+user {
+	mask = "*!*@*";
+	scanner = "blitzed";
+};
+
+exempt {
+#	mask = "*!*@localhost";
+#	mask = "*!*@127.0.0.1";
+};

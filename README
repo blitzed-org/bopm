@@ -46,8 +46,8 @@ note, earlier versions of Ultimate IRCD are *not* supported
 
 
 
-BOPM is designed for the Bahamut and Hybrid IRCds.   It would be easily
-portable to any other ircd with little modification (to the +c notice code).
+BOPM is designed for the Bahamut and Hybrid IRCds.   It is easily
+suitable for any other ircd with little modification (connregex in bopm.conf).
 However, if an ircd does not send IP's in a connection notice (bahamut sends
 [IP]), BOPM will not be effective because the time it takes to resolve a
 hostname would be a significant factor to BOPM's efficiency.
@@ -60,16 +60,6 @@ TR-IRCD and Xnet ircds.
 Any questions regarding compatibility should be sent to the developers. If
 feasible we might be able to add compatibility to multiple ircd types to the
 project in the future.
-
-New in v2.31 is support for Solaris.  This has not been extensively tested,
-please contact us if you are successfully running bopm on Solaris (or if
-you use Solaris and bopm does not work).
-
-New in 2.40 is support for scanning IPv6 clients and connecting BOPM to IPv6
-server addresses.  This has not been extensively tested, and features must be
-enabled with using the --enable-ipv6 configure option.  There is currently no
-DNSBL support for IPv6 addresses.
-
 
 Command Line Options
 --------------------
@@ -85,21 +75,21 @@ Command Line Options
 Operator Channel Commands
 -------------------------
 
-botnick <check> <host>  -- Manually scan host for insecure proxies and output all errors.
-botnick stats           -- Output scan stats, uptime and client connection count.
+botnick <check> <host> [scanner]  -- Manually scan host for insecure proxies and output all errors.
+botnick stats                     -- Output scan stats, uptime and client connection count.
 
 
 Rehashing the Configuration File
 --------------------------------
 
-Every time BOPM reconnects to the IRC server it rereads its configuration file.
-It is then possible to rehash the bot by /kill'ing it.
+As of bopm 3.0, the config file cannot be rehashed. You must restart bopm if you change
+the configuration.
 
 
 Support
 -------
 
-BOPM now has a mailing list for general discussion and announcements.  CVS
+BOPM has a mailing list for general discussion and announcements.  CVS
 commit emails are also sent there and that is also the place to mail your
 patches (unless they are massive, in which case just post a URL).  You can
 subscribe to this list from:
@@ -115,9 +105,8 @@ Compatibility Notes
 
 o Unreal Ircd
 
-  For Unreal to work,  patches to fix the HCN connect notices (found at
-  http://www.blitzed.org/files/) must be applied.
-  ./configure --with-unreal should then be used to configure BOPM.
+  For *older* versions of Unreal to work,  patches to fix the HCN connect 
+  notices (found at http://www.blitzed.org/files/) must be applied.
 
   Unreal 3.1.3 seems to require opers to be global if they are to see
   connection notices.
@@ -126,7 +115,7 @@ o Unreal Ircd
   Later versions of Unreal require different user modes to be set on BOPM for
   it to see connection notices.  You will need to use
 
-      OPER_MODES +s +c
+      mode = "+sc";
 
   in your bopm.conf.  Also later versions of Unreal no longer require patching
   as described above.
@@ -135,14 +124,14 @@ o Unreal Ircd
 o IRCu
 
   IRCu does not present a banner to clients when they connect, so
-  TARGET_STRING, SCANIP and SCANPORT must use some other service besides
+  target_string, target_ip and target_port must use some other service besides
   ircd.  For those with root access to their servers, the following inetd.conf
   example is an easy fix for this:
 
   # BOPM proxy check string
   16667 stream  tcp nowait nobody /bin/echo echo Open Proxy Check
 
-  TARGET_STRING can then be set to "Open Proxy Check", and SCANIP/SCANPORT
+  target_string can then be set to "Open Proxy Check", and target_ip/target_port
   set to your IP and port 16667.
 
   If you don't want to do the above, you could use any other service on
@@ -156,6 +145,32 @@ o IRCu
 
 Credits
 -------
+
+BOPM 3.0:
+
+  Erik Fears <strtok@blitzed.org>
+         - Main layout/functionality
+         - libopm library, and bopm interface
+         - IRC parsing
+         - config file parsing  
+ 
+  Andy Smith <grifferz@blitzed.org>
+         - Operator command interface
+         - dnsbl_report 
+         - Handles all the DNSBL fun!
+         - Automake/Autoconf madness
+
+  David Leadbeater <dg@blitzed.org>
+         - Asynchronous DNS (firedns)
+         - HTTP POST!
+
+  The Hybrid Team
+         - IRC match code
+         - Whitespace/String parsing in config-parser.y
+
+
+
+BOPM 1.x - 2.x:
 
    Erik Fears <strtok@blitzed.org>
          - Main Developer.
@@ -207,3 +222,4 @@ Credits
 
    Yusuf Iskenderoglu <uhc0@stud.uni-karlsruhe.de>
          - IPv6 support.
+         - Many other great ideas.

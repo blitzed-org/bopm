@@ -1,53 +1,53 @@
 #ifndef SCAN_H
 #define SCAN_H
-    
-typedef struct protocol_hash protocol_hash;
-typedef struct scan_struct scan_struct;
-typedef int (*scan_function) (scan_struct *);
 
-#define STATE_UNESTABLISHED 1
-#define STATE_ESTABLISHED   2
-#define STATE_SENT          3
-#define STATE_CLOSED        4   
- 
-struct protocol_hash
-{
-	char *type;                 /* Plaintext name of protocol to scan   */
-	int port;                   /* Port to scan protocol on             */
-	scan_function w_handler;    /* Function to handle specific protocol */
-	unsigned int stat_num;
-	unsigned int stat_numopen;
-	int stage;                  /* Scan first (0) or second pass (1) */
-};
+#include "libopm/src/opm.h"
 
 struct scan_struct
 {
-	scan_struct *next;   
-	char *addr;                  /* Address of remote host (IP)                      */
-	char *irc_addr;              /* Hostname of user on IRC (for kline)              */ 
-	char *irc_nick;              /* Nickname of user on IRC (for logging)            */
-	char *irc_user;              /* Username of user on IRC (for logging)            */
-	char *conn_notice;           /* original server notice for this connect, used
-				      * for evidence                                     */
- 
-	char *data;                  /* Buffered data                                    */
-	int  datasize;               /* Length of buffered data                          */
+   char *irc_nick;
+   char *irc_username;
+   char *irc_hostname;
 
-	int fd;                      /* File descriptor of socket                        */
-	struct bopm_sockaddr sockaddr; /* holds information about remote host for socket() */
-	time_t create_time;          /* Creation time, for timeout                       */         
-	int state;                   /* Status of scan                                   */
-	unsigned int bytes_read;     /* Number of bytes received                         */
-	protocol_hash *protocol;     /* Pointer to protocol type                         */
-	int verbose;                 /* report progress to channel verbosely?            */
-  	int aftype;
+   char *ip;
+   char *proof;
+   OPM_REMOTE_T *remote;
+
+   unsigned short scans;
+   unsigned short positive;
+
+   struct ChannelConf *manual_target;
 };
 
-extern void do_scan_init(void);
-extern void scan_connect(char *addr, char *irc_addr, char *irc_nick,
-    char *irc_user, int verbose, int aftype, char *conn_notice);
-extern void scan_cycle(void);
-extern void scan_timer(void);    
-extern void do_manual_check(struct command *c);
 
-#endif 
+struct scanner_struct
+{
+   char *name;
+   OPM_T *scanner;
+   list_t *masks;
+};
+
+struct protocol_assoc
+{
+   int type;
+   char *name;
+};
+
+extern void scan_init();
+extern char *scan_gettype(int);
+extern void scan_cycle();
+extern void scan_connect(char **, char *);
+extern void scan_checkfinished(struct scan_struct *);
+extern void scan_manual(char *, struct ChannelConf *);
+extern int scan_checkexempt(char *);
+
+struct kline_format_assoc
+{
+   char key;
+   void *data;
+   int type;
+};
+
+#define FORMATTYPE_STRING 1
+
+#endif /* SCAN_H */

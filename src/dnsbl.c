@@ -1,23 +1,23 @@
 /*
 Copyright (C) 2002  Erik Fears
-
+ 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
-
+ 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
+ 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-
+ 
       Foundation, Inc.
       59 Temple Place - Suite 330
       Boston, MA  02111-1307, USA.
-
+ 
 */
 
 #include "setup.h"
@@ -37,158 +37,185 @@ along with this program; if not, write to the Free Software
 #include <time.h>
 #include <errno.h>
 
-#include "irc.h"
-#include "opercmd.h"
-#include "scan.h"
-#include "dnsbl.h"
 #include "config.h"
+#include "dnsbl.h"
 #include "extern.h"
+#include "list.h"
 #include "log.h"
+#include "scan.h"
 
-extern unsigned int STAT_DNSBL_MATCHES;
-extern unsigned int STAT_DNSBL_REPORTS;
 
 /*
- * Check an ip address for presence in a DNS (black|block)list.  All we need
- * to do is reverse the octets, append the BL zone and then do a
- * gethostbyname.  If that gives us an answer, then it is on the BL.
+ * Work out the DNSBL zones and send the dns query
  */
-int dnsbl_check(const char *addr, const char *irc_nick,
-    const char *irc_user, char *irc_addr)
+void dnsbl_add(struct scan_struct *ss)
 {
-	size_t buflen;
-	struct in_addr in;
-	struct hostent *he;
-	char *buf;
-	char text_type[100];
-	unsigned char a, b, c, d;
-	int type;
-  
-	if (!inet_aton(addr, &in)) {
-		log("DNSBL -> Invalid address '%s', ignoring.", addr);
-		return(0);
-	}
+   struct in_addr in;
+   unsigned char a, b, c, d;
+   char lookup[DNSBL_LOOKUPLEN];
+   node_t *p;
+   int res;
 
-	d = (unsigned char) (in.s_addr >> 24) & 0xFF;
-	c = (unsigned char) (in.s_addr >> 16) & 0xFF;
-	b = (unsigned char) (in.s_addr >> 8) & 0xFF;
-	a = (unsigned char) in.s_addr & 0xFF;
+   if (!inet_aton(ss->ip, &in))
+   {
+      log("DNSBL -> Invalid address '%s', ignoring.", ss->ip);
+      return;
+   }
 
-	/* Enough for a reversed IP and the zone. */
-	buflen = 18 + strlen(CONF_DNSBL_ZONE);
-	buf = malloc(buflen * sizeof(*buf));
+   d = (unsigned char) (in.s_addr >> 24) & 0xFF;
+   c = (unsigned char) (in.s_addr >> 16) & 0xFF;
+   b = (unsigned char) (in.s_addr >> 8) & 0xFF;
+   a = (unsigned char) in.s_addr & 0xFF;
 
+   LIST_FOREACH(p, OpmItem->blacklists->head)
+   {
 #ifdef WORDS_BIGENDIAN
-	snprintf(buf, buflen, "%d.%d.%d.%d.%s.", a, b, c, d,
-	    CONF_DNSBL_ZONE);
+      snprintf(lookup, DNSBL_LOOKUPLEN, "%d.%d.%d.%d.%s", a, b, c, d,
+               (char *) p->data);
 #else
-	snprintf(buf, buflen, "%d.%d.%d.%d.%s.", d, c, b, a,
-	    CONF_DNSBL_ZONE);
+      snprintf(lookup, DNSBL_LOOKUPLEN, "%d.%d.%d.%d.%s", d, c, b, a,
+               (char *) p->data);
 #endif
 
-	if (OPT_DEBUG)
-		log("DNSBL -> Checking %s", buf);
-   
-	if (!(he = gethostbyname(buf))) {
-		switch(h_errno) {
-			/*
-			 * Some of these errors indicate serious problems
-			 * that will require admin intervention.
-			 */
-		case NO_RECOVERY:
-			irc_send("PRIVMSG %s :Whilst checking '%s' "
-			    "against my dnsbl zone '%s', I got a "
-			    "non-recoverable name server error.  Might "
-			    "want to take a look, check if your local "
-			    "resolver is working!?", CONF_CHANNELS, addr,
-			    CONF_DNSBL_ZONE);
-			break;
-		case TRY_AGAIN:
-			irc_send("PRIVMSG %s :Whilst checking '%s' "
-			    "against my dnsbl zone '%s', I got a "
-			    "temporary nameserver error.  Might want to "
-			    "take a look, check if your local resolver is "
-			    "working!?", CONF_CHANNELS, addr,
-			    CONF_DNSBL_ZONE);
-			break;
+      if(OPT_DEBUG)
+         log("DNSBL -> Passed '%s' to resolver", lookup);
 
-		default:
-			/*
-			 * Some other error but we don't care, we can just
-			 * treat this IP as OK.
-			 */
-	    		break;
-		}
+      res = firedns_getip4(lookup, (void *) ss);
 
-		free(buf);
-		return(0);
-	}
-	free(buf);
+      if(res == -1)
+         log("DNSBL -> Error sending dns lookup  '%s'", lookup);
+      else
+         ss->scans++; /* Increase scan count - one for each blacklist */
+   }
+}
 
-	/*
-	 * We got an answer, so we need to kline this IP now.
-	 */
-	irc_kline(irc_addr, (char *)addr);
+void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type)
+{
+   char text_type[100];
 
-	text_type[0] = '\0';
-	type = (int)he->h_addr_list[0][3];
+   text_type[0] = '\0';
 
-	if(type & DNSBL_TYPE_WG)
-	    strcat(text_type, "Wingate, ");
-	if(type & DNSBL_TYPE_SOCKS)
-	    strcat(text_type, "Socks, ");
-	if(type & DNSBL_TYPE_HTTP)
-	    strcat(text_type, "HTTP, ");
-	if(type & DNSBL_TYPE_CISCO)
-	    strcat(text_type, "Cisco, ");
-	if(type & DNSBL_TYPE_HTTPPOST)
-	    strcat(text_type, "HTTP Post, ");
+   if(type & DNSBL_TYPE_WG)
+      strcat(text_type, "Wingate, ");
+   if(type & DNSBL_TYPE_SOCKS)
+      strcat(text_type, "Socks, ");
+   if(type & DNSBL_TYPE_HTTP)
+      strcat(text_type, "HTTP, ");
+   if(type & DNSBL_TYPE_CISCO)
+      strcat(text_type, "Cisco, ");
+   if(type & DNSBL_TYPE_HTTPPOST)
+      strcat(text_type, "HTTP Post, ");
 
-	if(text_type[0] != '\0')
-	    *(strrchr(text_type, ',')) = '\0';
-	
-	log("DNSBL -> %s appears in BL zone %s type %s", addr, CONF_DNSBL_ZONE,
-		text_type);
-	irc_send("PRIVMSG %s :DNSBL: %s!%s@%s appears in BL zone %s type %s",
-	    CONF_CHANNELS, irc_nick, irc_user, irc_addr, CONF_DNSBL_ZONE,
-	    text_type);
+   if(text_type[0] != '\0')
+      *(strrchr(text_type, ',')) = '\0';
 
-	STAT_DNSBL_MATCHES++;
-	return(1);
+   if(strlen(ss->ip) < strlen(lookup)) {
+      lookup += strlen(ss->ip) + 1;
+   }
+   if(ss->manual_target == NULL)
+   {
+      log("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick, ss->irc_username,
+          ss->irc_hostname, lookup, text_type);
+      irc_send_channels("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick,
+                        ss->irc_username, ss->irc_hostname, lookup, text_type);
+   }
+   else /* Manual scan */
+      irc_send("PRIVMSG %s :DNSBL -> %s appears in BL zone %s (%s)",
+               ss->manual_target->name, ss->ip, lookup, text_type);
+
+   /* record stat */
+   stats_dnsblrecv();
+}
+
+void dnsbl_result(struct firedns_result *res)
+{
+   struct scan_struct *ss;
+
+   ss = (struct scan_struct *) res->info;
+   ss->scans--; /* We will have finished with this when we return */
+
+   if(OPT_DEBUG)
+      log("DNSBL -> Lookup result for %s!%s@%s (%s) %d.%d.%d.%d (error: %d)",
+          ss->irc_nick,
+          ss->irc_username,
+          ss->irc_hostname,
+          res->lookup,
+          (unsigned char)res->text[0],
+          (unsigned char)res->text[1],
+          (unsigned char)res->text[2],
+          (unsigned char)res->text[3], fdns_errno);
+
+   /* Everything is OK */
+   if(res->text[0] == '\0' && fdns_errno == FDNS_ERR_NXDOMAIN)
+      return;
+
+   /* Either an error, or a positive lookup */
+
+   if(fdns_errno == FDNS_ERR_NONE)
+   {
+      /* Only report it if no other scans have found positives yet. */
+      if(!ss->positive && (ss->manual_target == NULL))
+      {
+         scan_positive(ss);
+         dnsbl_log_positive(ss, res->lookup, (unsigned char)res->text[3]);
+      }
+   }
+   else
+   {
+      /* XXX: old bopm sometimes reports failures on these.. */
+      log("DNSBL -> Weird error! fdns_errno = %d", fdns_errno);
+   }
+
+   /* Check if ss has any remaining scans */
+   scan_checkfinished(ss);
+}
+
+void dnsbl_cycle(void)
+{
+   firedns_cycle();
 }
 
 /*
  * Send an email to report this open proxy.
  */
+
 void dnsbl_report(struct scan_struct *ss)
 {
- 	char buf[4096], cmdbuf[512];
-	FILE *fp;
+   char buf[4096], cmdbuf[512];
+   FILE *fp;
 
-	if (!ss || !ss->addr)
-		return;
+   if(ss->ip == NULL)
+      return;
 
-	snprintf(cmdbuf, sizeof(cmdbuf), "%s -t", CONF_SENDMAIL);
-	snprintf(buf, sizeof(buf),
-	    "From: %s <%s>\n"
+   if(strlen(OpmItem->dnsbl_to) == 0 || strlen(OpmItem->dnsbl_from) == 0 || strlen(OpmItem->sendmail) == 0)
+      return;
+
+
+   snprintf(cmdbuf, sizeof(cmdbuf), "%s -t", OpmItem->sendmail);
+   snprintf(buf, sizeof(buf),
+            "From: %s <%s>\n"
             "To: %s\n"
-	    "Subject: BOPM Report\n\n"
-	    "%s: %s\n\n"
-	    "%s\n", CONF_NICK, CONF_DNSBL_FROM, CONF_DNSBL_TO,
-	    ss->protocol->type, ss->addr, ss->conn_notice);
+            "Subject: BOPM Report\n\n"
+            "%s: %s\n\n"
+            "%s\n", IRCItem->nick, OpmItem->dnsbl_from, OpmItem->dnsbl_to,
+            scan_gettype(ss->remote->protocol), ss->ip, ss->proof);
 
-	if ((fp = popen(cmdbuf, "w")) == NULL) {
-		log("DNSBL -> Failed to create pipe to '%s' for email "
-		    "report!", cmdbuf);
-		irc_send("PRIVMSG %s :I was trying to create a pipe to "
-		    "'%s' to send a DNSBL report, and it failed!  I'll "
-		    "give up for now.", CONF_CHANNELS, cmdbuf);
-		return;
-	}
+   if(OPT_DEBUG >= 3)
+      log("DNSBL -> Sending following email:\n%s\n", buf);
 
-	fputs(buf, fp);
-	pclose(fp);
+   if ((fp = popen(cmdbuf, "w")) == NULL)
+   {
+      log("DNSBL -> Failed to create pipe to '%s' for email report!", cmdbuf);
+      irc_send_channels("I was trying to create a pipe to'%s' to send a DNSBL "
+                        "report, and it failed! I'll give up for now.",
+                        cmdbuf);
+      return;
+   }
 
-	log("DNSBL -> Sent report to %s", CONF_DNSBL_TO);
-	STAT_DNSBL_REPORTS++;
+   fputs(buf, fp);
+   pclose(fp);
+
+   log("DNSBL -> Sent report to %s [%s]", OpmItem->dnsbl_to, ss->ip);
+   /* record send in stats */
+   stats_dnsblsend();
 }

@@ -1,7 +1,20 @@
 #ifndef STATS_H
 #define STATS_H
 
-extern void do_stats_init(void);
-extern void do_stats(const char *target);
+#include "irc.h"
 
-#endif
+struct StatsHash
+{
+   int type;
+   unsigned int count;
+   char *name;
+};
+
+extern void stats_init();
+extern void stats_openproxy(int);
+extern void stats_connect();
+extern void stats_dnsblrecv();
+extern void stats_dnsblsend();
+extern void stats_output(char *);
+
+#endif /* STATS_H */

@@ -1,23 +1,23 @@
 /*
 Copyright (C) 2002  Erik Fears
-
+ 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
-
+ 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
+ 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-
+ 
       Foundation, Inc.
       59 Temple Place - Suite 330
       Boston, MA  02111-1307, USA.
-
+ 
 */
 
 #include "setup.h"
@@ -39,57 +39,148 @@ along with this program; if not, write to the Free Software
 #include "opercmd.h"
 #include "scan.h"
 #include "stats.h"
+#include "libopm/src/opm_types.h"
 
-time_t STAT_START_TIME;
-unsigned int STAT_NUM_CONNECTS;
-unsigned int STAT_DNSBL_MATCHES;
-unsigned int STAT_DNSBL_REPORTS;
+static time_t STATS_UPTIME;
+static unsigned int STATS_CONNECTIONS;
+static unsigned int STATS_DNSBLRECV;
+static unsigned int STATS_DNSBLSENT;
 
-extern protocol_hash SCAN_PROTOCOLS[];
-extern size_t SCAN_NUMPROTOCOLS;
+static struct StatsHash STATS_PROXIES[] =
+   {
+      {OPM_TYPE_HTTP,     0, "HTTP"     },
+      {OPM_TYPE_HTTPPOST, 0, "HTTPPOST" },
+      {OPM_TYPE_SOCKS4,   0, "SOCKS4"   },
+      {OPM_TYPE_SOCKS5,   0, "SOCKS5"   },
+      {OPM_TYPE_ROUTER,   0, "ROUTER"   },
+      {OPM_TYPE_WINGATE,  0, "WINGATE"  }
+   };
 
-extern unsigned int FD_USE;
 
-void do_stats_init(void)
+/* stats_init
+ *
+ *    Perform initialization of bopm stats 
+ *
+ * Parameters: NONE
+ * Return: NONE
+ * 
+ */
+
+void stats_init()
 {
-	STAT_START_TIME = time(NULL);
-	STAT_NUM_CONNECTS = 0;
+   time(&STATS_UPTIME);
 }
 
-void do_stats(const char *target)
+
+
+
+/* stats_openproxy
+ *
+ *    Record open proxy.
+ *
+ *
+ * Parameters: NONE
+ * Return: NONE
+ * 
+ */
+
+void stats_openproxy(int type)
 {
-	time_t now, uptime;
-	size_t i;
+   int i;
 
-	now = time(NULL);
-	uptime = now - STAT_START_TIME;
- 
-	irc_send("PRIVMSG %s :Uptime: %s", target, dissect_time(uptime));
-        irc_send("PRIVMSG %s :Using %d/%d file descriptors", target, FD_USE, CONF_FDLIMIT);
+   for(i = 0; i < (sizeof(STATS_PROXIES) / sizeof(struct StatsHash)); i++)
+      if(STATS_PROXIES[i].type == type)
+         STATS_PROXIES[i].count++;
+}
 
-	if (CONF_DNSBL_ZONE) {
-		irc_send("PRIVMSG %s :DNSBL: %u successful lookup%s from "
-		    "zone %s", target, STAT_DNSBL_MATCHES,
-		    STAT_DNSBL_MATCHES == 1 ? "" : "s", CONF_DNSBL_ZONE);
-	}
 
-	if(CONF_DNSBL_FROM && CONF_DNSBL_TO && CONF_SENDMAIL) {
-		irc_send("PRIVMSG %s :DNSBL: %u report%s sent",
-		    target, STAT_DNSBL_REPORTS,
-		    STAT_DNSBL_REPORTS == 1 ? "" : "s");
-	} else {
-		irc_send("PRIVMSG %s :DNSBL: reporting is disabled", target);
-	}
-	
-	for(i = 0; i < SCAN_NUMPROTOCOLS; i++) {
-		irc_send("PRIVMSG %s :Found %u %s (%d), %u open.", target,
-		    SCAN_PROTOCOLS[i].stat_num, SCAN_PROTOCOLS[i].type,
-		    SCAN_PROTOCOLS[i].port,SCAN_PROTOCOLS[i].stat_numopen);
-	}
 
-	irc_send("PRIVMSG %s :Number of connects: %u (%.2f/minute)",
-	    target, STAT_NUM_CONNECTS, STAT_NUM_CONNECTS ?
-	    (float)STAT_NUM_CONNECTS / ((float)uptime / 60.0) : 0.0);
+/* stats_connect
+ *
+ *    Record IRC connect.
+ *
+ *
+ * Parameters: NONE
+ * Return: NONE
+ * 
+ */
 
-	return;
+
+void stats_connect()
+{
+   STATS_CONNECTIONS++;
+}
+
+
+
+/* stats_dnsblrecv
+ *
+ *    Record that a user was found in the blacklist.
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
+ */
+
+void stats_dnsblrecv()
+{
+   STATS_DNSBLRECV++;
+}
+
+
+
+
+/* stats_dnsblsend
+ *
+ *    Record a sent report
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
+ */
+
+void stats_dnsblsend()
+{
+   STATS_DNSBLSENT++;
+}
+
+
+
+
+/* stats_output
+ *
+ *    Output stats to target via privmsg
+ *
+ *
+ * Parameters: NONE
+ * Return: NONE
+ * 
+ */
+
+void stats_output(char *target)
+{
+   int i;
+   time_t present;
+   time_t uptime;
+
+   time(&present);
+   uptime = present - STATS_UPTIME;
+
+   irc_send("PRIVMSG %s :Uptime: %s", target, dissect_time(uptime));
+
+   if(STATS_DNSBLRECV > 0)
+      irc_send("PRIVMSG %s :DNSBL: %u successful lookups from blacklists", target, STATS_DNSBLRECV);
+
+   if(STATS_DNSBLSENT > 0)
+      irc_send("PRIVMSG %s :DNSBL: %u reports sent", target, STATS_DNSBLSENT);
+
+   for(i = 0; i < (sizeof(STATS_PROXIES) / sizeof(struct StatsHash)); i++)
+      if(STATS_PROXIES[i].count > 0)
+         irc_send("PRIVMSG %s :Found %u (%s) open.", target, STATS_PROXIES[i].count, STATS_PROXIES[i].name);
+
+   irc_send("PRIVMSG %s :Number of connects: %u (%.2f/minute)",
+            target, STATS_CONNECTIONS, STATS_CONNECTIONS ?
+            (float)STATS_CONNECTIONS / ((float)uptime / 60.0) : 0.0);
+
+
 }

@@ -1,30 +1,26 @@
+/* vim: set shiftwidth=3 softtabstop=3 expandtab: */ 
+
 /*
-Copyright (C) 2002  Erik Fears
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-
-      Foundation, Inc.
-      59 Temple Place - Suite 330
-      Boston, MA  02111-1307, USA.
-
-*/
-
-/* The old sockaddr_in or in_addr structures were replaced with
- * bopm based newer structures.
- * Also took inetpton and friends from hybrid7/trircd5 tree
- * Implemented ipv6.
- * -TimeMr14C
+ * Copyright (C) 2002  Erik Fears
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to
+ *
+ *       The Free Software Foundation, Inc.
+ *       59 Temple Place - Suite 330
+ *       Boston, MA  02111-1307, USA.
+ *
+ *
  */
 
 #include "setup.h"
@@ -60,6 +56,7 @@ along with this program; if not, write to the Free Software
 
 #include <errno.h>
 #include <stdarg.h>
+#include <regex.h>
 
 #include "config.h"
 #include "irc.h"
@@ -73,26 +70,28 @@ along with this program; if not, write to the Free Software
 #include "match.h"
 #include "compat.h"
 #include "negcache.h"
+#include "malloc.h"
 
 static void irc_init(void);
 static void irc_connect(void);
 static void irc_reconnect(void);
 static void irc_read(void);
 static void irc_parse(void);
-static void do_perform(void);
-static void do_connect(char *addr, char *irc_nick, char *irc_user,
-    char *irc_addr, char *conn_notice);
-static void do_hybrid_connect(int tokens, char **token);
-static void do_trircd_connect(int tokens, char **token);
-static void do_ultimateircd_connect(int tokens, char **token);
-static void do_xnet_connect(int tokens, char **token);
-static char *get_chan_key(const char *channel);
-static char *check_channel(const char *channel);
 
-extern char *CONFFILE;
-extern time_t LAST_REAP_TIME;
-extern string_list *CONF_SCAN_WARNING;
-extern unsigned int CONF_NEG_CACHE;
+static struct ChannelConf *get_channel(const char *);
+
+static struct UserInfo *userinfo_create(char *);
+static void userinfo_free(struct UserInfo *source);
+
+static void m_ping(char **, unsigned int, char *, struct UserInfo *);
+static void m_invite(char **, unsigned int, char *, struct UserInfo *);
+static void m_privmsg(char **, unsigned int, char *, struct UserInfo *);
+static void m_ctcp(char **, unsigned int, char *, struct UserInfo *);
+static void m_notice(char **, unsigned int, char *, struct UserInfo *);
+static void m_perform(char **, unsigned int, char *, struct UserInfo *);
+static void m_userhost(char **, unsigned int, char *, struct UserInfo *);
+static void m_cannot_join(char **, unsigned int, char *, struct UserInfo *);
+
 extern struct cnode *nc_head;
 
 /*
@@ -100,1046 +99,989 @@ extern struct cnode *nc_head;
  * again so global scope is given.
  */
 
-char                IRC_RAW[MSGLENMAX];      /* Buffer to read data into              */
-char                IRC_SENDBUFF[MSGLENMAX]; /* Send buffer                           */
-int                 IRC_RAW_LEN = 0;         /* Position of IRC_RAW                   */
+char                 IRC_RAW[MSGLENMAX];         /* Buffer to read data into              */
+char                 IRC_SENDBUFF[MSGLENMAX];    /* Send buffer                           */
+char                 IRC_CHANNELS[MSGLENMAX];    /* Stores comma delim list of channels   */
+int                  IRC_RAW_LEN    = 0;         /* Position of IRC_RAW                   */
 
-int remote_is_ipv6 = 0;
-int bindto_ipv6 = 0;
+int                  IRC_FD         = -1;        /* File descriptor for IRC client        */
 
-int                 IRC_FD = -1;      /* File descriptor for IRC client        */
+struct bopm_sockaddr IRC_SVR;                   /* Sock Address Struct for IRC server    */
+struct bopm_ircaddr  IRC_LOCAL;                 /* Sock Address Struct for Bind          */
 
-struct bopm_sockaddr IRC_SVR;        /* Sock Address Struct for IRC server    */
-struct bopm_ircaddr IRC_LOCAL;      /* Sock Address Struct for Bind          */
+struct hostent      *IRC_HOST;                   /* Hostent struct for IRC server         */
+fd_set               IRC_READ_FDSET;             /* fd_set for IRC (read) data for select()*/
+struct timeval       IRC_TIMEOUT;                /* timeval struct for select() timeout   */
 
-unsigned int ssize = -1;
-unsigned int isize = -1;
+time_t               IRC_LAST = 0;               /* Last full line of data from irc server*/
 
-struct hostent     *IRC_HOST;         /* Hostent struct for IRC server         */
-fd_set              IRC_READ_FDSET;   /* fd_set for IRC (read) data for select()*/
+/* Table should be ordered with most occuring (or priority)
+   commands at the top of the list. */
 
-struct timeval      IRC_TIMEOUT;      /* timeval struct for select() timeout   */
-time_t              IRC_NICKSERV_LAST = 0; /* Last notice from nickserv        */
-time_t              IRC_LAST = 0;     /* Last full line of data from irc server*/
+static struct CommandHash COMMAND_TABLE[] = {
+         {"NOTICE",               m_notice         },
+         {"PRIVMSG",              m_privmsg        },
+         {"PING",                 m_ping           },
+         {"INVITE",               m_invite         },
+         {"001",                  m_perform        },
+         {"302",                  m_userhost       },
+         {"471",                  m_cannot_join    },
+         {"473",                  m_cannot_join    },
+         {"474",                  m_cannot_join    },
+         {"475",                  m_cannot_join    },
+      };
 
-/*
- * Give one cycle to the IRC client, which will allow it to poll for data and
- * handle that data if need be.
+/* irc_cycle
+ *
+ *    Pass control to the IRC portion of BOPM to handle any awaiting IRC events.
+ *
+ * Parameters:
+ *    None
+ *
+ * Return:
+ *    None
+ *
  */
 
 void irc_cycle(void)
-{	
-	if (IRC_FD <= 0) {
-		/* No socket open. */
-		
-		/* Reload config. */
-		config_load(CONFFILE);
+{
+   if (IRC_FD <= 0)
+   {
+      /* Initialise negative cache. */
+      if (OptionsItem->negcache > 0)
+         nc_init(&nc_head);
 
-		 /* Initialise negative cache. */
-		if (CONF_NEG_CACHE)
-			nc_init(&nc_head);
+      /* Resolve remote host. */
+      irc_init();
 
-		/* Resolve remote host. */
-		irc_init();
+      /* Connect to remote host. */
+      irc_connect();
+   }
 
-		/* Connect to remote host. */
-		irc_connect();
-        }
+   IRC_TIMEOUT.tv_sec  = 0;
+   /* Block .025 seconds to avoid excessive CPU use on select(). */
+   IRC_TIMEOUT.tv_usec = 25000;
 
-	IRC_TIMEOUT.tv_sec  = 0;
-	/*
-	 * Block .05 seconds to avoid excessive CPU use on select(). */
-	IRC_TIMEOUT.tv_usec = 50000;
-           
-	FD_ZERO(&IRC_READ_FDSET);
+   FD_ZERO(&IRC_READ_FDSET);
+   FD_SET(IRC_FD, &IRC_READ_FDSET);
 
-	FD_SET(IRC_FD, &IRC_READ_FDSET);
-            
-	switch (select((IRC_FD + 1), &IRC_READ_FDSET, 0, 0, &IRC_TIMEOUT)) {
-	case -1:         
-		return;
-		break;
-	case 0:
-		break;
-	default:
-		/* Check if IRC data is available. */
-		if (FD_ISSET(IRC_FD, &IRC_READ_FDSET))
-			irc_read();
-		break;
-	}
+   switch (select((IRC_FD + 1), &IRC_READ_FDSET, 0, 0, &IRC_TIMEOUT))
+   {
+      case -1:
+         return;
+         break;
+      case 0:
+         break;
+      default:
+         /* Check if IRC data is available. */
+         if (FD_ISSET(IRC_FD, &IRC_READ_FDSET))
+            irc_read();
+         break;
+   }
 }
 
 
-/*  Allocate socket file descriptor for connection,
- *  and resolve remote host.
+
+
+/* irc_init
+ *
+ *    Resolve IRC host and perform other initialization.
+ *
+ * Parameters: 
+ *    None
+ * 
+ * Return:
+ *    None
  *
  */
 
 static void irc_init(void)
 {
-	struct bopm_sockaddr bsaddr;
+   node_t *node;
+   struct ChannelConf *chan;
+   struct bopm_sockaddr bsaddr;
 
-	ssize = sizeof(struct bopm_sockaddr);
-	isize = sizeof(struct bopm_ircaddr);
 
-	if (IRC_FD)
-		close(IRC_FD);
+   if (IRC_FD)
+      close(IRC_FD);
 
-	memset(&IRC_SVR, 0, ssize);
-	memset(&IRC_LOCAL, 0, isize);
-	memset(&bsaddr, 0, sizeof(struct bopm_sockaddr));
+   memset(&IRC_SVR, 0, sizeof(IRC_SVR));
+   memset(&IRC_LOCAL, 0, sizeof(IRC_LOCAL));
+   memset(&bsaddr, 0, sizeof(struct bopm_sockaddr));
 
-	/* Resolve IRC host. */
-	if (!(IRC_HOST = bopm_gethostbyname(CONF_SERVER))) {
-		switch(h_errno) {
-		case HOST_NOT_FOUND:
-			log("IRC -> bopm_gethostbyname(): The specified host "
-			    "(%s) is unknown", CONF_SERVER);
-			break;
-		case NO_ADDRESS:
-			log("IRC -> bopm_gethostbyname(): The specified name "
-			    "(%s) exists, but does not have an IP",
-			    CONF_SERVER);
-			break;
-		case NO_RECOVERY:
-			log("IRC -> bopm_gethostbyname(): An unrecoverable "
-			    "error occured resolving (%s)", CONF_SERVER);
-			break;
-		case TRY_AGAIN:
-			log("IRC -> bopm_gethostbyname(): Error occured with "
-			    "authoritive name server (%s)", CONF_SERVER);
-			break;
-		default:
-			log("IRC -> bopm_gethostbyname(): Unknown error "
-			    "resolving (%s)", CONF_SERVER);
-			break;
-                }
-		exit(EXIT_FAILURE);
-	}
+   /* Resolve IRC host. */
+   if ((IRC_HOST = bopm_gethostbyname(IRCItem->server)) == NULL)
+   {
+      switch(h_errno)
+      {
+         case NO_ADDRESS:
+         case HOST_NOT_FOUND:
+            log("IRC -> bopm_gethostbyname(): The specified host (%s) is unknown", IRCItem->server);
+            break;
+         case NO_RECOVERY:
+            log("IRC -> bopm_gethostbyname(): An unrecoverable error occured resolving (%s)", IRCItem->server);
+            break;
+         case TRY_AGAIN:
+            log("IRC -> bopm_gethostbyname(): Error occured with authoritive name server (%s)", IRCItem->server);
+            break;
+         default:
+            log("IRC -> bopm_gethostbyname(): Unknown error resolving (%s)", IRCItem->server);
+            break;
+      }
+      exit(EXIT_FAILURE);
+   }
 
-#ifdef IPV6
-	if (remote_is_ipv6) {
-		IRC_SVR.sas.sa6.sin6_family = AF_INET6;
-		IRC_SVR.sas.sa6.sin6_port = htons(CONF_PORT);
-		IRC_SVR.sas.sa6.sin6_addr =
-		    *((struct in6_addr *) IRC_HOST->h_addr_list[0]);
+   IRC_SVR.sa4.sin_family = AF_INET;
+   IRC_SVR.sa4.sin_port = htons(IRCItem->port);
+   IRC_SVR.sa4.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
 
-		if (IN6_ARE_ADDR_EQUAL(&(IRC_SVR.sas.sa6.sin6_addr),
-		    &in6addr_any)) {
-			log("IRC -> Unknown error resolving remote host (%s)",
-			    CONF_SERVER);
-			exit(EXIT_FAILURE);
-		}
-	} else {
-		IRC_SVR.sas.sa4.sin_family = AF_INET;
-		IRC_SVR.sas.sa4.sin_port = htons(CONF_PORT);
-		IRC_SVR.sas.sa4.sin_addr =
-		    *((struct in_addr *) IRC_HOST->h_addr);
+   if (IRC_SVR.sa4.sin_addr.s_addr == INADDR_NONE)
+   {
+      log("IRC -> Unknown error resolving remote host (%s)",
+          IRCItem->server);
+      exit(EXIT_FAILURE);
+   }
 
-		if (IRC_SVR.sas.sa4.sin_addr.s_addr == INADDR_NONE) {
-			log("IRC -> Unknown error resolving remote host (%s)",
-			    CONF_SERVER);
-			exit(EXIT_FAILURE);
-		}
-	}
-#else
-	IRC_SVR.sas.sa4.sin_family = AF_INET;
-	IRC_SVR.sas.sa4.sin_port = htons(CONF_PORT);
-	IRC_SVR.sas.sa4.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
+   IRC_FD = socket(AF_INET, SOCK_STREAM, 0);
 
-	if (IRC_SVR.sas.sa4.sin_addr.s_addr == INADDR_NONE) {
-		log("IRC -> Unknown error resolving remote host (%s)",
-		    CONF_SERVER);
-		exit(EXIT_FAILURE);
-	}
-#endif
+   /* Request file desc for IRC client socket */
 
-	IRC_FD = socket(remote_is_ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, 0);
+   if (IRC_FD == -1)
+   {
+      switch(errno)
+      {
+         case EINVAL:
+         case EPROTONOSUPPORT:
+            log("IRC -> socket(): SOCK_STREAM is not "
+                "supported on this domain");
+            break;
+         case ENFILE:
+            log("IRC -> socket(): Not enough free file "
+                "descriptors to allocate IRC socket");
+            break;
+         case EMFILE:
+            log("IRC -> socket(): Process table overflow when "
+                "requesting file descriptor");
+            break;
+         case EACCES:
+            log("IRC -> socket(): Permission denied to create "
+                "socket of type SOCK_STREAM");
+            break;
+         case ENOMEM:
+            log("IRC -> socket(): Insufficient memory to "
+                "allocate socket");
+            break;
+         default:
+            log("IRC -> socket(): Unknown error allocating "
+                "socket");
+            break;
+      }
+      exit(EXIT_FAILURE);
+   }
 
-	/* Request file desc for IRC client socket */
+   /* Bind */
+   if (strlen(IRCItem->vhost) > 0)
+   {
+      int bindret = 0;
+      if (!inet_pton(AF_INET, IRCItem->vhost, &(IRC_LOCAL.in4.s_addr)))
+      {
+         log("IRC -> bind(): %s is an invalid address", IRCItem->vhost);
+         exit(EXIT_FAILURE);
+      }
+      bsaddr.sa4.sin_addr.s_addr = IRC_LOCAL.in4.s_addr;
+      bsaddr.sa4.sin_family = AF_INET;
+      bsaddr.sa4.sin_port = htons(0);
 
-	if (IRC_FD == -1) {
-		switch(errno) {
-		case EINVAL:
-		case EPROTONOSUPPORT:
-			log("IRC -> socket(): SOCK_STREAM is not "
-			    "supported on this domain");
-			break;
-		case ENFILE:
-			log("IRC -> socket(): Not enough free file "
-			    "descriptors to allocate IRC socket");
-			break;
-		case EMFILE:
-			log("IRC -> socket(): Process table overflow when "
-			    "requesting file descriptor");
-			break;
-		case EACCES:
-			log("IRC -> socket(): Permission denied to create "
-			    "socket of type SOCK_STREAM");
-			break;
-		case ENOMEM:
-			log("IRC -> socket(): Insufficient memory to "
-			    "allocate socket");
-			break;
-		default:
-			log("IRC -> socket(): Unknown error allocating "
-			    "socket");
-			break;
-		}
-		exit(EXIT_FAILURE);
-	}
+      bindret = bind(IRC_FD, (struct sockaddr *) &(bsaddr.sa4), sizeof(bsaddr.sa4));
 
-	if (CONF_BINDIRC) {
-		int bindret = 0;
-#ifdef IPV6
-        	if (bindto_ipv6) {
-            		if (!inetpton(AF_INET6, CONF_BINDIRC, &(IRC_LOCAL.ins.in6.s6_addr))) {
-                		log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
-                 		exit(EXIT_FAILURE);
-            		}   
-			copy_s_addr(bsaddr.sas.sa6.sin6_addr.s6_addr,
-			    IRC_LOCAL.ins.in6.s6_addr);
-			bsaddr.sas.sa6.sin6_family = AF_INET6;
-			bsaddr.sas.sa6.sin6_port = htons(0);
-			bindret = bind(IRC_FD, (struct sockaddr *) &(bsaddr.sas.sa6),
-				sizeof(bsaddr));
-        	} else {
-#endif
-            		if (!inetpton(AF_INET, CONF_BINDIRC, &(IRC_LOCAL.ins.in4.s_addr))) {
-                		log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
-                 		exit(EXIT_FAILURE);
-            		}
-			bsaddr.sas.sa4.sin_addr.s_addr = IRC_LOCAL.ins.in4.s_addr;
-                        bsaddr.sas.sa4.sin_family = AF_INET;
-                        bsaddr.sas.sa4.sin_port = htons(0);
-			bindret = bind(IRC_FD, (struct sockaddr *) &(bsaddr.sas.sa4),
-                                sizeof(bsaddr));
-#ifdef IPV6
-        	}
-#endif
+      if (bindret)
+      {
+         switch(errno)
+         {
+            case EACCES:
+               log("IRC -> bind(): No access to bind to %s",
+                   IRCItem->vhost);
+               break;
+            default:
+               log("IRC -> bind(): Error binding to %s (%d)",
+                   IRCItem->vhost, errno);
+               break;
+         }
+         exit(EXIT_FAILURE);
+      }
 
-		if (bindret) {
-			switch(errno) {
-			case EACCES:
-				log("IRC -> bind(): No access to bind to %s",
-				    CONF_BINDIRC);
-				break;
-			default:
-				log("IRC -> bind(): Error binding to %s (%d)",
-				    CONF_BINDIRC, errno);
-				break;
-			}
-			exit(EXIT_FAILURE);
-		}
-	}
+   }
+
+   /* Setup target list for irc_send_channels */
+   IRC_CHANNELS[0] = '\0';
+   LIST_FOREACH(node, IRCItem->channels->head)
+   {
+      chan = (struct ChannelConf *) node->data;
+      strncat(IRC_CHANNELS, chan->name, MSGLENMAX);
+
+      if(node->next)
+         strncat(IRC_CHANNELS, ",", MSGLENMAX);
+   }
+   IRC_CHANNELS[MSGLENMAX] = '\0';
+
+
 }
 
 
-/* 
- * Send data to remote IRC host.
+/* irc_send
+ *
+ *    Send data to remote IRC host.
+ *
+ * Parameters:
+ *    data: Format of data to send
+ *    ...: varargs to format with
+ * 
+ * Return: NONE
  */
 
 
 void irc_send(char *data, ...)
 {
-	va_list arglist;
-	char    data2[MSGLENMAX];
-	char    tosend[MSGLENMAX];
- 
-	va_start(arglist, data);
-	vsnprintf(data2, MSGLENMAX - 1, data, arglist);
-	va_end(arglist);
+   va_list arglist;
+   char    data2[MSGLENMAX];
+   char    tosend[MSGLENMAX];
 
-	if (OPT_DEBUG >= 2)
-		log("IRC SEND -> %s", data2);
+   va_start(arglist, data);
+   vsnprintf(data2, MSGLENMAX, data, arglist);
+   va_end(arglist);
 
-	snprintf(tosend, MSGLENMAX - 1, "%s\n", data2);
+   if (OPT_DEBUG >= 2)
+      log("IRC SEND -> %s", data2);
 
-	if (send(IRC_FD, tosend, strlen(tosend), 0) == -1) {
-		/* Return of -1 indicates error sending data; we reconnect. */
-		irc_reconnect();
-	}
+   snprintf(tosend, MSGLENMAX, "%s\n", data2);
+
+   if (send(IRC_FD, tosend, strlen(tosend), 0) == -1)
+   {
+
+      /* Return of -1 indicates error sending data; we reconnect. */
+      log("IRC -> Error sending data to server\n");
+      irc_reconnect();
+   }
 }
 
-/*
- * K:line given ip for given reason.
+/* irc_send
+ *
+ *    Send privmsg to all channels.
+ *
+ * Parameters:
+ *    data: Format of data to send
+ *    ...: varargs to format with
+ *
+ * Return: NONE
  */
 
-void irc_kline(char *addr, char *ip)
+void irc_send_channels(char *data, ...)
 {
-	irc_send(CONF_KLINE_COMMAND, addr, ip);
+   va_list arglist;
+   char    data2[MSGLENMAX];
+   char    tosend[MSGLENMAX];
+
+   va_start(arglist, data);
+   vsnprintf(data2, MSGLENMAX, data, arglist);
+   va_end(arglist);
+
+   snprintf(tosend, MSGLENMAX, "PRIVMSG %s :%s", IRC_CHANNELS, data2);
+
+   irc_send("%s", tosend);
 }
 
-/*
- * Create socket and connect to IRC server specificied in config file
- * (CONF_SERVER) with port CONF_PORT.
+
+
+
+/* irc_connect
+ *
+ *    Connect to IRC server.
+ *    XXX: FD allocation done here
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
  */
 
 static void irc_connect(void)
 {
-	/* Connect to IRC server as client. */
-	if (connect(IRC_FD, (struct sockaddr *) &IRC_SVR,
-	    sizeof(IRC_SVR)) == -1) {
-		switch(errno) {
-		case EISCONN: 
-			/* Already connected */
-			return;
-		case ECONNREFUSED:
-			log("IRC -> connect(): Connection refused by (%s)",
-			    CONF_SERVER);
-			break;
-		case ETIMEDOUT:
-			log("IRC -> connect(): Timed out connecting to (%s)",
-			    CONF_SERVER);
-			break;
-		case ENETUNREACH:
-			log("IRC -> connect(): Network unreachable");
-			break;
-		case EALREADY:
-			/* Previous attempt not complete */
-			return;
-		default:
-			log("IRC -> connect(): Unknown error connecting to (%s)",
-			    CONF_SERVER);
+   /* Connect to IRC server as client. */
+   if (connect(IRC_FD, (struct sockaddr *) &IRC_SVR,
+               sizeof(IRC_SVR)) == -1)
+   {
+      switch(errno)
+      {
+         case EISCONN:
+            /* Already connected */
+            return;
+         case ECONNREFUSED:
+            log("IRC -> connect(): Connection refused by (%s)",
+                IRCItem->server);
+            break;
+         case ETIMEDOUT:
+            log("IRC -> connect(): Timed out connecting to (%s)",
+                IRCItem->server);
+            break;
+         case ENETUNREACH:
+            log("IRC -> connect(): Network unreachable");
+            break;
+         case EALREADY:
+            /* Previous attempt not complete */
+            return;
+         default:
+            log("IRC -> connect(): Unknown error connecting to (%s)",
+                IRCItem->server);
 
-                        if (OPT_DEBUG >= 1)
-                        	log(strerror(errno));
-		}	
-		exit(EXIT_FAILURE);
-	}
+            if (OPT_DEBUG >= 1)
+               log(strerror(errno));
+      }
+      exit(EXIT_FAILURE);
+   }
 
-#ifdef WITH_UNREAL
-	irc_send("PROTOCTL HCN");
-#endif /* WITH_UNREAL */
+   irc_send("NICK %s", IRCItem->nick);
 
-	irc_send("NICK %s",CONF_NICK);
-	if (CONF_PASSWORD)
-		irc_send("PASS %s",CONF_PASSWORD);
-	irc_send("USER %s %s %s :%s", CONF_USER, CONF_USER, CONF_USER,
-	    CONF_REALNAME);
+   if(strlen(IRCItem->password) > 0)
+      irc_send("PASS %s", IRCItem->password);
+
+   irc_send("USER %s %s %s :%s",
+            IRCItem->username, IRCItem->username, IRCItem->username,
+            IRCItem->realname);
 }
 
+
+/* irc_reconnect
+ *
+ *    Close connection to IRC server.
+ *
+ * Parameters: NONE
+ *
+ * Return: NONE
+ */
 
 static void irc_reconnect(void)
 {
-	if(IRC_FD > 0)
-		close(IRC_FD);
 
-	/* Set IRC_FD 0 for reconnection on next irc_cycle(). */
-	IRC_FD = 0;
+   if(IRC_FD > 0)
+      close(IRC_FD);
 
-	log("IRC -> Connection to (%s) lost, rehashing and reconnecting.",
-	    CONF_SERVER);
+   /* Set IRC_FD 0 for reconnection on next irc_cycle(). */
+   IRC_FD = 0;
+
+   log("IRC -> Connection to (%s) lost, reconnecting.", IRCItem->server);
 }
 
-/*
- * Read one character at a time until an endline is hit, at which time control
- * is passed to irc_parse() to parse that line.
+
+
+/* irc_read
+ *
+ *    irc_read is called my irc_cycle when new data is ready to be
+ *    read from the irc server. 
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
  */
- 
+
 static void irc_read(void)
 {
-	int len;
-	char c;
+   int len;
+   char c;
 
-	while ((len = read(IRC_FD, &c, 1))) {
-		if (len <= 0) {
-			irc_reconnect();
-			return;
-		}
-            
-		if (c == '\r')
-			continue;
-		
-		if (c == '\n') {
-			/* Null string. */
-			IRC_RAW[IRC_RAW_LEN] = 0;
-			/* Parse line. */
-			irc_parse();
-			/* Reset counter. */
-			IRC_RAW_LEN = 0;
-			break;
-		}
+   while ((len = read(IRC_FD, &c, 1)) > 0)
+   {
+      if (c == '\r')
+         continue;
 
-		if (c != '\r' && c != '\n' && c != 0)
-			IRC_RAW[IRC_RAW_LEN++] = c;
-	}
-       
-	if (len <= 0) {
-		irc_reconnect();
-		return;
-	} 
+      if (c == '\n')
+      {
+         /* Null string. */
+         IRC_RAW[IRC_RAW_LEN] = '\0';
+         /* Parse line. */
+         irc_parse();
+         /* Reset counter. */
+         IRC_RAW_LEN = 0;
+         break;
+      }
+
+      if (c != '\r' && c != '\n' && c != '\0')
+         IRC_RAW[IRC_RAW_LEN++] = c;
+   }
+
+   if(len == -1 && errno != EAGAIN)
+   {
+      log("IRC -> Read error.");
+      irc_reconnect();
+      IRC_RAW_LEN = 0;
+      return;
+   }
 }
 
-/*
- * A full line has been read by irc_read(); this function begins parsing it.
+
+/* irc_parse
+ *
+ *    irc_parse is called by irc_read when a full line of data
+ *    is ready to be parsed.
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
  */
+
 
 static void irc_parse(void)
 {
-	char nick[NICKMAX];
-	char *token[32];
-	time_t present;
-	size_t prefixlen;
-	unsigned int tokens;
-	char *irc_channel, *key, *user, *target, *msg;
+   struct UserInfo *source_p;
+   char *pos;
+   int i;
 
-	tokens = 0;
+   /*
+      parv stores the parsed token, parc is the count of the parsed 
+      tokens
+     
+      parv[0] is ALWAYS the source, and is the server name of the source
+      did not exist 
+   */
 
-	/* Update timeout tracking. */ 
-	time(&IRC_LAST);
+   static char            *parv[17];
+   static unsigned int     parc;
+   static char             msg[MSGLENMAX];    /* Temporarily stores IRC msg to pass to handlers */
 
-	if(OPT_DEBUG >= 2)
-		log("IRC READ -> %s", IRC_RAW);
+   parc = 1;
 
-	/*
-	 * Tokenize the first 32 words in the incoming data, we really don't
-	 * need to worry about anything else and we don't need the original
-	 * string for anything.
-	 */
+   if(IRC_RAW_LEN <= 0)
+      return;
 
-	token[tokens] = strtok(IRC_RAW, " ");
+   if (OPT_DEBUG >= 2)
+      log("IRC READ -> %s", IRC_RAW);
 
-	while (++tokens < 32 && (token[tokens] = strtok(NULL, " ")))
-		; 
+   time(&IRC_LAST);
 
-	/* Anything with less than 1 token is useless to us. */  
+   /* Store a copy of IRC_RAW for the handlers (for functions that need PROOF) */
+   strcpy(msg, IRC_RAW);
 
-	if (tokens <= 1)
-		return;
+   /* parv[0] is always the source */
+   if(IRC_RAW[0] == ':')
+      parv[0] = IRC_RAW + 1;
+   else
+   {
+      parv[0] = IRCItem->server;
+      parv[parc++] = IRC_RAW;
+   }
 
-	if (!strcasecmp(token[0], "PING")) {
-		irc_send("PONG %s", token[1]);
-		return;
-	}
+   pos = IRC_RAW;
 
-	/* 001 is sent on initial connect to the IRC host. */
+   while((pos = strchr(pos, ' ')) && parc <= 17)
+   {
 
-	if (!strcasecmp(token[1], "001")) { 
-		if (CONF_AWAY)
-			irc_send("AWAY :%s (/msg %s INFO)", CONF_AWAY, CONF_NICK);
-		irc_send("OPER %s", CONF_OPER);
-		irc_send("MODE %s %s", CONF_NICK, CONF_OPER_MODES);      
-                do_perform();
-		return;
-	}   
-    
-   	/* 471, 473, 474, 475 are 'Cannot Join' messages. */
+      /* Avoid excessive spaces and end of IRC_RAW */
+      if(*(pos + 1) == ' ' && *(pos + 1) == '\0')
+      {
+         pos++;
+         continue;
+      }
 
-	if (!strcasecmp(token[1], "471") ||
-	    !strcasecmp(token[1], "473") ||
-	    !strcasecmp(token[1], "474") ||
-	    !strcasecmp(token[1], "475")) { 
-		if(CONF_CHANSERV_INVITE) {
-			/* 4th token is channel we can't join. */             
-			irc_send(CONF_CHANSERV_INVITE, token[3]);
-		}
-		return;
-	}
+      /* Anything after a : is considered the final string of the
+            message */
+      if(*(pos + 1) == ':')
+      {
+         parv[parc++] = pos + 2;
+         *pos = '\0';
+         break;
+      }
 
-	/*
-	 * Handle invites, complicated code ahead is due to a decision not to
-	 * use strtok() or strstr() in the following block
-	 */
+      /* Set the next parv at this position and replace the space with a
+         \0 for the previous parv */
+      parv[parc++] = pos + 1;
+      *pos = '\0';
+      pos++;
+   }
 
-	if (!strcasecmp(token[1], "INVITE")) {
-		/* token 4 is the channel, + 1 to shift past ':'. */
-		irc_channel = check_channel(token[3] + 1);
+   /* Generate a UserInfo struct from the source */
 
-		if (irc_channel) {
-			key = get_chan_key(irc_channel);
+   source_p = userinfo_create(parv[0]);
 
-			if (key)
-				irc_send("JOIN %s %s", irc_channel, key);
-			else
-				irc_send("JOIN %s", irc_channel);
+   /* Determine which command this is from the command table
+      and let the handler for that command take control */
 
-			return;
-		}
-	}
-    
-	/* Handle nickserv identification. */
-            
-	if (!strcasecmp(token[1], "NOTICE") && strchr(token[0], '@')) {
-		if (CONF_NICKSERV_IDENT &&
-		    !strcasecmp(strtok(token[0] + 1, "!") , "NICKSERV")) {
-			time(&present);
-			/*
-			 * If last used notice was greater than/equal to
-			 * 10 sec ago
-			 */
-			if ((present - IRC_NICKSERV_LAST) >= 10) {
-				/* Identify to nickserv. */  
-				irc_send(CONF_NICKSERV_IDENT);
-				/* Record last ident. */
-				time(&IRC_NICKSERV_LAST);
-			}
-			return;
-		}
-          }
+   for(i = 0; i < (sizeof(COMMAND_TABLE) / sizeof(struct CommandHash)); i++)
+      if(strcasecmp(COMMAND_TABLE[i].command, parv[1]) == 0)
+      {
+         (*COMMAND_TABLE[i].handler)(parv, parc, msg, source_p);
+         break;
+      }
 
-	/* Handle rejoining when kicked. */
-
-	/* :grifferz!goats@pc-62-30-219-54-pb.blueyonder.co.uk KICK #wg penguinBopm :test */
-	if (!strcasecmp(token[1], "KICK") &&
-	    !strcasecmp(token[3], CONF_NICK)) {
-		/*
-		 * Someone kicked us from channel token[2] so let's
-		 * rejoin.
-		 */
-		log("IRC -> Kicked from %s by %s! (%s)", token[2],
-		    token[0], token[4]);
-		key = get_chan_key(token[2]);
-
-		if (key)
-			irc_send("JOIN %s %s", token[2], key);
-		else
-			irc_send("JOIN %s", token[2]);
-		return;
-	}
-
-	/* Any messages from users that we need to respond to. */
-	if (!strcasecmp(token[1], "PRIVMSG") && token[0][0] == ':') {
-		/* work out who it was from */
-		strncpy(nick, token[0] + 1, NICKMAX);
-		user = index(nick, '!');
-
-		if(user) {
-			/*
-			 * Nick is currently the first 32 chars of a userhost,
-			 * so null terminate at !
-			 */
-			*user = '\0';
-
-			msg = token[3];
-
-			if (msg && msg[0] == ':')
-				msg++;
-
-			prefixlen = strlen(msg);
-
-			if (token[2][0] == '#' || token[2][0] == '&')
-				target = CONF_CHANNELS;
-			else
-				target = nick;
-
-			/* CTCP VERSION */
-			if (strncasecmp(msg, "\001VERSION\001", 9) == 0) {
-				irc_send("NOTICE %s :\001VERSION Blitzed "
-				    "Open Proxy Monitor %s\001", nick,
-				    VERSION);
-                  		return;
-                	}
-
-			if (strncasecmp(msg, "INFO", 4) == 0) {
-				irc_send("NOTICE %s :This bot is designed "
-				    "to scan incoming connections for the "
-				    "presence of open SOCKS, HTTP and "
-				    "other similar servers.", nick);
-				irc_send("NOTICE %s :These misconfigured "
-				    "servers allow anyone to abuse them "
-				    "to 'bounce' through, and are "
-				    "frequently used to harass.  As a "
-				    "result, use of such proxies is not "
-				    "permitted on this IRC network.", nick);
-				irc_send("NOTICE %s :If you found this bot "
-				    "because of NukeNabber or other "
-				    "firewall software on your computer, "
-				    "please be aware that this is not "
-				    "a nuke or any other form of abusive "
-				    "activity.", nick);
-				irc_send("NOTICE %s :You can get more "
-				    "information about this bot and what "
-				    "it does by contacting %s.", nick,
-				    CONF_HELP_EMAIL);
-				return;
-			}
-
-			if (strncasecmp(msg, CONF_NICK,
-			    prefixlen > 3 ? prefixlen : 3) &&
-			    strcasecmp(msg, "!all")) {
-				/*
-				 * Not in the form we accept, ignore this
-				 * message
-				 */
-				return;
-			}
-
-			if (!token[4]) {
-				irc_send("PRIVMSG %s :Some form of "
-				    "command would be nice.", target);
-				return;
-			}
-	       
-			if (strncasecmp(token[4], "STAT", 4) == 0) {
-				do_stats(target);
-				return;
-			}
-
-			/* Otherwise it might be an oper command. */
-			do_oper_cmd(nick, token[4], token[5], target);
-		}
-	}
-
-	if (!strcasecmp(token[1], "302")) {
-		check_userhost(token[3]);
-		return;
-	}
-
-	/* Search for +c notices. */
- 	/* Some ircd (just hybrid/xnet/df?) don't send a server name. */
-	if (tokens >= 11 && strcasecmp(token[0], "NOTICE") == 0 &&
-	    strcasecmp(token[6], "connecting:") == 0)
-		do_xnet_connect(tokens, token);
-
-	if (token[0][0] == ':') {
-		/* Toss any notices NOT from a server. */
-
-		if (strchr(token[0], '@'))
-			return;
-
-		if (tokens >= 11 && strcmp(token[7], "connecting:") == 0 &&
-		    strcmp(token[1], "NOTICE") == 0)
-			do_hybrid_connect(tokens, token);
-		else if (tokens >= 9 && strcmp(token[4], "connecting:") == 0 &&
-		    strcmp(token[1], "NOTICE") == 0)
-			do_trircd_connect(tokens, token);
-		else if (tokens >= 17 && strcmp(token[8], "Client") == 0 &&
-		    strcmp(token[9], "connecting") == 0 &&
-		    strcmp(token[1], "NOTICE") == 0)
-			do_ultimateircd_connect(tokens, token);
-	}
+   userinfo_free(source_p);
 }
 
-/*
- * Perform on connect functions.
- */
 
-static void do_perform(void)
-{    
-	log("IRC -> Connected to %s:%d", CONF_SERVER, CONF_PORT);
 
-	if (CONF_NICKSERV_IDENT) {
-		/* Identify to nickserv. */
-		irc_send(CONF_NICKSERV_IDENT);
-	}
 
-	/* Join all listed channels. */
-	if (CONF_KEYS)
-		irc_send("JOIN %s %s", CONF_CHANNELS, CONF_KEYS);
-	else
-		irc_send("JOIN %s", CONF_CHANNELS);
-}
-
-/*
- * Functions we need to perform ~1 seconds.
+/* irc_timer
+ *
+ *    Functions to be performed every ~seconds.
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
  */
 
 void irc_timer(void)
 {
-	time_t present, delta;
-   
-	time(&present);
-   
-	delta = present - IRC_LAST;
-   
-	/* No data in NODATA_TIMEOUT minutes (set in options.h). */
-	if (delta >= NODATA_TIMEOUT) {
-		irc_reconnect();
-		/* Make sure we dont do this again for another 5 minutes */
-		time(&IRC_LAST);
-	} else if (delta >= NODATA_TIMEOUT / 2) {
-		/*
-		 * Generate some data so high ping times or bugs in certain
-		 * ircds (*cough* unreal *cough*) don't cause uneeded
-		 * reconnections
-		 */
-		irc_send("PING :BOPM");
-   	}
+   time_t present, delta;
 
-	/* Get rid of old command structures. */
-	if ((present - LAST_REAP_TIME) >= 120) {
-		reap_commands(present);
-		time(&LAST_REAP_TIME);
-	}
+   time(&present);
+
+   delta = present - IRC_LAST;
+
+   /* No data in NODATA_TIMEOUT minutes (set in options.h). */
+   if (delta >= NODATA_TIMEOUT)
+   {
+      log("IRC -> Timeout awaiting data from server.");
+      irc_reconnect();
+      /* Make sure we dont do this again for a while */
+      time(&IRC_LAST);
+   }
+   else if (delta >= NODATA_TIMEOUT / 2)
+   {
+      /*
+       * Generate some data so high ping times or bugs in certain
+       * ircds (*cough* unreal *cough*) don't cause uneeded
+       * reconnections
+       */
+      irc_send("PING :BOPM");
+   }
+
 }
 
-static void do_connect(char *addr, char *irc_nick, char *irc_user,
-    char *irc_addr, char *conn_notice)
-{
-	struct bopm_sockaddr ipaddr;
-	int aftype;
-	string_list *list;
 
-	/*
-	 * Check that neither the user's IP nor host matches anything in our
-	 * exclude list.
-	 */
-	for (list = ((string_list *) CONF_EXCLUDE)->next; list; list = list->next) {
-		if (match(list->text, addr) || match(list->text, irc_addr)) {
-			if (OPT_DEBUG) {
-				log("SCAN -> excluded user %s!%s@%s",
-				    irc_nick, irc_user, irc_addr);
-			}
-			return;
-		}
-	}
 
-	/* FIXME: Ipv6 is required here */
 
-	if (strchr(addr, ':')) {
-		aftype = AF_INET6;
-	} else {
-		aftype = AF_INET;
-	    
-		if (CONF_NEG_CACHE) {
-			if (!inetpton(AF_INET, addr, &(ipaddr.sas.sa4.sin_addr))) {
-				log("Invalid address %s", addr);
-				return;
-			}
-		    
-			/* Now check it isn't in our negative cache. */
-			if (check_neg_cache(ipaddr.sas.sa4.sin_addr.s_addr)) {
-				log("%s is negatively cached, skipping "
-				    "checks", addr);
-				return;
-			}
-		}
-	}
-
-	/*
-	 * Enqueue a warning for this person.
-	 */
-	if (CONF_SCAN_WARNING)
-		add_warning(irc_nick);
-   
-	if (CONF_DNSBL_ZONE &&
-	    dnsbl_check(addr, irc_nick, irc_user, irc_addr))
-		return;
-
-	scan_connect(addr, irc_addr, irc_nick, irc_user, 0, AF_INET, conn_notice);
-}
-
-/*
- * :porkscratchings.pa.us.blitzed.org NOTICE grifferz :*** Notice -- Client connecting: griff (goats@pc-62-30-219-54-pb.blueyonder.co.uk) [62.30.219.54] {1}
+/* get_channel
+ *
+ *    Check if a channel is defined in our conf. If so return
+ *    a pointer to it.
+ *
+ * Parameters:
+ *    channel: channel to search conf for
+ *
+ * Return: Pointer to ChannelConf containing the channel
  */
-static void do_hybrid_connect(int tokens, char **token)
+
+static struct ChannelConf *get_channel(const char *channel)
 {
-	char conn_notice[MSGLENMAX];
-	char *addr;	/* IP of remote host in connection notices */
-	char *irc_addr;	/* IRC host address of the remote host     */
-	char *irc_user;     
-	char *irc_nick;
+   node_t *node;
+   struct ChannelConf *item;
 
-	/* Paranoia. */
-	if (tokens < 11)
-		return;
+   LIST_FOREACH(node, IRCItem->channels->head)
+   {
+      item = node->data;
 
-	STAT_NUM_CONNECTS++;
+      if(strcasecmp(item->name, channel) == 0)
+         return item;
+   }
 
-	/*
-	 * Take a copy of the original connect notice now in case we need it
-	 * for evidence later.
-	 */
-	snprintf(conn_notice, sizeof(conn_notice),
-	    "%s %s %s %s %s %s %s %s %s %s %s", token[0], token[1],
-	    token[2], token[3], token[4], token[5], token[6], token[7],
-	    token[8], token[9], token[10]);
-
-	/* Make sure it is null terminated. */
-	conn_notice[MSGLENMAX - 1] = '\0';
-
-	/*
-	 * Token 11 is the IP of the remote host enclosed in [ ]. We need
-	 * to remove it from [ ] and pass it to the scanner.
-	 */
-
-	/* Shift over 1 byte to pass over [. */
-	addr = token[10] + 1;
-        /* Replace ] with a \0. */
-	addr = strtok(addr, "]");
-
-	/* Token 9 is the nickname of the connecting client. */
-	irc_nick = token[8];
-
-	/*
-	 * Token 10 is (user@host), we want to parse the user/host out for
-	 * future reference in case we need to kline the host.
-	 */
-	
-        /* Shift one byte over to discard '('. */
-	irc_user = token[9] + 1;
-	/* Username is everything before the '@'. */
-	if(!(irc_user = strtok(irc_user, "@")))
-        	return;
-	/* irc_addr is everything between '@' and closing ')'. */
-	if(!(irc_addr = strtok(NULL , ")")))
-        	return;
-	
-	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
+   return NULL;
 }
 
-/*
- * :test.teklan.com.tr NOTICE &CONNECTS :Client connecting: griff (andy@pc-62-30-219-54-pb.blueyonder.co.uk) [62.30.219.54] {1}
+
+/* userinfo_create
+ *
+ *    Parse a nick!user@host into a UserInfo struct
+ *    and return a pointer to the new struct.
+ *
+ * Parameters:
+ *    source: nick!user@host to parse
+ *
+ * Return:
+ *    pointer to new UserInfo struct, or NULL if parsing failed
+ *
  */
-static void do_trircd_connect(int tokens, char **token)
+
+static struct UserInfo *userinfo_create(char *source)
 {
-	char conn_notice[MSGLENMAX];
-	char *addr;	/* IP of remote host in connection notices */
-	char *irc_addr;	/* IRC host address of the remote host     */
-	char *irc_user;     
-	char *irc_nick;
+   struct UserInfo *ret;
 
-	/* Paranoia. */
-	if (tokens < 9)
-		return;
+   char *nick;
+   char *username;
+   char *hostname;
+   char *tmp;
 
-	STAT_NUM_CONNECTS++;
+   int i, len;
 
-	/*
-	 * Take a copy of the original connect notice now in case we need it
-	 * for evidence later.
-	 */
-	snprintf(conn_notice, sizeof(conn_notice),
-	    "%s %s %s %s %s %s %s %s %s", token[0], token[1], token[2],
-	    token[3], token[4], token[5], token[6], token[7], token[8]);
+   nick = username = hostname = NULL;
+   tmp = DupString(source);
+   len = strlen(tmp);
 
-	/* Make sure it is null terminated. */
-	conn_notice[MSGLENMAX - 1] = '\0';
+   nick = tmp;
 
-	/*
-	 * Token 8 is the IP of the remote host enclosed in [ ]. We need
-	 * to remove it from [ ] and pass it to the scanner.
-	 */
+   for(i = 0; i < len; i++)
+   {
+      if(tmp[i] == '!')
+      {
+         tmp[i] = '\0';
+         username = tmp + i + 1;
+      }
+      if(tmp[i] == '@')
+      {
+         tmp[i] = '\0';
+         hostname = tmp + i + 1;
+      }
+   }
 
-	/* Shift over 1 byte to pass over [. */
-	addr = token[7] + 1;
-        /* Replace ] with a \0. */
-	addr = strtok(addr, "]");
+   if(nick == NULL || username == NULL || hostname == NULL)
+   {
+      MyFree(tmp);
+      return NULL;
+   }
 
-	/* Token 6 is the nickname of the connecting client */
-	irc_nick = token[5];
+   ret = MyMalloc(sizeof(struct UserInfo));
 
-	/*
-	 * Token 7 is (user@host), we want to parse the user/host out for
-	 * future reference in case we need to kline the host.
-	 */
-	
-        /* Shift one byte over to discard '('. */
-	irc_user = token[6] + 1;
-	/* username is everything before the '@' */
-	if(!(irc_user = strtok(irc_user, "@")))
-        	return;
-	/* irc_addr is everything between '@' and closing ')' */
-	if(!(irc_addr = strtok(NULL , ")")))
-        	return;
-	
-	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
-}
+   ret->irc_nick     = DupString(nick);
+   ret->irc_username = DupString(username);
+   ret->irc_hostname = DupString(hostname);
 
-/*
- * :CurCuNa.NeT NOTICE AndyBopm :*** Connect/Exit -- from CurCuNa.NeT: Client connecting on port 6667: Misafir (jirc@213.14.40.51) [213.14.40.51] {1} [JPilot jIRC applet User]
+   MyFree(tmp);
+
+   return ret;
+};
+
+
+
+/* userinfo_free
+ *
+ *    Free a UserInfo struct created with userinfo_create.
+ *
+ * Parameters:
+ *    source: struct to free
+ * 
+ * Return: None
+ *
  */
-static void do_ultimateircd_connect(int tokens, char **token)
+
+static void userinfo_free(struct UserInfo *source_p)
 {
-	char conn_notice[MSGLENMAX];
-	char *addr;	/* IP of remote host in connection notices */
-	char *irc_addr;	/* IRC host address of the remote host     */
-	char *irc_user;     
-	char *irc_nick;
+   if(source_p == NULL)
+      return;
 
-	/* Paranoia. */
-	if (tokens < 17)
-		return;
-
-	STAT_NUM_CONNECTS++;
-
-	/*
-	 * Take a copy of the original connect notice now in case we need it
-	 * for evidence later.
-	 */
-	snprintf(conn_notice, sizeof(conn_notice),
-	    "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s", token[0],
-	    token[1], token[2], token[3], token[4], token[5], token[6],
-	    token[7], token[8], token[9], token[10], token[11], token[12],
-	    token[13], token[14], token[15], token[16]);
-
-	/* Make sure it is null terminated. */
-	conn_notice[MSGLENMAX - 1] = '\0';
-
-	/*
-	 * Token 16 is the IP of the remote host enclosed in [ ]. We need
-	 * to remove it from [ ] and pass it to the scanner.
-	 */
-
-	/* Shift over 1 byte to pass over [. */
-	addr = token[15] + 1;
-        /* Replace ] with a \0. */
-	addr = strtok(addr, "]");
-
-	/* Token 14 is the nickname of the connecting client. */
-	irc_nick = token[13];
-
-	/*
-	 * Token 15 is (user@host), we want to parse the user/host out for
-	 * future reference in case we need to kline the host.
-	 */
-	
-        /* Shift one byte over to discard '('. */
-	irc_user = token[14] + 1;
-	/* Username is everything before the '@'. */
-	if(!(irc_user = strtok(irc_user, "@")))
-        	return;
-	/* irc_addr is everything between '@' and closing ')' */
-	if(!(irc_addr = strtok(NULL , ")")))
-                return;
-	
-	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
+   MyFree(source_p->irc_nick);
+   MyFree(source_p->irc_username);
+   MyFree(source_p->irc_hostname);
+   MyFree(source_p);
 }
 
 
 
-/*
- * NOTICE BopmMirage :*** Notice -- Client connecting: Iain (iain@modem-449.gacked.dialup.pol.co.uk) [62.25.241.193] {1} (6667)
+/* m_perform
+ *
+ *    actions to perform on IRC connection
+ *
+ * Parameters:
+ * parv[0]  = source
+ * parv[1]  = PING
+ * parv[2]  = PING TS/Package
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
  */
-static void do_xnet_connect(int tokens, char **token)
+
+static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo *notused)
 {
-	char conn_notice[MSGLENMAX];
-	char *addr;	/* IP of remote host in connection notices */
-	char *irc_addr;	/* IRC host address of the remote host     */
-	char *irc_user;     
-	char *irc_nick;
+   node_t *node;
+   struct ChannelConf *channel;
 
-	/* Paranoia. */
-	if (tokens < 11)
-		return;
+   log("IRC -> Connected to %s:%d", IRCItem->server, IRCItem->port);
 
-	STAT_NUM_CONNECTS++;
+   /* Identify to nickserv if needed */
+   if(strlen(IRCItem->nickserv))
+      irc_send("%s", IRCItem->nickserv);
 
-	/*
-	 * Take a copy of the original connect notice now in case we need
-	 * it for evidence later.
-	 */
-	snprintf(conn_notice, sizeof(conn_notice),
-	    "%s %s %s %s %s %s %s %s %s %s %s", token[0], token[1],
-	    token[2], token[3], token[4], token[5], token[6], token[7],
-	    token[8], token[9], token[10]);
+   /* Oper */
+   irc_send("OPER %s", IRCItem->oper);
 
-	/* Make sure it is null terminated. */
-	conn_notice[MSGLENMAX - 1] = '\0';
-	  
-	/*
-	 * Token 10 is the IP of the remote host enclosed in [ ]. We need to
-	 * remove it from [ ] and pass it to the scanner.
-	 */
-	
-	/* Shift over 1 byte to pass over [. */
-	addr = token[9] + 1;
-	/* Replace ] with a \0. */
-        addr = strtok(addr, "]");
+   /* Set modes */
+   irc_send("MODE %s %s", IRCItem->nick, IRCItem->mode);
 
-	/* Token 8 is the nickname of the connecting client. */
-	irc_nick = token[7];
+   /* Set Away */
+   irc_send("AWAY :%s", IRCItem->away);
 
-	/*
-	 * Token 9 is (user@host), we want to parse the user/host out for
-	 * future reference in case we need to kline the host.
-	 */
+   /* Perform */
+   LIST_FOREACH(node, IRCItem->performs->head)
+   irc_send("%s", (char *) node->data);
 
-	/* Shift one byte over to discard '('. */
-	irc_user = token[8] + 1;
-	/* Username is everything before the '@'. */
-	if(!(irc_user = strtok(irc_user, "@")))
-        	return;
-	/* irc_addr is everything between '@' and closing ')'. */
-	if(!(irc_addr = strtok(NULL , ")")))
-        	return;
+   /* Join all listed channels. */
+   LIST_FOREACH(node, IRCItem->channels->head)
+   {
+      channel = (struct ChannelConf *) node->data;
 
-	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
+      if(strlen(channel->name) == 0)
+         continue;
+
+      if(strlen(channel->key) > 0)
+         irc_send("JOIN %s %s", channel->name, channel->key);
+      else
+         irc_send("JOIN %s", channel->name);
+   }
 }
 
-/*
- * Return a pointer into CONF_KEYS for the given channel, or NULL if there
- * is no key.
+
+/* m_ping
+ *
+ * parv[0]  = source
+ * parv[1]  = PING
+ * parv[2]  = PING TS/Package
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
  */
-static char *get_chan_key(const char *channel)
+static void m_ping(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
-	int ci, ki;
-	char *kp;
-	size_t i, h, len;
+   if(parc < 3)
+      return;
 
-	ci = 0;
-	
-	if (!CONF_KEYS || !channel)
-		return(NULL);
+   if(OPT_DEBUG >= 2)
+      log("IRC -> PING? PONG!");
 
-	len = strlen(CONF_CHANNELS);
-
-	for (i = 0; i < len; i++) {
-		if (CONF_CHANNELS[i] != '#' && CONF_CHANNELS[i] != '&') 
-			continue;
-		
-		for (h = (i + 1); h < len; h++) {
-			if (CONF_CHANNELS[h] == ',' ||
-			    CONF_CHANNELS[h] == ' ' || h == (len - 1)) {
-				if (CONF_CHANNELS[h] == ',')
-					ci++;
-
-				if (h == (len - 1))
-					h++;
-
-				if (strlen(channel) != (h - i))
-					break; 
-
-				if (!strncasecmp(&(CONF_CHANNELS[i]),
-				    channel, strlen(channel))) {
-					for (kp = CONF_KEYS, ki = 0;
-					    (ki < ci) && (kp = strchr(kp, ','));
-					    ki++) ; /* empty loop */
-
-					if (kp && *kp == ',')
-						kp++;
-
-					if (kp && *kp)
-						return(kp);
-					else
-						return(NULL);
-				}
-			}
-		}
-	}
-	return(NULL);
+   irc_send("PONG %s", parv[2]);
 }
 
-/*
- * Check if channel is one of our configured report channels, and return a
- * pointer to it if so, or NULL if not.
+
+
+/* m_invite
+ *
+ * parv[0]  = source
+ * parv[1]  = INVITE
+ * parv[2]  = target
+ * parv[3]  = channel
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
+ *
  */
-static char *check_channel(const char *channel)
+
+static void m_invite(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
-	size_t i, len, h;
-	
-	len = strlen(CONF_CHANNELS);
+   struct ChannelConf *channel;
 
-	for (i = 0; i < len; i++) {
-		if (CONF_CHANNELS[i] != '#' && CONF_CHANNELS[i] != '&') 
-			continue;
+   if(parc < 4)
+      return;
 
-		for (h = (i + 1); h < len; h++) {
-			if (CONF_CHANNELS[h] == ',' ||
-			    CONF_CHANNELS[h] == ' ' || h == (len - 1)) {
-				if(h == (len - 1))
-					h++;
-                                   
-				if (strlen(channel) != (h - i))
-					break; 
-                                 
-				if (!strncasecmp(&(CONF_CHANNELS[i]),
-				    channel, strlen(channel))) {
-					return(&(CONF_CHANNELS[i]));
-				}
-			}
-		}
-	}
-	return(NULL);
+   log("IRC -> Invited to %s by %s", parv[3], parv[0]);
+
+   if((channel = get_channel(parv[3])) == NULL)
+      return;
+
+   irc_send("JOIN %s %s", channel->name, channel->key);
 }
+
+
+
+
+/* m_privmsg
+ *
+ * parv[0]  = source
+ * parv[1]  = PRIVMSG
+ * parv[2]  = target (channel or user)
+ * parv[3]  = message
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
+ *
+ */
+
+static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+{
+   struct ChannelConf *channel;
+
+   if(source_p == NULL)
+      return;
+
+   if(parc < 4)
+      return;
+
+   /* CTCP */
+   if(parv[3][0] == '\001');
+   m_ctcp(parv, parc, msg, source_p);
+
+   /* Only interested in privmsg to channels */
+   if(parv[2][0] != '#' && parv[2][0] != '&')
+      return;
+
+   /* Get a target */
+   if((channel = get_channel(parv[2])) == NULL)
+      return;
+
+   /* message is a command */
+   if(strncasecmp(parv[3], IRCItem->nick, 3) == 0  ||
+         strcasecmp(msg, "!all") == 0)
+   {
+      /* XXX command_parse will alter parv[3]. */
+      command_parse(parv[3], msg, channel, source_p);
+   }
+}
+
+
+
+
+
+/* m_ctcp
+ * parv[0]  = source
+ * parv[1]  = PRIVMSG
+ * parv[2]  = target (channel or user)
+ * parv[3]  = message
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
+ *
+ */
+
+static void m_ctcp(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+{
+   if(strncasecmp(parv[3], "\001VERSION\001", 9) == 0)
+      irc_send("NOTICE %s :\001VERSION Blitzed Open Proxy Monitor %s\001", source_p->irc_nick, VERSION);
+}
+
+
+
+
+
+/* m_notice
+ *
+ * parv[0]  = source
+ * parv[1]  = NOTICE
+ * parv[2]  = target
+ * parv[3]  = message
+ *
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
+ *
+ */
+
+static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+{
+
+
+   static regex_t *preg = NULL;
+   regmatch_t pmatch[5];
+
+   static char errmsg[256];
+   int errnum, i;
+
+   char *user[4];
+
+   if(parc < 4)
+      return;
+
+   /* Not interested in notices from users */
+   if(source_p != NULL)
+      return;
+
+   /* Compile the regular expression if it has not been already */
+   if(preg == NULL)
+   {
+      preg = MyMalloc(sizeof(regex_t));
+
+      if((errnum = regcomp(preg, IRCItem->connregex, REG_ICASE | REG_EXTENDED)) != 0)
+      {
+
+         regerror(errnum, preg, errmsg, 256);
+         log("IRC REGEX -> Error when compiling regular expression");
+         log("IRC REGEX -> %s", errmsg);
+
+         MyFree(preg);
+         preg = NULL;
+         return;
+      }
+   }
+
+   /* Match the expression against the possible connection notice */
+   if(regexec(preg, parv[3], 5, pmatch, 0) != 0)
+      return;
+
+   if(OPT_DEBUG > 0)
+      log("IRC REGEX -> Regular expression caught connection notice. Parsing.");
+
+   if(pmatch[4].rm_so == -1)
+   {
+      log("IRC REGEX -> pmatch[4].rm_so is -1 while parsing??? Aborting.");
+      return;
+   }
+
+   /*
+       Offsets for data in the connection notice:
+
+       NICKNAME: pmatch[1].rm_so  TO  pmatch[1].rm_eo 
+       USERNAME: pmatch[2].rm_so  TO  pmatch[2].rm_eo
+       HOSTNAME: pmatch[3].rm_so  TO  pmatch[3].rm_eo
+       IP      : pmatch[4].rm_so  TO  pmatch[4].rm_eo
+
+    */ 
+
+   for(i = 0; i < 4; i++)
+   {
+      user[i] = (parv[3] + pmatch[i + 1].rm_so);
+      *(parv[3] + pmatch[i + 1].rm_eo) = '\0';
+   }
+
+   if(OPT_DEBUG > 0)
+      log("IRC REGEX -> Parsed %s!%s@%s [%s] from connection notice.",
+          user[0], user[1], user[2], user[3]);
+
+   /*FIXME (reminder) In the case of any rehash to the regex, preg MUST be freed first.
+       regfree(preg);
+   */
+
+   /* Pass this information off to scan.c */
+   scan_connect(user, msg);
+   /* Record the connect for stats purposes */
+   stats_connect();
+}
+
+/* m_userhost
+ *
+ * parv[0]  = source
+ * parv[1]  = USERHOST
+ * parv[2]  = target (bopm)
+ * parv[3]  = :nick=(flags)user@host
+ *
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
+ *
+ */
+
+static void m_userhost(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+{
+   if(parc < 4)
+      return;
+
+   command_userhost(parv[3]);
+}
+
+/* m_cannot_join
+ *
+ * parv[0]  = source
+ * parv[1]  = numeric
+ * parv[2]  = target (bopm)
+ * parv[3]  = channel
+ * parv[4]  = error text
+ *
+ */
+
+static void m_cannot_join(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+{
+   struct ChannelConf *channel;
+
+   if(parc < 5)
+      return;
+
+   /* Is it one of our channels? */
+   if((channel = get_channel(parv[3])) == NULL)
+      return;
+
+   if(strlen(channel->invite) == 0)
+      return;
+
+   irc_send("%s", channel->invite);
+}
+

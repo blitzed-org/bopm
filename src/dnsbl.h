@@ -1,8 +1,12 @@
 #ifndef DNSBL_H
 #define DNSBL_H
 
-extern int dnsbl_check(const char *addr, const char *irc_nick,
-    const char *irc_user, char *irc_addr);
+#include "firedns.h"
+#include "scan.h"
+
+extern void dnsbl_add(struct scan_struct *);
+extern void dnsbl_result(struct firedns_result *);
+extern void dnsbl_cycle(void);
 extern void dnsbl_report(struct scan_struct *ss);
 
 /* Bitmasks used in final octet of IP address */
@@ -11,5 +15,7 @@ extern void dnsbl_report(struct scan_struct *ss);
 #define DNSBL_TYPE_HTTP 4
 #define DNSBL_TYPE_CISCO 8
 #define DNSBL_TYPE_HTTPPOST 16
+
+#define DNSBL_LOOKUPLEN 82
 
 #endif

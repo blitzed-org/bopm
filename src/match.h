@@ -4,4 +4,4 @@
 int match(const char *mask, const char *name);
 char *collapse(char *pattern);
 
-#endif    
+#endif
