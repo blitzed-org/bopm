@@ -725,12 +725,17 @@ void irc_timer(void)
    
 	time(&present);
    
+   
 	/* No data in NODATA_TIMEOUT minutes (set in options.h). */
 	if ((present - IRC_LAST) >= NODATA_TIMEOUT) {
 		irc_reconnect();
 		/* Make sure we dont do this again for another 5 minutes */
 		time(&IRC_LAST);
-	}
+   /* Generate some data so high ping times or bugs in certain ircds 
+    * (*cough* unreal *cough*) don't cause uneeded reconnections */
+	}else if((present - IRC_LAST) >= NODATA_TIMEOUT / 2) {
+      irc_send("PING :BOPM");
+   }
 
 	/* Get rid of old command structures. */
 	if ((present - LAST_REAP_TIME) >= 120) {
