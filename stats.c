@@ -47,6 +47,7 @@ unsigned int STAT_DNSBL_MATCHES;
 extern protocol_hash SCAN_PROTOCOLS[];
 extern size_t SCAN_NUMPROTOCOLS;
 
+
 void do_stats_init(void)
 {
 	STAT_START_TIME = time(NULL);

@@ -226,6 +226,9 @@ static void scan_establish(scan_struct *conn)
 	/* Request file descriptor for socket. */
 	conn->fd = socket(PF_INET, SOCK_STREAM, 0);
 
+        /* Increase global FD Use counter. */
+        FD_USE++;
+
 	/* If error, mark connection for close. */
 	if (conn->fd == -1) {
 		log("SCAN -> Error allocating file descriptor.");
@@ -266,8 +269,6 @@ static void scan_establish(scan_struct *conn)
 	conn->data = malloc((SCANBUFFER + 1) * sizeof(char));
 	conn->datasize = 0;
 
-	/* Increase global FD Use counter. */      
-	FD_USE++;
 }
 
 
@@ -580,7 +581,8 @@ static void scan_del(scan_struct *delconn)
 		close(delconn->fd);
 
 	/* 1 file descriptor freed up for use. */
-	FD_USE--;
+	if(delconn->fd)
+        	FD_USE--;
 
 	lastss = 0;
 
