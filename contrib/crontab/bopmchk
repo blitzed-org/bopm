@@ -25,12 +25,12 @@ cd ~/bopm
 
 # Leave the rest alone.
 
-if [ -f bopm.pid ] ; then
-  PID=`cat bopm.pid`
+if [ -f var/bopm.pid ] ; then
+  PID=`cat var/bopm.pid`
   if `kill -CHLD $PID >/dev/null 2>&1`; then
     exit 0;
   fi
-  rm -f bopm.pid
+  rm -f var/bopm.pid
 fi
 
 bin/bopm
