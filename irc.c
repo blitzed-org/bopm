@@ -78,6 +78,7 @@ static char *get_chan_key(const char *channel);
 static char *check_channel(const char *channel);
 
 extern char *CONFFILE;
+extern time_t LAST_REAP_TIME;
 
 /*
  * Certain variables we don't want to allocate memory for over and over
