@@ -94,6 +94,7 @@ for bleh in 1 2 3; do
 done
 AC_MSG_RESULT([ http://www.blitzed.org/goat_winter_2001.phtml])
 
+AC_CONFIG_SUBDIRS(src/libopm)
 AC_OUTPUT(Makefile src/Makefile)
 
 echo "##############################################################################"
