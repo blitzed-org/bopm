@@ -36,6 +36,7 @@ along with this program; if not, write to the Free Software
 #include "irc.h"
 #include "log.h"
 #include "config.h"
+#include "scan.h"
 #include "extern.h"
 
 
@@ -90,7 +91,6 @@ void irc_cycle()
             default:
 		   if(FD_ISSET(IRC_FD, &IRC_FDSET))     /* Check if IRC data is available */
 		        irc_read();
-
         }
       
       
