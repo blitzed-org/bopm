@@ -283,8 +283,8 @@ void command_userhost(char *reply)
       return;
 
    /* Operators have a * flag in a USERHOST reply */
-   if (*(tmp - 1) != '*') 
-      return;
+   if (*(tmp - 1) == '*') 
+      oper = 1;
 
    /* Null terminate it so tmp = the oper's nick */
    *(--tmp) = '\0';
@@ -296,7 +296,8 @@ void command_userhost(char *reply)
 
       if(strcmp(cs->irc_nick, reply) == 0)
       {
-         COMMAND_TABLE[cs->type].handler(cs->param, cs->irc_nick, cs->target);
+         if(oper)
+            COMMAND_TABLE[cs->type].handler(cs->param, cs->irc_nick, cs->target);
 
          /* Cleanup the command */
          command_free(cs);
