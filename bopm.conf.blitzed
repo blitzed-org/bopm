@@ -61,7 +61,7 @@ OPM {
    blacklist {
       name = "opm.blitzed.org";
       type = "A record bitmask";
-      ban_unknown = true;
+      ban_unknown = yes;
 		
       reply {
          1 = "WinGate";
