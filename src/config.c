@@ -66,6 +66,7 @@ char *CONF_SENDMAIL        = 0;
 char *CONF_HELP_EMAIL      = 0;
 char *CONF_AWAY            = 0;
 char *CONF_TARGET_STRING   = 0;
+char *CONF_PIDFILE         = 0;
 string_list *CONF_EXCLUDE  = 0;
 
 unsigned int  CONF_SCANPORT         = 0;
@@ -103,6 +104,7 @@ config_hash hash[] = {
        {"TARGET_STRING",       TYPE_STRING, 1,0,    &CONF_TARGET_STRING      },
        {"EXCLUDE",             TYPE_LIST,   0,0,    &CONF_EXCLUDE            },
        {"TIMEOUT",             TYPE_INT,    1,0,    &CONF_TIMEOUT            },
+       {"PIDFILE",             TYPE_STRING, 1,0,    &CONF_PIDFILE            },
        {0,                     0,           0,0,    0                        },
 };
 

@@ -26,6 +26,7 @@ extern char *CONF_SENDMAIL;
 extern char *CONF_HELP_EMAIL;
 extern char *CONF_AWAY;
 extern char *CONF_TARGET_STRING;
+extern char *CONF_PIDFILE;
 extern string_list *CONF_EXCLUDE;
 
 extern unsigned int CONF_PORT;

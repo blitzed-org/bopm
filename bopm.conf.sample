@@ -284,3 +284,7 @@ FDLIMIT 512
 #EXCLUDE 192.168.0.*
 #EXCLUDE some-isp-??.example.com
 
+# PIDFILE <filepath> : Full path specifying where bopm should record its
+#                      process ID.
+
+PIDFILE /path/to/bopm.pid

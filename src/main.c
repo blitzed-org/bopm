@@ -55,7 +55,7 @@ char *CONFNAME = DEFAULTNAME;
 
 char *CONFDIR = BOPM_ETCDIR;
 char *LOGDIR = BOPM_LOGDIR;
-char *CONFFILE, *LOGFILE, *PIDFILE;
+char *CONFFILE, *LOGFILE;
 
 struct sigaction ALARMACTION;
 struct sigaction INTACTION;
@@ -63,7 +63,8 @@ struct sigaction INTACTION;
 int main(int argc, char **argv)
 {
 	char spid[16];
-	int pid, c, lenc, lenl, lenp;
+	pid_t pid;
+	int c, lenc, lenl, lenp;
 	FILE *pidout;
 
 	do_stats_init();
@@ -95,11 +96,9 @@ int main(int argc, char **argv)
 
 	CONFFILE = (char *) malloc(lenc * sizeof(*CONFFILE));
 	LOGFILE = (char *) malloc(lenl * sizeof(*LOGFILE));
-	PIDFILE = (char *) malloc(lenp * sizeof(*PIDFILE));
 
 	snprintf(CONFFILE, lenc, "%s/%s.%s", CONFDIR, CONFNAME, CONFEXT);
 	snprintf(LOGFILE, lenl, "%s/%s.%s", LOGDIR, CONFNAME, LOGEXT);
-	snprintf(PIDFILE, lenp, "%s/%s.%s", LOGDIR, CONFNAME, PIDEXT);
 
 	/* Fork off. */
 
@@ -108,15 +107,6 @@ int main(int argc, char **argv)
 			perror("fork()");
 			exit(EXIT_FAILURE);
 		} else if (pid != 0) {
-			pidout = fopen(PIDFILE, "w");
-			snprintf(spid, 16, "%d", pid);
-
-			if (pidout) {
-				fwrite(spid, sizeof(char), strlen(spid),
-				    pidout);
-			}
-
-			fclose(pidout);
 			_exit(EXIT_SUCCESS);
 		}
 
@@ -144,6 +134,17 @@ int main(int argc, char **argv)
 	log("MAIN -> Reading configuration file...");
 
 	config_load(CONFFILE);
+
+	pid = getpid();
+
+	pidout = fopen(CONF_PIDFILE, "w");
+	snprintf(spid, 16, "%u", pid);
+
+	if (pidout) {
+		fwrite(spid, sizeof(char), strlen(spid), pidout);
+	}
+
+	fclose(pidout);
 
 	/* Setup alarm & int handlers. */
  
