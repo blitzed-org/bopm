@@ -39,6 +39,8 @@ void do_alarm(int);
 
 int ALARMED = 0;
 
+struct sigaction ALARMACTION;
+
 int main()
 {
 
@@ -50,7 +52,12 @@ int main()
     config_load("bopm.conf");
 
     /* Setup alarm */
-    signal(SIGALRM,do_alarm);
+ 
+    ALARMACTION.sa_handler = &(do_alarm);  
+    ALARMACTION.sa_flags = SA_RESTART;
+ 
+    sigaction(SIGALRM, &ALARMACTION, 0);
+
     alarm(1);
 
     while(1)     
