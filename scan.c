@@ -196,10 +196,10 @@ void scan_establish(scan_struct *conn)
 
       conn->fd = socket(PF_INET, SOCK_STREAM, 0);                /* Request file descriptor for socket */
 
-      if(conn->fd == -1)                                         /* If error, free memory for this struct */
+      if(conn->fd == -1)                                         /* If error, mark connection for close */
        {
            log("SCAN -> Error allocating file descriptor.");
-           scan_del(conn);
+           conn->state = STATE_CLOSED;
            return;
        }
 
@@ -562,7 +562,9 @@ void scan_del(scan_struct *delconn)
      scan_struct *ss;
      scan_struct *lastss;
 
-     close(delconn->fd);
+     if(delconn->fd > 0) 
+        close(delconn->fd);
+
      FD_USE--;            /* 1 file descriptor freed up for use */
 
      lastss = 0;
