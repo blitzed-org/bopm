@@ -3,8 +3,8 @@
 
 #include "inet.h"
 
-#define NICKMAX 32
-#define MSGLENMAX 513
+#define NICKMAX 32 + 1
+#define MSGLENMAX 512 + 1
 
 
 struct bopm_sockaddr
@@ -38,11 +38,9 @@ struct UserInfo
    char *irc_nick;
    char *irc_username;
    char *irc_hostname;
-
-   char *ip;
 };
 
-typedef void (*irc_command) (struct UserInfo *);
+typedef void (*irc_command) (char **, unsigned int, char *, struct UserInfo *);
 
 struct CommandHash
 {

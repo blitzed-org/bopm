@@ -79,10 +79,11 @@ static struct ChannelConf *get_channel(const char *);
 static struct UserInfo *userinfo_create(char *);
 static void userinfo_free(struct UserInfo *source);
 
-static void m_ping(struct UserInfo *);
-static void m_invite(struct UserInfo *);
-static void m_privmsg(struct UserInfo *);
-static void m_perform(struct UserInfo *);
+static void m_ping(char **, unsigned int, char *, struct UserInfo *);
+static void m_invite(char **, unsigned int, char *, struct UserInfo *);
+static void m_privmsg(char **, unsigned int, char *, struct UserInfo *);
+static void m_notice(char **, unsigned int, char *, struct UserInfo *);
+static void m_perform(char **, unsigned int, char *, struct UserInfo *);
 
 extern time_t LAST_REAP_TIME;
 extern struct cnode *nc_head;
@@ -114,15 +115,15 @@ struct timeval      IRC_TIMEOUT;                /* timeval struct for select() t
 time_t              IRC_NICKSERV_LAST = 0;      /* Last notice from nickserv             */
 time_t              IRC_LAST = 0;               /* Last full line of data from irc server*/
 
-char                *parv[15];
-int                  parc;
-
+/* Table should be ordered with most occuring (or priority)
+   commands at the top of the list. */
 
 struct CommandHash COMMAND_TABLE[] = {
+   {"NOTICE",               m_notice  },
    {"PRIVMSG",              m_privmsg },
    {"PING",                 m_ping    },
    {"INVITE",               m_invite  },
-   {"001",                  m_perform},
+   {"001",                  m_perform },
 };
 
 /* irc_cycle
@@ -452,6 +453,13 @@ static void irc_connect(void)
 }
 
 
+/* Disconnect from IRC. Reconnection will happen when the next irc_cycle.
+
+   !!! This function should be used for reconnection rather than calling irc_connect
+   directly. !!!
+
+*/
+
 static void irc_reconnect(void)
 {
 
@@ -510,9 +518,19 @@ static void irc_read(void)
 
 static void irc_parse(void)
 {
+   char msg[MSGLENMAX];       /* Temporarily stores IRC msg to pass to handlers */
    struct UserInfo *source_p;
    char *pos;
    int i;
+
+   /* parv stores the parsed token, parc is the count of the parsed 
+      tokens
+     
+      parv[0] is ALWAYS the source, and is the server name of the source
+      did not exist */
+
+   static char            *parv[15];
+   static unsigned int     parc;
 
    parc = 1;
 
@@ -523,6 +541,9 @@ static void irc_parse(void)
       log("IRC READ -> %s", IRC_RAW);
 
    time(&IRC_LAST);
+
+   /* Store a copy of IRC_RAW for the handlers (for functions that need PROOF) */
+   strcpy(msg, IRC_RAW);
 
    /* parv[0] is always the source */
    if(IRC_RAW[0] == ':')
@@ -570,7 +591,7 @@ static void irc_parse(void)
 
    for(i = 0; i < (sizeof(COMMAND_TABLE) / sizeof(struct CommandHash)); i++) 
       if(strcasecmp(COMMAND_TABLE[i].command, parv[1]) == 0)
-         COMMAND_TABLE[i].handler(source_p);
+         COMMAND_TABLE[i].handler(parv, parc, msg, source_p);
 
    userinfo_free(source_p);
 }
@@ -580,7 +601,7 @@ static void irc_parse(void)
  *     Actions to perform when successfully connected to IRC.
  */
 
-static void m_perform(struct UserInfo *notused)
+static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo *notused)
 {
     node_t *node;
     struct ChannelConf *channel;
@@ -728,7 +749,6 @@ static struct UserInfo *userinfo_create(char *source)
    ret->irc_nick     = DupString(nick);
    ret->irc_username = DupString(username);
    ret->irc_hostname = DupString(hostname);
-   ret->ip           = NULL;
 
    MyFree(tmp);
 
@@ -757,7 +777,6 @@ static void userinfo_free(struct UserInfo *source_p)
    MyFree(source_p->irc_nick);
    MyFree(source_p->irc_username);
    MyFree(source_p->irc_hostname);
-   MyFree(source_p->ip);
    MyFree(source_p);
 }
 
@@ -771,7 +790,7 @@ static void userinfo_free(struct UserInfo *source_p)
  * source_p: UserInfo struct of the source user, or NULL if
  * the source (parv[0]) is a server.
  */
-static void m_ping(struct UserInfo *source_p)
+static void m_ping(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
    if(OPT_DEBUG >= 2)
       log("IRC -> PING? PONG!\n");
@@ -793,7 +812,7 @@ static void m_ping(struct UserInfo *source_p)
  *
  */
 
-static void m_invite(struct UserInfo *source_p)
+static void m_invite(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
 
    struct ChannelConf *channel;
@@ -814,18 +833,47 @@ static void m_invite(struct UserInfo *source_p)
  * parv[0]  = source
  * parv[1]  = PRIVMSG
  * parv[2]  = target (channel or user)
- * parv[3]  = msg
+ * parv[3]  = message
  *
  * source_p: UserInfo struct of the source user, or NULL if
  * the source (parv[0]) is a server.
  *
  */
 
-static void m_privmsg(struct UserInfo *source_p)
+static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
    struct ChannelConf channel;
 
    if(source_p == NULL)
+      return;
+
+}
+
+
+/* m_notice
+ *
+ * parv[0]  = source
+ * parv[1]  = NOTICE
+ * parv[2]  = target
+ * parv[3]  = message
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
+ *
+ */
+
+
+static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+{
+
+   /* Not interested in notices from users */
+   if(source_p != NULL)
+      return;
+
+
+   /* FIXME This needs to match against CURRENT nick, not the config nick! */
+   /* Check that target is BOPM */
+   if(strcasecmp(IRCItem->nick, parv[2]) != 0)
       return;
 
 }
