@@ -141,7 +141,8 @@ DNSBL_ZONE opm.blitzed.org
 # DNSBL_TO <email> : Email address that reports of open proxies should be
 #                    sent to.  For Blitzed it should be
 #                    proxy-report@blitzed.org.  If this is not set, proxies
-#                    will not be reported by email.
+#                    will not be reported by email.  You can report to
+#                    multiple addresses by separating them with commas
 
 #DNSBL_TO proxy-report@blitzed.org
 

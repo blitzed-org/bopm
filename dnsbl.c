@@ -124,7 +124,7 @@ void dnsbl_report(struct scan_struct *ss)
 
    snprintf(cmdbuf, sizeof(cmdbuf), "%s -t", CONF_SENDMAIL);
    snprintf(buf, sizeof(buf), "From: %s <%s>\n"
-            "To: <%s>\n"
+            "To: %s\n"
 	    "Subject: BOPM Report\n\n"
 	    "%s: %s\n\n"
 	    "%s\n", CONF_NICK, CONF_DNSBL_FROM, CONF_DNSBL_TO,

@@ -55,6 +55,7 @@ Credits
    Sotiris Tsimbonis <stsimb@irc.gr>
          - Added -c command line argument
          - Idea to make bopm set umode -h on oper
+         - Mutliple DNSBL_TO idea
 
    For support, irc.blitzed.org #blitzed before emailing a developer. Thank you.
 
