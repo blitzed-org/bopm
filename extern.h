@@ -16,6 +16,7 @@
     extern char *CONF_BINDIRC;
     extern char *CONF_BINDSCAN;
     extern char *CONF_CHANNELS;
+    extern char *CONF_KEYS;
     extern char *CONF_NICKSERV_IDENT;
     extern char *CONF_CHANSERV_INVITE;
     extern char *CONF_KLINE_COMMAND;

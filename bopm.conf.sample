@@ -87,6 +87,16 @@ PORT 6667
 CHANNELS #bopm,#wg
 
 
+# KEYS <list> : Comma separated list of keys for channels above.  Again
+#               there should not be spaces between these keys, only
+#               commas.  Also if a channel above does not need a key, you
+#               need to put some text anyway, it will be ignored (this is
+#               the same syntax that IRC clients use to join multiple
+#               channels).
+#               Keep this commented if you don't need any keys.
+
+KEYS secret
+
 
 
 # OPER <user> <pass> : Username and Password of O line BOPM will be using

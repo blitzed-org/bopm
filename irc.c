@@ -62,6 +62,8 @@ along with this program; if not, write to the Free Software
 #include "version.h"
 #include "match.h"
 
+static char *get_chan_key(const char *channel);
+
 extern char *CONFFILE;
 
 /* Certain variables we don't want to allocate memory for over and over again
@@ -385,6 +387,7 @@ void irc_parse()
    int   tokens = 0;
    int   i, h, len;
    time_t present;
+   char *key;
 
    time(&IRC_LAST); /*     Update timeout tracking    */ 
 
@@ -469,14 +472,21 @@ void irc_parse()
                                  
                                      if(!strncasecmp(&(CONF_CHANNELS[i]), irc_channel, strlen(irc_channel)))
                                        {
-                                           irc_send("JOIN %s", irc_channel);
+					   key = get_chan_key(irc_channel);
+
+					   if (key) {
+					       irc_send("JOIN %s %s",
+					         irc_channel, key);
+					   } else {
+                                               irc_send("JOIN %s",
+					         irc_channel);
+					   }
                                            return;
                                        }
                                  }
                            }
                     }
              }
-                         
        }
     
     /* Handle nickserv identification */
@@ -504,7 +514,13 @@ void irc_parse()
      {
 	  /* someone kicked us from channel token[2] so let's rejoin */
 	  log("IRC -> Kicked from %s by %s! (%s)", token[2], token[0], token[4]);
-	  irc_send("JOIN %s", token[2]);
+
+	  key = get_chan_key(token[2]);
+
+	  if (key)
+              irc_send("JOIN %s %s", token[2], key);
+	  else
+              irc_send("JOIN %s", token[2]);
 	  return;
      }
 
@@ -636,7 +652,10 @@ void do_perform()
       if(CONF_NICKSERV_IDENT)
           irc_send(CONF_NICKSERV_IDENT);       /* Identify to nickserv */
 
-      irc_send("JOIN %s", CONF_CHANNELS);  /* Join all listed channels */
+      if (CONF_KEYS)
+          irc_send("JOIN %s %s", CONF_CHANNELS, CONF_KEYS);  /* Join all listed channels */
+      else
+          irc_send("JOIN %s", CONF_CHANNELS);  /* Join all listed channels */
 
 }
 
@@ -874,3 +893,56 @@ void do_xnet_connect(int tokens, char **token)
 
 	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
 } 
+
+/*
+ * Return a pointer into CONF_KEYS for the given channel, or NULL if there
+ * is no key.
+ */
+static char *get_chan_key(const char *channel)
+{
+	size_t len;
+	int i, h, ci, ki;
+	char *kp;
+
+	ci = 0;
+	
+	if (!CONF_KEYS || !channel)
+		return(NULL);
+
+	len = strlen(CONF_CHANNELS);
+
+	for (i = 0; i < len; i++) {
+		if (CONF_CHANNELS[i] != '#') 
+			continue;
+		
+		for (h = (i + 1); h < len; h++) {
+			if (CONF_CHANNELS[h] == ',' ||
+			    CONF_CHANNELS[h] == ' ' || h == (len - 1)) {
+				if (CONF_CHANNELS[h] == ',')
+					ci++;
+
+				if (h == (len - 1))
+					h++;
+
+				if (strlen(channel) != (h - i))
+					break; 
+
+				if (!strncasecmp(&(CONF_CHANNELS[i]),
+				    channel, strlen(channel))) {
+					for (kp = CONF_KEYS, ki = 0;
+					    (ki < ci) && (kp = strchr(kp, ','));
+					    ki++) ; /* empty loop */
+
+					if (kp && *kp == ',')
+						kp++;
+
+					if (kp && *kp)
+						return(kp);
+					else
+						return(NULL);
+				}
+			}
+		}
+	}
+	return(NULL);
+}

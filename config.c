@@ -48,6 +48,7 @@ char *CONF_SCANIP          = 0;
 char *CONF_BINDIRC         = 0;
 char *CONF_BINDSCAN        = 0;
 char *CONF_CHANNELS        = 0;
+char *CONF_KEYS            = 0;
 char *CONF_NICKSERV_IDENT  = 0;
 char *CONF_CHANSERV_INVITE = 0;
 char *CONF_KLINE_COMMAND   = 0;
@@ -80,6 +81,7 @@ config_hash hash[] = {
        {"BINDSCAN",            TYPE_STRING, 0,0,    &CONF_BINDSCAN           },
        {"FDLIMIT",             TYPE_INT   , 1,0,    &CONF_FDLIMIT            },
        {"CHANNELS",            TYPE_STRING, 1,0,    &CONF_CHANNELS           },
+       {"KEYS",                TYPE_STRING, 1,0,    &CONF_KEYS               },
        {"NICKSERV_IDENT",      TYPE_STRING, 0,0,    &CONF_NICKSERV_IDENT     },
        {"CHANSERV_INVITE",     TYPE_STRING, 0,0,    &CONF_CHANSERV_INVITE    },
        {"KLINE_COMMAND",       TYPE_STRING, 1,0,    &CONF_KLINE_COMMAND      },
