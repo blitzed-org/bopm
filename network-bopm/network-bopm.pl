@@ -29,7 +29,9 @@ use IO::Socket::INET;
 
 #Options
 my %BOPM    = (
-                 NICK  => 'bopm',            #Our bopm hostname
+                 NICK     => 'bopm',            #Our bopm hostname
+                 TS_GRACE => 30,                #Delta allowed above LAST_SCAN in seconds
+                 LAST     => time,                 #TS of last scan
               );
 
 
@@ -49,6 +51,7 @@ my %PROTOCOL = (
 
 my %NICKFORMAT = (
                     NICK     => 1,
+                    TS       => 3,
                     USERNAME => 5,
                     HOSTNAME => 6,
                     SERVER   => 7,
@@ -56,17 +59,15 @@ my %NICKFORMAT = (
                     REALNAME => 10,
                  );
 
+my $IRC_SOCKET;
+my $IRC_DATA;
+
 ###### END CONFIGURATION ######
 
 my %IRC_FUNCTIONS = (
                      'PING'    => \&m_ping,
                      'NICK'    => \&m_nick,
                     );
-
-
-#Global Variables
-my $IRC_SOCKET;          #IRC Connection
-my $IRC_DATA;            #Data read from IRC
 
 my $SELECT = new IO::Select; 
 
@@ -340,6 +341,16 @@ sub m_nick
    }
    shift @$parv;
 
+
+   #Check if the NICK TS is older than last scan time, give TS_GRACE seconds grace
+   if($$parv[$NICKFORMAT{TS}] < ($BOPM{LAST} + $BOPM{TS_GRACE}))
+   {
+      do_log(sprintf('BOPM -> Not scanning %s due to old TS (%d < %d + %d)',
+                     $$parv[$NICKFORMAT{NICK}], $$parv[$NICKFORMAT{TS}], $BOPM{LAST} , $BOPM{TS_GRACE}));
+      return;
+   }
+   
+
    $conn = sprintf('*** Notice -- Client connecting: %s (%s@%s) [%s] {class}',
                    $$parv[$NICKFORMAT{NICK}],
                    $$parv[$NICKFORMAT{USERNAME}],
@@ -349,4 +360,6 @@ sub m_nick
 
    #send hybrid connection notice
    irc_send(sprintf(':%s NOTICE %s :%s', $IRC{NAME}, $BOPM{NICK}, $conn)); 
+
+   $BOPM{LAST} = time;
 }
