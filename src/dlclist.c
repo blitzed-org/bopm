@@ -58,7 +58,7 @@ void dlclist_delete_node(struct dlclist *n)
 {
     n->prev->next = n->next;
     n->next->prev = n->prev;
-    MyFree(n);
+    //MyFree(n);
 }
 
 /*
@@ -70,7 +70,7 @@ void dlclist_destroy(struct dlclist *head)
     while (head->next != head)
         dlclist_delete_node(head->next);
 
-    MyFree(head);
+    //MyFree(head);
 }
 
 /*

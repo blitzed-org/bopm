@@ -893,9 +893,6 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
 
    char *user[4];
 
-
-
-
    if(parc < 4)
       return;
 

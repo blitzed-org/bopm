@@ -57,7 +57,7 @@ typedef union
 # define YYSTYPE_IS_TRIVIAL 1
 #endif
 #ifndef YYDEBUG
-# define YYDEBUG 1
+# define YYDEBUG 0
 #endif
 
 
@@ -1160,8 +1160,8 @@ case 49:
 {
    struct ChannelConf *item = tmp;
 
-   MyFree(item->name);
-   item->name = DupString(yyvsp[-1].string);
+   MyFree(item->key);
+   item->key = DupString(yyvsp[-1].string);
 ;
     break;}
 case 50:
@@ -1213,7 +1213,7 @@ case 59:
 
    /* Setup ScannerConf defaults */
    item->name = DupString("undefined");
-   item->vhost = "0.0.0.0";
+   item->vhost = DupString("0.0.0.0");
    item->fd = 512;
    item->target_ip = DupString("127.0.0.1");
    item->target_port = 6667;
@@ -1249,7 +1249,7 @@ case 75:
 {
    struct ScannerConf *item = (struct ScannerConf *) tmp;
    MyFree(item->target_ip);
-   item->vhost = DupString(yyvsp[-1].string);
+   item->target_ip = DupString(yyvsp[-1].string);
 ;
     break;}
 case 76:
@@ -1257,7 +1257,7 @@ case 76:
 {
    struct ScannerConf *item = (struct ScannerConf *) tmp;
    MyFree(item->target_string);
-   item->vhost = DupString(yyvsp[-1].string);
+   item->target_string = DupString(yyvsp[-1].string);
 ;
     break;}
 case 77:

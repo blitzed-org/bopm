@@ -92,6 +92,7 @@ void config_setup()
     IRCItem->nick = DupString("bopm");
     IRCItem->password = DupString("");
     IRCItem->port = 6667;
+    IRCItem->oper = DupString("undefined");
     IRCItem->username = DupString("bopm");
     IRCItem->realname = DupString("Blitzed Open Proxy Monitor");
     IRCItem->server = DupString("myserver.blitzed.org");

@@ -151,10 +151,11 @@ void scan_init()
             LIST_FOREACH(p3, SCANNERS->head)
             {
                ss = (struct scanner_struct *) p3->data;
-               if(strcasecmp(scannername, ss->name))
+               if(strcasecmp(scannername, ss->name) == 0)
                {
                   if(OPT_DEBUG >= 2)
                      log("SCAN -> Linking the mask [%s] to scanner [%s]", mask, scannername);
+
                   ms = (struct mask_struct *) MyMalloc(sizeof(struct mask_struct));
                   ms->mask = (char *) DupString(mask);
                   ms->ss = ss;

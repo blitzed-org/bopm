@@ -26,6 +26,7 @@
 #include <string.h>
 #include "malloc.h"
 
+
 /* MyMalloc
  *  
  *   A wrapper function for malloc(), for catching memory issues
@@ -59,8 +60,10 @@ void *MyMalloc(size_t bytes)
  *     None
  */
 
-void _MyFree(void **var)
+inline void _MyFree(void **var)
 {
+    assert(var != NULL);
+
     if(*var != NULL)
         free(*var);
     *var = NULL;

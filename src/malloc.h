@@ -6,7 +6,7 @@
 #define MyFree(X) _MyFree((void **) &X)
 
 extern void *MyMalloc(size_t bytes);
-extern void _MyFree(void **var);
+inline extern void _MyFree(void **var);
 inline char *DupString(const char *y);
 
 #endif /* MALLOC_H */

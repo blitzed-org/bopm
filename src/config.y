@@ -231,8 +231,8 @@ channel_key: KEY '=' STRING ';'
 {
    struct ChannelConf *item = tmp;
 
-   MyFree(item->name);
-   item->name = DupString($3);
+   MyFree(item->key);
+   item->key = DupString($3);
 };
 
 /*************************** USER BLOCK ***************************/
@@ -292,7 +292,7 @@ scanner_entry:
 
    /* Setup ScannerConf defaults */
    item->name = DupString("undefined");
-   item->vhost = "0.0.0.0";
+   item->vhost = DupString("0.0.0.0");
    item->fd = 512;
    item->target_ip = DupString("127.0.0.1");
    item->target_port = 6667;
@@ -340,14 +340,14 @@ scanner_target_ip: TARGET_IP '=' STRING ';'
 {
    struct ScannerConf *item = (struct ScannerConf *) tmp;
    MyFree(item->target_ip);
-   item->vhost = DupString($3);
+   item->target_ip = DupString($3);
 };
 
 scanner_target_string: TARGET_STRING '=' STRING ';'
 {
    struct ScannerConf *item = (struct ScannerConf *) tmp;
    MyFree(item->target_string);
-   item->vhost = DupString($3);
+   item->target_string = DupString($3);
 };
 
 scanner_fd: FD '=' NUMBER ';'
