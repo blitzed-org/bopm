@@ -1,3 +1,21 @@
+2003-01-06 12:58  strtok
+
+	* configure, configure.in, src/irc.c: Version should be 3.0.1 not
+	3.01
+
+2003-01-06 11:26  dgl
+
+	* src/dnsbl.c: Send proxy port in dnsbl reports so BOPMs will be
+	reporting them when dnsbl starts to accept them.
+
+2003-01-06 06:27  andy
+
+	* src/scan.c: Typo. :)
+
+2003-01-05 12:05  strtok
+
+	* ChangeLog: Updated ChangeLog
+
 2003-01-04 18:37  strtok
 
 	* src/firedns.c: Added more verbose error when firedns can't find
