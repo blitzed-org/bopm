@@ -79,11 +79,11 @@ botnick <check> <host> [scanner]  -- Manually scan host for insecure proxies and
 botnick stats                     -- Output scan stats, uptime and client connection count.
 
 
-Rehashing the Configuration File
+Rehashing BOPM 
 --------------------------------
 
-As of bopm 3.0, the config file cannot be rehashed. You must restart bopm if you change
-the configuration.
+A /kill to bopm will cause the process to restart, rehashing the configuraiton file
+and ending all queued scans.
 
 
 Support
