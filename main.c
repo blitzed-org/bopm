@@ -22,12 +22,15 @@ along with this program; if not, write to the Free Software
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <signal.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "config.h"
 #include "extern.h"
@@ -73,7 +76,12 @@ int main(int argc, char **argv)
 
    if(!OPT_DEBUG)
     {
-       if((pid = fork()))
+       if((pid = fork()) < 0)
+        {
+	   perror("fork()");
+	   exit(1);
+	}
+       else if(pid != 0)
         {
            pidout = fopen("bopm.pid", "w");
            snprintf(spid, 16, "%d", pid);
@@ -85,6 +93,22 @@ int main(int argc, char **argv)
 
            exit(0);
         }
+
+       /* get us in our own process group */
+       if(setpgid(0, 0) < 0)
+        {
+	   perror("setpgid()");
+	   exit(1);
+	}
+
+       /* reset file mode */
+       umask(0);
+
+       /* close file descriptors */
+       close(STDIN_FILENO);
+       close(STDOUT_FILENO);
+       close(STDERR_FILENO);
+
        log_open("bopm.log"); 
     }
    else
