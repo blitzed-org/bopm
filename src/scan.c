@@ -579,6 +579,7 @@ char *scan_gettype(int protocol)
 void scan_positive(struct scan_struct *ss)
 {
    node_t *node;
+
    OPM_T *scanner;
 
    /* Format KLINE and send to IRC server */
@@ -588,7 +589,7 @@ void scan_positive(struct scan_struct *ss)
    /* Close all scans prematurely */
    LIST_FOREACH(node, SCANNERS->head)
    {
-      scanner = (OPM_T *) node->data;
+      scanner = (OPM_T *) ((struct scanner_struct *) node->data)->scanner;
       opm_endscan(scanner, ss->remote);
    }
   

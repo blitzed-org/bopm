@@ -77,12 +77,12 @@ void dnsbl_add(struct scan_struct *ss)
 #endif
 
       if(OPT_DEBUG)
-         log("DNSBL -> Passed '%s' to firedns", lookup);
+         log("DNSBL -> Passed '%s' to resolver", lookup);
 
       res = firedns_getip4(lookup, (void *) ss);
 
       if(res == -1)
-         log("DNSBL -> Error sending dns lookup '%s'", lookup);
+         log("DNSBL -> Error sending dns lookup  '%s'", lookup);
       else
 	  ss->scans++; /* Increase scan count - one for each blacklist */
    }
