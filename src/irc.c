@@ -72,6 +72,7 @@ along with this program; if not, write to the Free Software
 #include "options.h"
 #include "match.h"
 #include "compat.h"
+#include "negcache.h"
 
 static void irc_init(void);
 static void irc_connect(void);
@@ -91,6 +92,8 @@ static char *check_channel(const char *channel);
 extern char *CONFFILE;
 extern time_t LAST_REAP_TIME;
 extern string_list *CONF_SCAN_WARNING;
+extern unsigned int CONF_NEG_CACHE;
+extern struct cnode *nc_head;
 
 /*
  * Certain variables we don't want to allocate memory for over and over
@@ -119,18 +122,28 @@ struct timeval      IRC_TIMEOUT;      /* timeval struct for select() timeout   *
 time_t              IRC_NICKSERV_LAST = 0; /* Last notice from nickserv        */
 time_t              IRC_LAST = 0;     /* Last full line of data from irc server*/
 
-/* Give one cycle to the IRC client, which
- * will allow it to poll for data and handle
- * that data if need be.
+/*
+ * Give one cycle to the IRC client, which will allow it to poll for data and
+ * handle that data if need be.
  */
 
 void irc_cycle(void)
 {	
 	if (IRC_FD <= 0) {
 		/* No socket open. */
-		config_load(CONFFILE);	/* Reload config. */
-		irc_init();		/* Resolve remote host. */
-		irc_connect();		/* Connect to remote host. */
+		
+		/* Reload config. */
+		config_load(CONFFILE);
+
+		 /* Initialise negative cache. */
+		if (CONF_NEG_CACHE)
+			nc_init(&nc_head);
+
+		/* Resolve remote host. */
+		irc_init();
+
+		/* Connect to remote host. */
+		irc_connect();
         }
 
 	IRC_TIMEOUT.tv_sec  = 0;
@@ -751,8 +764,9 @@ void irc_timer(void)
 static void do_connect(char *addr, char *irc_nick, char *irc_user,
     char *irc_addr, char *conn_notice)
 {
-	string_list *list;
+	struct bopm_sockaddr ipaddr;
 	int aftype;
+	string_list *list;
 
 	/*
 	 * Check that neither the user's IP nor host matches anything in our
@@ -768,6 +782,28 @@ static void do_connect(char *addr, char *irc_nick, char *irc_user,
 		}
 	}
 
+	/* FIXME: Ipv6 is required here */
+
+	if (strchr(addr, ':')) {
+		aftype = AF_INET6;
+	} else {
+		aftype = AF_INET;
+	    
+		if (CONF_NEG_CACHE) {
+			if (!inetpton(AF_INET, addr, &(ipaddr.sas.sa4.sin_addr))) {
+				log("Invalid address %s", addr);
+				return;
+			}
+		    
+			/* Now check it isn't in our negative cache. */
+			if (check_neg_cache(ipaddr.sas.sa4.sin_addr.s_addr)) {
+				log("%s is negatively cached, skipping "
+				    "checks", addr);
+				return;
+			}
+		}
+	}
+
 	/*
 	 * Enqueue a warning for this person.
 	 */
@@ -777,13 +813,6 @@ static void do_connect(char *addr, char *irc_nick, char *irc_user,
 	if (CONF_DNSBL_ZONE &&
 	    dnsbl_check(addr, irc_nick, irc_user, irc_addr))
 		return;
-
-	/* FIXME: Ipv6 is required here */
-
-	if (strchr(irc_addr, ':'))
-	    aftype = AF_INET6;
-	else
-	    aftype = AF_INET;
 
 	scan_connect(addr, irc_addr, irc_nick, irc_user, 0, AF_INET, conn_notice);
 }
