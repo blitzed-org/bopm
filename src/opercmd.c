@@ -63,7 +63,7 @@ static struct OperCommandHash COMMAND_TABLE[] =
       {"STATS",  cmd_stat   },
       {"STATUS", cmd_stat   },
       {"FDSTAT", cmd_fdstat },
-      {"OP",     cmd_op }
+/*    {"OP",     cmd_op     } */
    };
 
 

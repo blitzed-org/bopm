@@ -3,7 +3,7 @@ SUBDIRS = libopm .
 bin_PROGRAMS = bopm
 
 AM_CPPFLAGS = -DBOPM_ETCDIR="\"$(sysconfdir)\"" -DBOPM_LOGDIR="\"$(localstatedir)\""
-YFLAGS = -d
+AM_YFLAGS = -d
 
 bopm_SOURCES = compat.c compat.h config-parser.y config-lexer.l config.c config.h \
     dnsbl.c dnsbl.h extern.h inet.c inet.h irc.c irc.h log.c log.h main.c match.c \

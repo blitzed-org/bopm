@@ -1,3 +1,168 @@
+2003-02-12 09:31  andy
+
+	* README: Fix <check> typo, add a bit about fdstat.
+
+2003-02-12 08:15  andy
+
+	* README: Note about it not adding klines on manual scan.
+
+2003-02-10 05:16  andy
+
+	* bopm.conf.blitzed, bopm.conf.sample: A couple more SOCKS4 weird
+	ports seen in the wild.
+
+2003-02-02 14:59  andy
+
+	* configure, configure.in, ltmain.sh: Remove goat/faldo. 
+	Regenerate autotools.
+
+2003-02-02 14:46  strtok
+
+	* src/scan.c: scan_handle_error: Fixed use of NULL pointer where
+	libopm returned back a file descriptor allocation error and
+	manual_target was NULL
+
+2003-02-01 16:44  andy
+
+	* src/opercmd.c: Make sure that the param string is at least null
+	terminated when there is no parameter (this caused segfault on any
+	oper command for implementations whose strlen() can't handle null
+	pointers, e.g. sparc-sun-solaris2.8).
+
+2003-02-01 13:22  strtok
+
+	* src/opercmd.c: opercmd: Added requested (Alien88@efnet) op
+	command
+
+2003-01-29 18:04  andy
+
+	* bopm.conf.sample: Updated Ultimate IRCD connregex example that
+	actually works, thanks to "Baltazar" <baltazar.pinto AT
+	mail.telepac.pt>
+
+2003-01-29 10:03  dgl
+
+	* contrib/crontab/bopmchk: update paths for bopm 3.0!
+
+2003-01-27 19:05  andy
+
+	* INSTALL, README, bopm.conf.sample, src/.cvsignore: Removed some
+	blitzedisms to try to cut down on abuse from morons.
+
+2003-01-19 18:36  andy
+
+	* bopm.conf.sample: Missing */!  This caused confusion for a number
+	of people who did not spot it.
+
+2003-01-19 18:30  andy
+
+	* libtool: Apparently we need this now too.  One day someone will
+	explain autotools to me.
+
+2003-01-19 18:12  andy
+
+	* Makefile.in, aclocal.m4, acsite.m4, config.guess, config.sub,
+	configure, configure.in, src/Makefile.am, src/Makefile.in,
+	src/scan.c, src/setup.h.in: Better socket libs check from Warren
+	Young <warren@etr-usa.com>.  Header reorganisation for benefit of
+	some solaris machines..
+
+2003-01-18 12:22  andy
+
+	* src/stats.c: Use the dup() method of FD counting instead of the
+	fcntl() method - fcntl() only seems to count established tcp
+	connections.
+	
+	Reorganise some headers.
+
+2003-01-16 17:18  andy
+
+	* src/stats.c: Fixes for FreeBSD.
+
+2003-01-15 14:05  andy
+
+	* README: Typo.
+
+2003-01-15 14:01  andy
+
+	* README: The boneheadedness becomes too much. :(
+
+2003-01-13 18:43  strtok
+
+	* src/stats.c: Check ret != -1 in total fd use count
+
+2003-01-12 16:56  dgl
+
+	* src/: dnsbl.c, firedns.c, firedns.h: Make firedns/dnsbl print
+	nicer error messages
+
+2003-01-12 14:53  strtok
+
+	* src/stats.c: Show open fd limit in fdstat
+
+2003-01-12 14:37  dgl
+
+	* src/firedns.c: Remove lastcreate close code from firedns
+
+2003-01-12 14:22  strtok
+
+	* src/: config.c, opercmd.c, stats.c, stats.h: Added code to
+	config.c to close the config file.  Added start of 'fdstat'
+	command. Right now it counts the tototal open fds the process has
+
+2003-01-10 22:28  andy
+
+	* aclocal.m4, configure, configure.in, src/Makefile.am,
+	src/Makefile.in, src/compat.c, src/compat.h, src/dnsbl.c,
+	src/firedns.c, src/inet.c, src/inet.h, src/log.c, src/main.c,
+	src/misc.c, src/scan.c, src/snprintf.c, src/snprintf.h:
+	src/snprintf.[ch]:	Added Mark Martinec's (v)snprintf
+	replacement from      http://www.ijs.si/software/snprintf/ for
+	sstems with missing or	       broken (v)snprintf.
+	
+	src/compat.c:	Replace inet_aton() with bopm_inet_aton() to
+	prevent clashes.
+	
+	src/compat.h:	Systems without inet_aton() should use
+	bopm_inet_aton() (compat.c).
+	
+		Systems without (v)snprintf should use bopm_snprintf()
+		(snprintf.c).
+	
+		Systems without inet_pton() should use bopm_inet_pton()
+	(inet.c).
+	
+	src/dnsbl.c: src/firedns.c: src/log.c: src/main.c: src/misc.c:
+	src/scan.c:	 Needs to include compat.h if it wants to compile
+	on Solaris.
+	
+	src/inet.c:	For now made inetntoa() static as it is used
+	nowhere but this   file.  Later we need to either remove this and
+	use bopm_inet_ntoa()	 from compat.c, or else remove that one and
+	rename this one.
+	
+		Commented out inetntop() -- nothing seems to be using it
+	currently?
+	
+		Renamed inet_pton() to bopm_inet_pton() to avoid clashes.
+
+2003-01-10 11:33  strtok
+
+	* src/: dnsbl.c, scan.c: scan_positive only klines if ss->positive
+	is true
+
+2003-01-09 09:30  andy
+
+	* acsite.m4, configure, configure.in, src/setup.h.in: Chekc for
+	working snprintf (but do nothing about it yet).  This macro came
+	from http://www.gnu.org/software/ac-archive/ac_func_snprintf.html
+	and is copyright Rüdiger Kuhlmann <info@ruediger-kuhlmann.de>.
+
+2003-01-07 19:16  strtok
+
+	* ChangeLog, configure, configure.in: Version is now 3.0.2 Updated
+	ChangeLog
+
 2003-01-07 19:08  strtok
 
 	* src/: dnsbl.c, irc.c: Fix to only ss->scans-- when we know for
@@ -535,12 +700,12 @@
 
 2002-12-08 16:28  strtok
 
-	* src/config-lexer.l: file config-lexer.l was initially added on
+	* src/config-parser.y: file config-parser.y was initially added on
 	branch LIBOPM.
 
 2002-12-08 16:28  strtok
 
-	* src/config-parser.y: file config-parser.y was initially added on
+	* src/config-lexer.l: file config-lexer.l was initially added on
 	branch LIBOPM.
 
 2002-12-08 16:28  strtok
@@ -554,12 +719,12 @@
 
 2002-12-08 11:00  dgl
 
-	* src/firedns.c: file firedns.c was initially added on branch
+	* src/firedns.h: file firedns.h was initially added on branch
 	LIBOPM.
 
 2002-12-08 11:00  dgl
 
-	* src/firedns.h: file firedns.h was initially added on branch
+	* src/firedns.c: file firedns.c was initially added on branch
 	LIBOPM.
 
 2002-12-08 11:00  dgl
@@ -679,12 +844,12 @@
 
 2002-11-19 22:59  strtok
 
-	* src/config.tab.h: Added config.tab.h to project
+	* src/config.tab.h: file config.tab.h was initially added on branch
+	LIBOPM.
 
 2002-11-19 22:59  strtok
 
-	* src/config.tab.h: file config.tab.h was initially added on branch
-	LIBOPM.
+	* src/config.tab.h: Added config.tab.h to project
 
 2002-11-19 22:58  strtok
 
@@ -707,19 +872,19 @@
 
 2002-11-12 00:57  strtok
 
-	* src/malloc.c: file malloc.c was initially added on branch LIBOPM.
-
-2002-11-12 00:57  strtok
-
 	* src/malloc.h: file malloc.h was initially added on branch LIBOPM.
 
 2002-11-12 00:57  strtok
 
-	* src/list.c: file list.c was initially added on branch LIBOPM.
+	* src/malloc.c: file malloc.c was initially added on branch LIBOPM.
 
 2002-11-12 00:57  strtok
 
 	* src/list.h: file list.h was initially added on branch LIBOPM.
+
+2002-11-12 00:57  strtok
+
+	* src/list.c: file list.c was initially added on branch LIBOPM.
 
 2002-11-12 00:57  strtok
 
@@ -740,12 +905,12 @@
 
 2002-11-12 00:57  strtok
 
-	* src/config.tab.c: file config.tab.c was initially added on branch
-	LIBOPM.
+	* src/config.l: file config.l was initially added on branch LIBOPM.
 
 2002-11-12 00:57  strtok
 
-	* src/config.l: file config.l was initially added on branch LIBOPM.
+	* src/config.tab.c: file config.tab.c was initially added on branch
+	LIBOPM.
 
 2002-11-12 00:57  strtok
 
