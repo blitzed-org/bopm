@@ -119,6 +119,7 @@ IRC {
          *
          * REMEMBER THAT IRCU AND LATER VERSIONS OF UNREAL DO NOT USE A SIMPLE
          * +c !!
+	 */
 	mode = "+c-h";
 
         /* Example for Bahamut; +F gives BOPM relaxed flood limits */
