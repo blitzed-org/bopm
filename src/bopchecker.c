@@ -245,3 +245,10 @@ int dnsbl_check(const char *addr, const char *irc_nick,
 		return(0);
 	return(0);
 }
+
+void negcache_insert(const char *ipstr)
+{
+	if (ipstr)
+		return;
+	return;
+}
