@@ -48,7 +48,6 @@ along with this program; if not, write to the Free Software
 /* FIXME
  * Work out the DNSBL zones and send the dns query
  */
-#define DNSBL_LOOKUPLEN 82
 void dnsbl_add(struct scan_struct *ss)
 {
    struct in_addr in;
@@ -84,7 +83,35 @@ void dnsbl_add(struct scan_struct *ss)
 
       if(res == -1)
          log("Error sending dns lookup '%s'", lookup);
+      else
+	  ss->scans++; /* Increase scan count - one for each blacklist */
    }
+}
+
+void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type)
+{
+    char text_type[100];
+
+    text_type[0] = '\0';
+    if(type & DNSBL_TYPE_WG)
+	strcat(text_type, "Wingate, ");
+    if(type & DNSBL_TYPE_SOCKS)
+	strcat(text_type, "Socks, ");
+    if(type & DNSBL_TYPE_HTTP)
+	strcat(text_type, "HTTP, ");
+    if(type & DNSBL_TYPE_CISCO)
+	strcat(text_type, "Cisco, ");
+    if(type & DNSBL_TYPE_HTTPPOST)
+	strcat(text_type, "HTTP Post, ");
+
+    if(text_type[0] != '\0')
+	*(strrchr(text_type, ',')) = '\0';
+
+    if(strlen(ss->ip) < strlen(lookup)) {
+	lookup += strlen(ss->ip) + 1;
+    }
+
+    log("DNSBL -> %s!%s@%s appears in BL zone %s type %s", ss->irc_nick, ss->irc_username, ss->irc_hostname, lookup, text_type);
 }
 
 void dnsbl_result(struct firedns_result *res)
@@ -92,6 +119,7 @@ void dnsbl_result(struct firedns_result *res)
    struct scan_struct *ss;
 
    ss = (struct scan_struct *) res->info;
+   ss->scans--; /* We will have finished with this when we return */
 
    if(OPT_DEBUG)
       log("DNSBL -> Lookup result: %d.%d.%d.%d (%d)",
@@ -108,10 +136,11 @@ void dnsbl_result(struct firedns_result *res)
 
    if(fdns_errno == FDNS_ERR_NONE)
    {
-      log("DNSBL -> Positive lookup for %s!%s@%s", ss->irc_nick,
-          ss->irc_username, ss->irc_hostname);
+      scan_irckline(ss);
+      dnsbl_log_positive(ss, res->lookup, (unsigned char)res->text[3]);
    }else
    {
+       // XXX: old bopm sometimes reports failures on these..
       log("DNSBL -> Weird error! fdns_errno = %d", fdns_errno);
    }
 }

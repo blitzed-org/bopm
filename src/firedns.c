@@ -47,7 +47,10 @@ static struct in6_addr servers6[FDNS_MAX];
 
 static int wantclose = 0;
 static int lastcreate = -1;
+
+int fdns_fdlimit = 50;
 int fdns_errno = FDNS_ERR_NONE;
+int fdns_fdinuse = 0;
 
 struct s_connection { /* open DNS query */
    struct s_connection *next; /* next in list */
@@ -57,6 +60,7 @@ struct s_connection { /* open DNS query */
    int fd; /* file descriptor returned from sockets */
    void *info;
    time_t start;
+   char lookup[256];
 #ifdef IPV6
    int v6;
 #endif
@@ -182,6 +186,79 @@ static int firedns_send_requests(struct s_header *h, struct s_connection *s, int
 
 #ifdef IPV6
    struct sockaddr_in6 addr6;
+#endif
+
+   if(fdns_fdinuse > fdns_fdlimit)
+       return;
+
+   /* set header flags */
+   h->flags1 = 0 | FLAGS1_MASK_RD;
+   h->flags2 = 0;
+   h->qdcount = htons(1);
+   h->ancount = htons(0);
+   h->nscount = htons(0);
+   h->arcount = htons(0);
+   memcpy(h->id, s->id, 2);
+
+   /* try to create ipv6 or ipv4 socket */
+#ifdef IPV6
+   s->v6 = 0;
+   if (i6 > 0) {
+      s->fd = socket(PF_INET6, SOCK_DGRAM, 0);
+      if (s->fd != -1) {
+         if (fcntl(s->fd, F_SETFL, O_NONBLOCK) != 0) {
+            close(s->fd);
+            s->fd = -1;
+         }
+      }
+      if (s->fd != -1) {
+         struct sockaddr_in6 addr6;
+         memset(&addr6,0,sizeof(addr6));
+         addr6.sin6_family = AF_INET6;
+         if (bind(s->fd,(struct sockaddr *)&addr6,sizeof(addr6)) == 0)
+            s->v6 = 1;
+         else
+	 {
+            close(s->fd);
+	 }
+      }
+   }
+   if (s->v6 == 0) {
+#endif
+      s->fd = socket(PF_INET, SOCK_DGRAM, 0);
+      if (s->fd != -1) {
+         if (fcntl(s->fd, F_SETFL, O_NONBLOCK) != 0) {
+            close(s->fd);
+            s->fd = -1;
+         }
+      }
+      if (s->fd != -1) {
+         struct sockaddr_in addr;
+         memset(&addr,0,sizeof(addr));
+         addr.sin_family = AF_INET;
+         addr.sin_port = 0;
+         addr.sin_addr.s_addr = INADDR_ANY;
+         if (bind(s->fd,(struct sockaddr *)&addr,sizeof(addr)) != 0) {
+            close(s->fd);
+            s->fd = -1;
+         }
+      }
+      if (s->fd == -1) {
+         return 0;
+      }
+#ifdef IPV6
+   }
+#endif
+   if (wantclose == 1) {
+      close(lastcreate);
+      wantclose = 0;
+   }
+   lastcreate = s->fd;
+
+   time(&s->start);
+   fdns_fdinuse++;
+   
+#ifdef IPV6
    /* if we've got ipv6 support, an ip v6 socket, and ipv6 servers, send to them */
    if (i6 > 0 && s->v6 == 1) {
       for (i = 0; i < i6; i++) {
@@ -218,81 +295,19 @@ static int firedns_send_requests(struct s_header *h, struct s_connection *s, int
    return 0;
 }
 
-static struct s_connection *firedns_add_query(struct s_header *h) { /* build DNS query, add to list */
+static struct s_connection *firedns_add_query(void) { /* build DNS query, add to list */
    struct s_connection *s;
-
-   /* set header flags */
-   h->id[0] = rand() % 255; /* verified by firedns_getresult() */
-   h->id[1] = rand() % 255;
-   h->flags1 = 0 | FLAGS1_MASK_RD;
-   h->flags2 = 0;
-   h->qdcount = htons(1);
-   h->ancount = htons(0);
-   h->nscount = htons(0);
-   h->arcount = htons(0);
 
    /* create new connection object, add to linked list */
    s = MyMalloc(sizeof(struct s_connection));
    s->next = connection_head;
    connection_head = s;
 
-   /* needed for security later */
-   memcpy(s->id,h->id,2);
+   s->id[0] = rand() % 255; /* verified by firedns_getresult() */
+   s->id[1] = rand() % 255;
 
-   /* try to create ipv6 or ipv4 socket */
-#ifdef IPV6
-   s->v6 = 0;
-   if (i6 > 0) {
-      s->fd = socket(PF_INET6, SOCK_DGRAM, 0);
-      if (s->fd != -1) {
-         if (fcntl(s->fd, F_SETFL, O_NONBLOCK) != 0) {
-            close(s->fd);
-            s->fd = -1;
-         }
-      }
-      if (s->fd != -1) {
-         struct sockaddr_in6 addr6;
-         memset(&addr6,0,sizeof(addr6));
-         addr6.sin6_family = AF_INET6;
-         if (bind(s->fd,(struct sockaddr *)&addr6,sizeof(addr6)) == 0)
-            s->v6 = 1;
-         else
-            close(s->fd);
-      }
-   }
-   if (s->v6 == 0) {
-#endif
-      s->fd = socket(PF_INET, SOCK_DGRAM, 0);
-      if (s->fd != -1) {
-         if (fcntl(s->fd, F_SETFL, O_NONBLOCK) != 0) {
-            close(s->fd);
-            s->fd = -1;
-         }
-      }
-      if (s->fd != -1) {
-         struct sockaddr_in addr;
-         memset(&addr,0,sizeof(addr));
-         addr.sin_family = AF_INET;
-         addr.sin_port = 0;
-         addr.sin_addr.s_addr = INADDR_ANY;
-         if (bind(s->fd,(struct sockaddr *)&addr,sizeof(addr)) != 0) {
-            close(s->fd);
-            s->fd = -1;
-         }
-      }
-      if (s->fd == -1) {
-         connection_head = s->next;
-         free(s);
-         return NULL;
-      }
-#ifdef IPV6
-   }
-#endif
-   if (wantclose == 1) {
-      close(lastcreate);
-      wantclose = 0;
-   }
-   lastcreate = s->fd;
+   s->fd = -1;
+
    return s;
 }
 
@@ -333,50 +348,49 @@ static int firedns_build_query_payload(const char * const name, unsigned short r
 }
 
 int firedns_getip4(const char * const name, void *info) { /* build, add and send A query; retrieve result with firedns_getresult() */
-   struct s_header h;
    struct s_connection *s;
-   int l;
 
-   l = firedns_build_query_payload(name,FDNS_QRY_A,1,(unsigned char *)&h.payload);
-   if (l == -1)
-      return -1;
-   s = firedns_add_query(&h);
+   s = firedns_add_query();
 
    if (s == NULL)
       return -1;
+
    s->class = 1;
    s->type = FDNS_QRY_A;
-
+   strncpy(s->lookup, name, 256);
    s->info = info;
-   time(&s->start);
 
-   if (firedns_send_requests(&h,s,l) == -1)
-      return -1;
+   return firedns_doquery(s);
+}
 
-   return s->fd;
+int firedns_doquery(struct s_connection *s)
+{
+    int l;
+    struct s_header h;
+
+    l = firedns_build_query_payload(s->lookup, s->type, 1, 
+	    (unsigned char *)&h.payload);
+    if(l == -1)
+	return -1;
+    if (firedns_send_requests(&h,s,l) == -1)
+	return -1;
+
+    return 1;
 }
 
 int firedns_getip6(const char * const name, void *info) {
-   struct s_header h;
    struct s_connection *s;
-   int l;
 
-   l = firedns_build_query_payload(name,FDNS_QRY_AAAA,1,(unsigned char *)&h.payload);
-   if (l == -1)
-      return -1;
-   s = firedns_add_query(&h);
+   s = firedns_add_query();
    if (s == NULL)
       return -1;
+
    s->class = 1;
    s->type = FDNS_QRY_AAAA;
-
+   strncpy(s->lookup, name, 256);
    s->info = info;
-   time(&s->start);
 
-   if (firedns_send_requests(&h,s,l) == -1)
-      return -1;
-
-   return s->fd;
+   return firedns_doquery(s);
 }
 
 char *firedns_getresult_i(const int fd)
@@ -400,7 +414,7 @@ struct firedns_result *firedns_getresult(const int fd) { /* retrieve result of D
 
    fdns_errno = FDNS_ERR_OTHER;
    result.info = (void *) NULL;
-   result.text[0] = '\0';
+   memset(result.text, 0, sizeof(result.text));
 
    prev = NULL;
    c = connection_head;
@@ -421,7 +435,9 @@ struct firedns_result *firedns_getresult(const int fd) { /* retrieve result of D
 
    l = recv(c->fd,&h,sizeof(struct s_header),0);
    firedns_close(c->fd);
+   fdns_fdinuse--;
    result.info = (void *) c->info;
+   strncpy(result.lookup, c->lookup, 256);
 
    if (l < 12) {
       free(c);
@@ -586,6 +602,8 @@ void firedns_cycle(void) {
    int i, t, fd;
    time_t timenow;
 
+   int COUNT = 0;
+
    if(connection_head == NULL)
       return;
 
@@ -599,7 +617,10 @@ void firedns_cycle(void) {
 
    for(p = connection_head; p != NULL; p = p->next)
    {
-      if((p->start + 5) < timenow)
+      if(p->fd < 0)
+	  continue;
+      COUNT++;
+      if(p->fd > 0 && (p->start + 5) < timenow)
       {
          /* Timed out - remove from list */
          if (prev != NULL)
@@ -607,8 +628,13 @@ void firedns_cycle(void) {
          else
             connection_head = p->next;
 
-         new_result.text[0] = '\0';
+         memset(new_result.text, 0, sizeof(new_result.text));
          new_result.info = p->info;
+         strncpy(new_result.lookup, p->lookup, 256);
+
+	 firedns_close(p->fd);
+	 fdns_fdinuse--;
+	 free(p);
 
          fdns_errno = FDNS_ERR_TIMEOUT;
 
@@ -623,6 +649,7 @@ void firedns_cycle(void) {
 
       prev = p;
    }
+   printf("There are %d\n", COUNT);
 
    i = select(t + 1, &s, NULL, NULL, &tv);
    if(i < 1)
@@ -630,14 +657,20 @@ void firedns_cycle(void) {
 
    for(p = connection_head; p != NULL; p != NULL && (p = p->next))
    {
-      if(FD_ISSET(p->fd, &s))
+      if(p->fd > 0)
       {
-         fd = p->fd;
-         p = p->next;
-         res = firedns_getresult(fd);
-
-         if(res != NULL && res->info != NULL)
-            dnsbl_result(res);
+	  if(FD_ISSET(p->fd, &s))
+	  {
+	      fd = p->fd;
+	      p = p->next;
+	      res = firedns_getresult(fd);
+	      
+	      if(res != NULL && res->info != NULL)
+		  dnsbl_result(res);
+	  }
+      }else if(fdns_fdinuse < fdns_fdlimit)
+      {
+	  firedns_doquery(p);
       }
    }
 }

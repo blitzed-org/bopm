@@ -16,4 +16,6 @@ extern void dnsbl_cycle(void);
 #define DNSBL_TYPE_CISCO 8
 #define DNSBL_TYPE_HTTPPOST 16
 
+#define DNSBL_LOOKUPLEN 82
+
 #endif
