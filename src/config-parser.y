@@ -504,6 +504,6 @@ exempt_mask: MASK '=' STRING ';'
    node = node_create(DupString($3));
 
    list_add(ExemptItem->masks, node);
-}
+};
 
 %%
