@@ -1,3 +1,4 @@
 *.sw[op]
 *.bb*
 bopm
+bopm.conf
