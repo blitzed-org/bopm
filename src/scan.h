@@ -29,8 +29,14 @@ struct scanner_struct
    OPM_T *scanner;
 };
 
+struct protocol_assoc
+{
+   int type;
+   char *name;
+};
+
 extern void scan_init();
-extern char *scan_prototype(int protocol);
+extern char *scan_gettype(int);
 extern void scan_cycle();
 void scan_connect(char **user, char *msg);
 

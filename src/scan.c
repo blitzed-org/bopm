@@ -166,11 +166,11 @@ void scan_init()
 
 
       /* Setup callbacks */
-      opm_callback(scs->scanner, OPM_CALLBACK_OPENPROXY, &scan_open_proxy, NULL);
-      opm_callback(scs->scanner, OPM_CALLBACK_NEGFAIL, &scan_negotiation_failed, NULL);
-      opm_callback(scs->scanner, OPM_CALLBACK_TIMEOUT, &scan_timeout, NULL);
-      opm_callback(scs->scanner, OPM_CALLBACK_END, &scan_end, NULL);
-      opm_callback(scs->scanner, OPM_CALLBACK_ERROR, &scan_handle_error, NULL);
+      opm_callback(scs->scanner, OPM_CALLBACK_OPENPROXY, &scan_open_proxy, scs);
+      opm_callback(scs->scanner, OPM_CALLBACK_NEGFAIL, &scan_negotiation_failed, scs);
+      opm_callback(scs->scanner, OPM_CALLBACK_TIMEOUT, &scan_timeout, scs);
+      opm_callback(scs->scanner, OPM_CALLBACK_END, &scan_end, scs);
+      opm_callback(scs->scanner, OPM_CALLBACK_ERROR, &scan_handle_error, scs);
 
 
       /* Setup the protocols */
@@ -356,6 +356,11 @@ void scan_free(struct scan_struct *ss)
 
 void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 {
+   struct scanner_struct *scs;
+   scs = (struct scanner_struct *) data;
+
+   log("SCAN -> Open proxy %s:%d (%s) [%s]", remote->ip, remote->port,
+             scan_gettype(remote->protocol), scs->name);   
 }
 
 
@@ -375,6 +380,12 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
 
 void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 {
+   struct scanner_struct *scs;
+   scs = (struct scanner_struct *) data;
+
+   if(OPT_DEBUG)
+      log("SCAN -> Negotiation failed %s:%d (%s) [%s]", remote->ip, remote->port, 
+             scan_gettype(remote->protocol), scs->name);
 }
 
 
@@ -393,6 +404,12 @@ void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, 
 
 void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 {
+   struct scanner_struct *scs;
+   scs = (struct scanner_struct *) data;
+
+   if(OPT_DEBUG)
+      log("SCAN -> Negotiation timed out %s:%d (%s) [%s]", remote->ip, remote->port,
+             scan_gettype(remote->protocol), scs->name);
 }
 
 
@@ -411,9 +428,12 @@ void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 
 void scan_end(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 {
+   struct scanner_struct *scs;
+   scs = (struct scanner_struct *) data;
+
+   if(OPT_DEBUG)
+      log("SCAN -> Scan completed %s [%s]", remote->ip, scs->name);
 }
-
-
 
 /* scan_handle_error CALLBACK
  *
@@ -446,7 +466,23 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
 
 
 
-char *scan_getprototype(int protocol)
+char *scan_gettype(int protocol)
 {
-   return "SOMETYPE";
+   int i;
+   static char *undef = "undefined";
+   static struct protocol_assoc protocols[] = 
+   {
+      { OPM_TYPE_HTTP,     "HTTP"     },
+      { OPM_TYPE_HTTPPOST, "HTTPPOST" },
+      { OPM_TYPE_SOCKS4,   "SOCKS4"   },
+      { OPM_TYPE_SOCKS5,   "SOCKS5"   },
+      { OPM_TYPE_WINGATE,  "WINGATE"  },
+      { OPM_TYPE_ROUTER,   "ROUTER"   }
+   };
+
+   for(i = 0; i < (sizeof(protocols) / sizeof(struct protocol_assoc)); i++)
+      if(protocol == protocols[i].type)
+         return protocols[i].name;
+      
+   return undef;
 }
