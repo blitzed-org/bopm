@@ -283,9 +283,13 @@ void irc_read()
 void irc_parse()
 {
 
-   
+   char *ip;           /* IP of remote host in connection notices */
    char *token[16];
    int   tokens = 0;
+
+   
+
+    printf("%s\n", IRC_RAW);
 
     /* Tokenize the first 16 words in the incoming data, we really don't need to worry
       about anything else and we don't need the original string for anything. */
@@ -294,12 +298,19 @@ void irc_parse()
 
     while(++tokens < 16 && (token[tokens] = strtok(NULL, " "))); 
 
+
+   /* Anything with less than 1 token is useless to us */  
+
+   if(tokens <= 1)
+        return;
    
     if(!strcasecmp(token[0], "PING"))
        {
             irc_send("PONG %s", token[1]);
 	    return;
        }
+
+    /* 001 is sent on initial connect to the IRC host */
 
     if(!strcasecmp(token[1], "001"))
      { 
@@ -308,6 +319,37 @@ void irc_parse()
        do_perform();       
      }   
     
+
+    /* Search for +c notices */
+
+    if(token[0][0] == ':')
+     {
+          /* Toss any notices NOT from a server */
+
+          if(strchr(token[0], '@'))
+               return ;
+
+          /* Notice is too short to be a connect notice, 
+           * toss it to save on execution time */
+
+          if(tokens < 11)
+                return;
+             
+
+
+          if(!strcmp(token[7], "connecting:"))
+            { 
+                 /* Token 11 is the IP of the remote host 
+                  * enclosed in [ ]. We need to remove it from
+                  * [ ] and pass it to the scanner. */
+
+                  ip = token[10] + 1;          /* Shift over 1 byte to pass over [ */
+                  ip = strtok(ip, "]");        /* Replace ] with a /0              */
+                  printf("Connecting IP: %s", ip);
+            }
+     }
+
+
 }
 
 
