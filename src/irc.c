@@ -88,7 +88,6 @@ static void m_notice(char **, unsigned int, char *, struct UserInfo *);
 static void m_perform(char **, unsigned int, char *, struct UserInfo *);
 static void m_versioncheck(char **, unsigned int, char *, struct UserInfo *);
 
-extern time_t LAST_REAP_TIME;
 extern struct cnode *nc_head;
 
 /*
@@ -603,12 +602,6 @@ void irc_timer(void)
       irc_send("PING :BOPM");
    }
 
-   /* Get rid of old command structures. */
-   if ((present - LAST_REAP_TIME) >= 120)
-   {
-      reap_commands(present);
-      time(&LAST_REAP_TIME);
-   }
 }
 
 /*
@@ -836,11 +829,28 @@ static void m_invite(char **parv, unsigned int parc, char *msg, struct UserInfo 
 
 static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
-   struct ChannelConf channel;
+   struct ChannelConf *channel;
 
    if(source_p == NULL)
       return;
 
+   if(parc < 4)
+      return;
+
+   /* Only interested in privmsg to channels */
+   if(parv[2][0] != '#')
+      return;
+
+   /* Get a target */
+   if((channel = get_channel(parv[2])) == NULL)
+      return; 
+
+   /* message is a command */
+   if(strncasecmp(parv[3], IRCItem->nick, 3) == 0  || 
+      strcasecmp(msg, "!all") == 0) 
+   {
+      command_parse(parv[3], msg, channel, source_p); 
+   }
 }
 
 

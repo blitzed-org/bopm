@@ -43,149 +43,22 @@ along with this program; if not, write to the Free Software
 static void checkoper(const char *nick, const char *param,
                       const char *target, unsigned int cmd_type);
 static void delete_command(unsigned int index);
+static void cmd_check(char **, unsigned int, char *, const struct ChannelConf *, const struct UserInfo *);
 
-struct command cmd_stack[MAXCMD];
-time_t LAST_REAP_TIME;
-
-void do_oper_cmd(const char *nick, const char *cmd, const char *param,
-                 const char *target)
+struct OperCommandHash COMMANDS[] = 
 {
-   if (strncasecmp(cmd, "CHECK", 5) == 0)
-   {
-      if (!param)
-      {
-         irc_send("PRIVMSG %s :*ring* Hello, cluephone for "
-                  "%s, you need to specify a host or IP address "
-                  "if you want me to do any checking, yo.",
-                  target, nick);
-         return;
-      }
-      checkoper(nick, param, target, CMD_CHECK);
-   }
-   else
-   {
-      irc_send("PRIVMSG %s :Sorry, I don't know how to %s, %s.",
-               target, cmd, nick);
-   }
-   return;
+   {"CHECK",  cmd_check}
+};
+
+
+void command_parse(char *command, char *msg, const struct ChannelConf *target, struct UserInfo *source_p)
+{
+   if(OPT_DEBUG)
+      log("COMMAND -> Parsing command (%s) from %s [%s]", command, source_p->irc_nick, target->name);
 }
 
-static void checkoper(const char *nick, const char *param,
-                      const char *target, unsigned int cmd_type)
+static void cmd_check(char **commandv, unsigned int commandc, char *msg, 
+                         const struct ChannelConf *channel, const struct UserInfo *source_p)
 {
-   unsigned int i;
 
-   for (i = 0; i < MAXCMD; i++)
-   {
-      if (cmd_stack[i].type == CMD_NONE)
-      {
-         cmd_stack[i].type = cmd_type;
-         cmd_stack[i].param = DupString(param);
-         cmd_stack[i].target = DupString(target);
-         strncpy(cmd_stack[i].nick, nick, NICKMAX);
-         break;
-      }
-   }
-
-   if (i == MAXCMD)
-   {
-      irc_send("PRIVMSG %s :Too many queued commands, try later.",
-               target);
-   }
-   else
-   {
-      irc_send("USERHOST %s", nick);
-   }
-}
-
-/*
- * Check a userhost to see if it is from an oper, we're looking for the
- * asterisk (*) between the nick and the ident as below:
- * :grifferz*=+goats@pc-62-30-219-54-pb.blueyonder.co.uk
- */
-void check_userhost(const char *userhost)
-{
-   int c, oper;
-   char *tmp;
-
-   oper = 0;
-
-   tmp = strchr(userhost, '=');
-
-   if (!tmp)
-   {
-      /* Looks like they quit, oh well, just ignore it. */
-      return;
-   }
-
-   if (*(tmp - 1) == '*')
-   {
-      oper = 1;
-      tmp--;
-   }
-
-   /* Null terminate userhost so we have a nickname there now. */
-   *tmp = '\0';
-
-   /* Go through the command list looking for commands by this person */
-   for (c = 0; c < MAXCMD; c++)
-   {
-      if (!strcasecmp(userhost + 1, cmd_stack[c].nick))
-      {
-         if (oper)
-         {
-            /* Do the command. */
-            if (cmd_stack[c].type == CMD_CHECK)
-            {
-               //do_manual_check(&cmd_stack[c]);
-            }
-         }
-         else
-         {
-            irc_send("PRIVMSG %s :You are not an IRC "
-                     "Operator.  Go away.",
-                     cmd_stack[c].target);
-         }
-
-         delete_command(c);
-      }
-   }
-}
-
-/*
- * Set a command to CMD_NONE and free all resources it used, so that it
- * can be reused later.
- */
-static void delete_command(unsigned int index)
-{
-   if (cmd_stack[index].type == CMD_NONE)
-      return;
-
-   cmd_stack[index].type = CMD_NONE;
-   cmd_stack[index].added = 0;
-   MyFree(cmd_stack[index].param);
-   MyFree(cmd_stack[index].target);
-}
-
-/*
- * Delete any commands which are more than 2 minutes old, they are almost certainly
- * no longer relevant.
- */
-void reap_commands(time_t present)
-{
-   int c;
-
-   for (c = 0; c < MAXCMD; c++)
-   {
-      if (cmd_stack[c].type != CMD_NONE &&
-            (present - cmd_stack[c].added >= 120))
-      {
-         irc_send("PRIVMSG %s :Reaping dead command from "
-                  "%s of type %u with param '%s', added %s ago.",
-                  cmd_stack[c].target, cmd_stack[c].nick,
-                  cmd_stack[c].type, cmd_stack[c].param,
-                  dissect_time(cmd_stack[c].added));
-         delete_command(c);
-      }
-   }
 }

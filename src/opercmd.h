@@ -1,6 +1,8 @@
 #ifndef OPERCMD_H
 #define OPERCMD_H
 
+#include "config.h"
+
 struct command
 {
    /* Types defined below. */
@@ -33,6 +35,16 @@ struct command
 #define CMD_NONE  0
 #define CMD_CHECK 1
 
+
+typedef void (*oper_command) (char **, unsigned int, char *, const struct ChannelConf *, const struct UserInfo *);
+
+struct OperCommandHash
+{
+   char       *command;
+   oper_command handler;
+};
+
+extern void command_parse(char *, char *,  const struct ChannelConf *, struct UserInfo *);
 extern void do_oper_cmd(const char *nick, const char *cmd,
                            const char *param, const char *target);
 extern void check_userhost(const char *userhost);
