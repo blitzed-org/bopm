@@ -8,3 +8,6 @@ Handling "nick in use" situations:
 	- kill user holding nick
 	- ID to services / join channels
 	- Suggested by Simorgh <simorgh@dataphone.se>
+	- Minor flaw to this - user holding nick not on local server. - MrFridge
+	- So use Q: lines? - Simorgh
+	- Or nickserv GHOST? - grifferz
