@@ -37,7 +37,15 @@ IRC {
         /* Hybrid */
         connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
 
-        /* Kline format */
+        /* Kline format 
+
+           %n     Users nick
+           %u     Users username
+           %h     Users irc hostname
+           %i     Users IP address
+
+        */
+
         kline = "KLINE %u@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
 };
 
@@ -72,12 +80,17 @@ scanner {
         /* Maximum file descriptors this scanner can use */
         fd = 512;
 
+        /* Maximum data read from a proxy before considering it closed */
+        max_read = 4096;
+
+        /* Amount of time (in seconds) before a test is considered timed out */
+        timeout = 30;
+
         /* Target IP to tell the proxy to connect to */
         target_ip     = "127.0.0.1";
 
         /* Target port to tell the proxy to connect to */
         target_port   = 6667;
-
 
         /* 
            String target IP:PORT will send back to verify 
