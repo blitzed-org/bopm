@@ -743,9 +743,11 @@ static void do_hybrid_connect(int tokens, char **token)
         /* Shift one byte over to discard '('. */
 	irc_user = token[9] + 1;
 	/* Username is everything before the '@'. */
-	irc_user = strtok(irc_user, "@");
+	if(!(irc_user = strtok(irc_user, "@")))
+        	return;
 	/* irc_addr is everything between '@' and closing ')'. */
-	irc_addr = strtok(NULL , ")");
+	if(!(irc_addr = strtok(NULL , ")")))
+        	return;
 	
 	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
 }
@@ -799,9 +801,11 @@ static void do_trircd_connect(int tokens, char **token)
         /* Shift one byte over to discard '('. */
 	irc_user = token[6] + 1;
 	/* username is everything before the '@' */
-	irc_user = strtok(irc_user, "@");
+	if(!(irc_user = strtok(irc_user, "@")))
+        	return;
 	/* irc_addr is everything between '@' and closing ')' */
-	irc_addr = strtok(NULL , ")");
+	if(!(irc_addr = strtok(NULL , ")")))
+        	return;
 	
 	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
 }
@@ -857,9 +861,11 @@ static void do_ultimateircd_connect(int tokens, char **token)
         /* Shift one byte over to discard '('. */
 	irc_user = token[14] + 1;
 	/* Username is everything before the '@'. */
-	irc_user = strtok(irc_user, "@");
+	if(!(irc_user = strtok(irc_user, "@")))
+        	return;
 	/* irc_addr is everything between '@' and closing ')' */
-	irc_addr = strtok(NULL , ")");
+	if(!(irc_addr = strtok(NULL , ")")))
+                return;
 	
 	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
 }
@@ -916,9 +922,11 @@ static void do_xnet_connect(int tokens, char **token)
 	/* Shift one byte over to discard '('. */
 	irc_user = token[8] + 1;
 	/* Username is everything before the '@'. */
-	irc_user = strtok(irc_user, "@");
+	if(!(irc_user = strtok(irc_user, "@")))
+        	return;
 	/* irc_addr is everything between '@' and closing ')'. */
-	irc_addr = strtok(NULL , ")");
+	if(!(irc_addr = strtok(NULL , ")")))
+        	return;
 
 	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
 }
