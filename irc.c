@@ -469,7 +469,8 @@ void irc_parse()
             
     if(!strcasecmp(token[1], "NOTICE") && strchr(token[0], '@'))
       {
-          if(!strcasecmp(strtok(token[0] + 1, "!") , "NICKSERV"))
+           
+          if(CONF_NICKSERV_IDENT && !strcasecmp(strtok(token[0] + 1, "!") , "NICKSERV"))
             {
                   time(&present);
                   if(((int) present - (int) IRC_NICKSERV_LAST) >= 10) /* If last used notice was greater than/equal to 10 sec ago */
