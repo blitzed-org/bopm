@@ -633,8 +633,12 @@ static struct in_addr *firedns_resolveip4_i(const char * const name, char *(*res
    int fd;
    int t,i;
    struct in_addr *ret;
+   static struct in_addr addr;
    fd_set s;
    struct timeval tv;
+
+   if(inet_aton(name, &addr))
+      return &addr;
 
    for (t = 0; t < FIREDNS_TRIES; t++)
    {

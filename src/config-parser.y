@@ -364,6 +364,7 @@ scanner_entry:
 		item->vhost = DupString(olditem->vhost);
 		item->fd = olditem->fd;
 		item->target_ip = DupString(olditem->target_ip);
+		item->target_port = olditem->target_port;
 		item->timeout = olditem->timeout;
 		item->max_read = olditem->max_read;
 

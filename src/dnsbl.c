@@ -200,8 +200,9 @@ void dnsbl_result(struct firedns_result *res)
 	{
       log("DNSBL -> Lookup error on %s: %s", res->lookup,
 	      firedns_strerror(fdns_errno));
-		irc_send_channels("DNSBL -> Lookup error on %s: %s", res->lookup,
-			firedns_strerror(fdns_errno));
+		if(fdns_errno != FDNS_ERR_TIMEOUT)
+			irc_send_channels("DNSBL -> Lookup error on %s: %s", res->lookup,
+				firedns_strerror(fdns_errno));
 	}
 
    /* Check if ss has any remaining scans */
