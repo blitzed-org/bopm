@@ -137,7 +137,7 @@ void config_load(char *filename)
 
             args = clean(args); /* Strip leading and tailing spaces */
 
-            for(i = 0; i < (sizeof(hash) / sizeof(config_hash) - 1); i++)
+            for(i = 0; i < (sizeof(hash) / sizeof(config_hash)) - 1; i++)
               if(!strcasecmp(key, hash[i].key))
                 {
                       switch(hash[i].type)
