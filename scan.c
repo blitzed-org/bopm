@@ -342,7 +342,7 @@ static void scan_check(void)
 			break;
 		}
 
-		if (++i > MAX_POLL)
+		if (++i >= MAX_POLL)
 			break;
 	}
 
