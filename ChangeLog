@@ -1,3 +1,16 @@
+2003-01-07 19:08  strtok
+
+	* src/: dnsbl.c, irc.c: Fix to only ss->scans-- when we know for
+	sure we're not using ss anymore.
+
+2003-01-07 19:08  andy
+
+	* .gdbinit: This helps when using gdb with bopm.
+
+2003-01-06 13:01  strtok
+
+	* ChangeLog: Updated ChangeLog
+
 2003-01-06 12:58  strtok
 
 	* configure, configure.in, src/irc.c: Version should be 3.0.1 not
