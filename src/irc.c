@@ -988,24 +988,16 @@ void m_userhost(char **parv, unsigned int parc, char *msg, struct UserInfo *sour
 
 void m_cannot_join(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
-   node_t *node;
    struct ChannelConf *channel;
 
    if(parc < 5)
       return;
 
-   LIST_FOREACH(node, IRCItem->channels->head)
-   {
-      channel = (struct ChannelConf *) node->data;
+   channel = get_channel(parv[3]);
 
-      if(strlen(channel->name) == 0 || strlen(channel->invite) == 0)
-         continue;
+   if(strlen(channel->invite) == 0)
+       return;
 
-      if(strcmp(channel->name, parv[3]) != 0)
-         continue;
-
-      irc_send("%s", channel->invite);
-      break;
-   }
+   irc_send("%s", channel->invite);
 }
 
