@@ -171,7 +171,8 @@ void dnsbl_result(struct firedns_result *res)
    else
    {
       /* XXX: old bopm sometimes reports failures on these.. */
-      log("DNSBL -> Weird error! fdns_errno = %d", fdns_errno);
+      log("DNSBL -> Lookup error on %s: %s", res->lookup,
+	      firedns_strerror(fdns_errno));
    }
 
    /* Check if ss has any remaining scans */

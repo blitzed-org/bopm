@@ -56,6 +56,17 @@ static struct in6_addr servers6[FDNS_MAX];
 int fdns_errno = FDNS_ERR_NONE;
 int fdns_fdinuse = 0;
 
+static char *errors[] = {
+   "Success",
+   "Format error",
+   "Server failure",
+   "Name error",
+   "Not implemented",
+   "Refused",
+   "Timeout",
+   "Unknown error"
+};
+
 struct s_connection
 { /* open DNS query */
    unsigned char id[2]; /* unique ID (random number), matches header ID; both set by firedns_add_query() */
@@ -79,8 +90,6 @@ struct s_rr_middle
    unsigned long ttl;
    unsigned short rdlength;
 };
-
-#define FIREDNS_POINTER_VALUE 0xc000
 
 static list_t *CONNECTIONS = NULL; /* linked list of open DNS queries; populated by firedns_add_query(), decimated by firedns_getresult() */
 
@@ -693,7 +702,7 @@ void firedns_cycle(void)
       if(p->fd < 0)
          continue;
 
-      if(p->fd > 0 && (p->start + 5) < timenow)
+      if(p->fd > 0 && (p->start + FDNS_TIMEOUT) < timenow)
       {
          /* Timed out - remove from list */
          list_remove(CONNECTIONS, node);
@@ -754,5 +763,10 @@ void firedns_cycle(void)
          firedns_doquery(p);
       }
    }
+}
+
+char *firedns_strerror(int error)
+{
+   return errors[error];
 }
 

@@ -36,6 +36,8 @@ struct in6_addr {
 #define FDNS_MAX              8                    /* max number of nameservers used */
 #define FDNS_CONFIG_PREF     "/etc/firedns.conf"   /* preferred firedns config file */
 #define FDNS_CONFIG_FBCK     "/etc/resolv.conf"    /* fallback config file */
+#define FDNS_TIMEOUT         5                     /* Number of seconds to
+						      wait for a reply */
 #define FDNS_PORT            53                    /* DNS well known port */
 #define FDNS_QRY_A            1                    /* name to IP address */
 #define FDNS_QRY_AAAA        28                    /* name to IP6 address */
@@ -71,5 +73,6 @@ struct in_addr *firedns_resolveip4(const char * const name);
 struct in6_addr *firedns_resolveip6(const char * const name);
 
 void firedns_cycle(void);
+char *firedns_strerror(int);
 
 #endif
