@@ -1,5 +1,5 @@
 #/usr/bin/perl
-#Copyright (C) 2002  Erik Fears
+#Copyright (C) 2003  Erik Fears
 #
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License
@@ -26,17 +26,16 @@ use IO::Select;
 use IO::Socket::INET;
 
 
-
 #Options
 my %BOPM    = (
-                 NICK     => 'bopm',            #Our bopm hostname
-                 TS_GRACE => 30,                #Delta allowed above LAST_SCAN in seconds
-                 LAST     => time,              #TS of last scan
+                 NICK     => 'bopm',              #Our bopm's nick
+                 TS_GRACE => 30,                  #Delta allowed above LAST_SCAN in seconds
+                 LAST     => time,                #TS of last scan
               );
 
 
 my %IRC =     (
-                  NAME     => 'bopm.blitzed.org', #Our server name
+                  NAME     => 'bopm.blitzed.org', #Your server name
                   HOST     => 'localhost',        #Remote server we're linking to
                   PORT     => '6667',             #Port of remote server we're linking to
                   PASS     => 'link',             #Link password from C/N
@@ -58,9 +57,6 @@ my %NICKFORMAT = (
                     REALNAME => 10,
                  );
 
-my $IRC_SOCKET;
-my $IRC_DATA;
-
 ###### END CONFIGURATION ######
 
 my %IRC_FUNCTIONS = (
@@ -69,6 +65,10 @@ my %IRC_FUNCTIONS = (
                     );
 
 my $SELECT = new IO::Select; 
+
+my $IRC_SOCKET;
+my $IRC_DATA;
+
 
 main();
 
