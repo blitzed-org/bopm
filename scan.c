@@ -718,7 +718,7 @@ void do_manual_check(struct command *c)
    ip = inet_ntoa(*((struct in_addr *) he->h_addr));
 
    irc_send("PRIVMSG %s :Checking %s [%s] for open proxies at request of %s...",
-            c->target, c->param, ip, c->nick);
+            CONF_CHANNELS, c->param, ip, c->nick);
 
    if(CONF_DNSBL_ZONE)
       dnsbl_check(ip, "*", "*", c->param);
