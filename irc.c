@@ -61,6 +61,7 @@ along with this program; if not, write to the Free Software
 #include "options.h"
 #include "version.h"
 #include "match.h"
+#include "compat.h"
 
 static void irc_init(void);
 static void irc_connect(void);
