@@ -39,14 +39,120 @@ along with this program; if not, write to the Free Software
 #include "extern.h"
 
 
+struct scan_struct *scans = 0;  /* Linked list head for connections */
+
+
+                                /* Table hashes protocols to functions which
+                                 * handle the specifics of those protocols */
+
 protocol_hash SCAN_PROTOCOLS[] = {
 
-       {"OpenSquid", 80, scan_squid }
+       {"OpenSquid", 8080, scan_squid },
+       {"OpenSquid", 3128, scan_squid },
+       {"OpenSquid",   80, scan_squid }
 
 };
 
 
+
+
+void scan_memfail()
+{
+    log("SCAN -> Error allocating memory.");
+    exit(1);
+}
+
+
+
+
+/* IRC client has receieved a +c notice from
+ * the remote server. scan_connect is called
+ * with the connecting IP, where we will begin
+ * to establish the proxy testing */
+
+void scan_connect(char *ip)
+{
+
+      int i;                
+      scan_struct *newconn; 
+
+      /* Loop through the protocols creating a 
+       * seperate connection struct for each 
+       * port/protocol */
+
+      for(i = 0; i < sizeof(SCAN_PROTOCOLS) / sizeof(protocol_hash); i++)
+        {
+            newconn = malloc(sizeof(scan_struct));
+
+            if(!newconn)
+               scan_memfail();               
+
+            newconn->addr = strdup(ip);                 
+            newconn->protocol = &(SCAN_PROTOCOLS[i]); /* Give struct a link to information about the protocol
+                                                         it will be handling. */
+
+            newconn->sockaddr.sin_family = AF_INET;                       /* Fill in sockaddr with information about remote host */
+            newconn->sockaddr.sin_port = htons(newconn->protocol->port); 
+            newconn->sockaddr.sin_addr.s_addr = inet_addr(ip);
+      
+            newconn->fd = socket(PF_INET, SOCK_STREAM, 0);                /* Request file descriptor for socket */
+
+            if(newconn->fd == -1)                                         /* If error, free memory for this struct and continue */
+              {
+                 log("SCAN -> Error allocating file descriptor.");
+                 free(newconn->addr);
+                 free(newconn);
+                 continue;
+              }
+
+            time(&(newconn->create_time));                               /* Log create time of connection for timeouts */
+
+            scan_add(newconn);                                           /* Add struct to list of connections */                                                             
+            connect(newconn->fd, (struct sockaddr *) &(newconn->sockaddr), sizeof(newconn->sockaddr));  /* Connect ! */
+        }    
+
+}
+
+
+/* Link struct to connection list 
+ */
+
+
+void scan_add(scan_struct *newconn)
+{
+
+       scan_struct *ss;
+
+       /* Only item in list */
+         
+       if(!scans)
+         {
+            newconn->next = 0;
+            scans = newconn;
+         }
+       else       /* Link to end of list */
+        {
+             for(ss = scans;ss;ss = ss->next)
+                {
+                     if(!ss->next)
+                       {
+                          newconn->next = 0;
+                          ss->next = newconn;
+                          break;
+                       }              
+                }
+
+        }
+}
+
+
+
+/* Functions used to SEND specific data to
+ * operate possible proxies. */
+
 int scan_squid(int fd)
 {
 
+
+      return 1;
 }
