@@ -23,7 +23,6 @@
 use strict;
 use Socket;
 use IO::Select;
-use IO::Socket::INET;
 
 
 #Options
