@@ -445,6 +445,12 @@ void scan_readready(scan_struct *conn)
                                scan_read(conn);              
                                continue;
                            }
+                          /* Avoid freezing from reading endless data */
+                          if(conn->datasize >= SCANBUFFER)
+                           {
+                               conn->state = STATE_CLOSED;
+                               return;
+                           } 
 
                           if(conn->datasize < SCANBUFFER)  /* -1 to pad for null term */
                                conn->data[(++conn->datasize) - 1] = c;
