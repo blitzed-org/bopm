@@ -1010,6 +1010,7 @@ static void scan_log(OPM_REMOTE_T *remote)
    char buf_present[25];
    time_t present;
    struct tm *tm_present;
+   struct scan_struct *ss = (struct scan_struct *) remote->data;
 
    if(!(OptionsItem->scanlog && scanlogfile))
       return;
@@ -1018,7 +1019,7 @@ static void scan_log(OPM_REMOTE_T *remote)
    tm_present = gmtime(&present);
    strftime(buf_present, sizeof(buf_present), "%b %d %H:%M:%S %Y", tm_present);
 
-   fprintf(scanlogfile, "[%s] %s:%d (%s)\n", buf_present, remote->ip,
-       remote->port, scan_gettype(remote->protocol));
+   fprintf(scanlogfile, "[%s] %s:%d (%s) \"%s\"\n", buf_present,
+       remote->ip, remote->port, scan_gettype(remote->protocol), ss->proof);
    fflush(scanlogfile);
 }
