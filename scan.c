@@ -116,7 +116,7 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user, in
        * seperate connection struct for each 
        * port/protocol */
 
-      for(i = 0; i < sizeof(SCAN_PROTOCOLS) / sizeof(protocol_hash); i++)
+      for(i = 0; i < SCAN_NUMPROTOCOLS; i++)
         {
             newconn = malloc(sizeof(scan_struct));
 

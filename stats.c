@@ -58,9 +58,9 @@ void do_stats(const char *target)
 
 
    for(i = 0; i < SCAN_NUMPROTOCOLS;i++)
-      irc_send("PRIVMSG %s :Found %u [%s], %u open.", target,  
+      irc_send("PRIVMSG %s :Found %u %s (%d), %u open.", target,  
                SCAN_PROTOCOLS[i].stat_num, SCAN_PROTOCOLS[i].type,
-               SCAN_PROTOCOLS[i].stat_numopen);
+               SCAN_PROTOCOLS[i].port,SCAN_PROTOCOLS[i].stat_numopen);
         
    irc_send("PRIVMSG %s :Number of connects: %u", target, STAT_NUM_CONNECTS);      
 
