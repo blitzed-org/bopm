@@ -65,6 +65,7 @@ static void scan_memfail(void);
 static void scan_establish(scan_struct *conn);
 static void scan_check(void);
 static void scan_negfail(scan_struct *conn);
+static void scan_negfail_next(scan_struct *conn);
 static void scan_readready(scan_struct *conn);
 static void scan_read(scan_struct *conn);
 static void scan_openproxy(scan_struct *conn);
@@ -72,6 +73,7 @@ static void scan_writeready(scan_struct *conn);
 static void scan_add(scan_struct *newconn);
 static void scan_del(scan_struct *delconn);
 static int scan_w_squid(struct scan_struct *conn);
+static int scan_w_post(struct scan_struct *conn);
 static int scan_w_socks4(struct scan_struct *conn);
 static int scan_w_socks5(struct scan_struct *conn);
 static int scan_w_cisco(struct scan_struct *conn);
@@ -96,15 +98,23 @@ unsigned int FD_USE = 0;
 
 protocol_hash SCAN_PROTOCOLS[] = {
 
-       {"HTTP"      , 8080, &(scan_w_squid),    0 ,0 },
-/*     {"HTTP"      , 8001, &(scan_w_squid),    0 ,0 },    */
-/*     {"HTTP"      , 8000, &(scan_w_squid),    0 ,0 },    */
-       {"HTTP"      , 3128, &(scan_w_squid),    0 ,0 },
-       {"HTTP"      ,   80, &(scan_w_squid),    0 ,0 },
-       {"Socks4"    , 1080, &(scan_w_socks4),   0 ,0 },
-       {"Socks5"    , 1080, &(scan_w_socks5),   0 ,0 },
-       {"Cisco"     ,   23, &(scan_w_cisco),    0 ,0 },    
-       {"Wingate"   ,   23, &(scan_w_wingate),  0 ,0 },
+       {"HTTP"      , 8080, &(scan_w_squid),    0 ,0, 0 },
+/*     {"HTTP"      , 8001, &(scan_w_squid),    0 ,0, 0 },    */
+/*     {"HTTP"      , 8000, &(scan_w_squid),    0 ,0, 0 },    */
+       {"HTTP"      , 3128, &(scan_w_squid),    0 ,0, 0 },
+       {"HTTP"      ,   80, &(scan_w_squid),    0 ,0, 0 },
+
+       {"Cisco"     ,   23, &(scan_w_cisco),    0 ,0, 0 },    
+       {"Socks5"    , 1080, &(scan_w_socks5),   0 ,0, 0 },
+
+       {"HTTP Post" , 8080, &(scan_w_post),    0 ,0, 1 },
+/*     {"HTTP Post" , 8001, &(scan_w_post),    0 ,0, 1 },    */
+/*     {"HTTP Post" , 8000, &(scan_w_post),    0 ,0, 1 },    */
+       {"HTTP Post" , 3128, &(scan_w_post),    0 ,0, 1 },
+       {"HTTP Post" ,   80, &(scan_w_post),    0 ,0, 1 },
+
+       {"Socks4"    , 1080, &(scan_w_socks4),   0 ,0, 1 },
+       {"Wingate"   ,   23, &(scan_w_wingate),  0 ,0, 1 },
 };
 
 size_t SCAN_NUMPROTOCOLS;
@@ -146,6 +156,11 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
 	 */
 
 	for (i = 0; i < SCAN_NUMPROTOCOLS; i++) {
+
+		/* Scan is not a first stage scan */
+		if(SCAN_PROTOCOLS[i].stage != 0)
+		    continue;
+
 		newconn = malloc(sizeof(*newconn));
 
 		if (!newconn)
@@ -498,6 +513,58 @@ static void scan_negfail(scan_struct *conn)
  
 }
 
+/* The port is open - see if another protocol on the same port needs scanning */
+static void scan_negfail_next(scan_struct *conn)
+{
+    size_t i;
+
+    if(conn->protocol->stage != 0) {
+	scan_negfail(conn);
+	return;
+    }
+
+    for (i = 0; i < SCAN_NUMPROTOCOLS; i++) {
+	if(SCAN_PROTOCOLS[i].stage != 1 ||
+		SCAN_PROTOCOLS[i].port == conn->protocol->port)
+	    continue;
+
+	/* Let people know what's happening */
+	if (conn->verbose) {
+		irc_send("PRIVMSG %s :%s (%d): Connection to %s closed, "
+		    "negotiation failed (%d bytes read) now trying %s",
+		    CONF_CHANNELS, conn->protocol->type, conn->protocol->port,
+		    conn->irc_addr, conn->bytes_read, SCAN_PROTOCOLS[i].type);
+	}
+
+	/* No longer need fd - free it */
+	if(conn->fd > 0) {
+	    close(conn->fd);
+	    FD_USE--;
+	}
+
+	conn->protocol = &(SCAN_PROTOCOLS[i]);
+
+	/* Reset the conn struct to have some sane starting values */
+	conn->state = STATE_UNESTABLISHED;
+	conn->data = NULL;
+	conn->bytes_read = conn->fd = 0;
+
+	/* If we have available FD's, overide queue. */
+	if (FD_USE < CONF_FDLIMIT)
+		scan_establish(conn);
+	else if (OPT_DEBUG >= 3) {
+		log("SCAN -> File Descriptor limit (%d) reached, "
+		    "queuing scan for %s", CONF_FDLIMIT,
+		    conn->addr);
+	}
+
+	return;
+    }
+
+    /* No second protocol - so fail it as normal */
+    scan_negfail(conn);
+}
+
 /*
  * Poll or select returned back that this connection is ready for read.
  */
@@ -507,9 +574,18 @@ static void scan_readready(scan_struct *conn)
 
 	while(1) {
 		switch (read(conn->fd, &c, 1)) {
-		case  0:
+		case  0: 
+		    /* Connection closed after successful connection */
+		    scan_negfail_next(conn);
+		    return;
+
 		case -1:
+		    if(errno == EAGAIN)
 			return;
+
+		    /* Failed to connect */
+		    scan_negfail(conn);
+		    return;
 
 		default:
 			conn->bytes_read++;
@@ -785,7 +861,17 @@ static int scan_w_squid(struct scan_struct *conn)
     return(1);
 }
 
-
+static int scan_w_post(struct scan_struct *conn)
+{
+	snprintf(SENDBUFF, 128, "POST http://%s:%d/ HTTP/1.0\r\n"
+	    "Content-type: text/plain\r\n"
+	    "Content-length: 5\r\n\r\n"
+	    "quit\r\n\r\n",
+	    CONF_SCANIP, CONF_SCANPORT);
+	send(conn->fd, SENDBUFF, strlen(SENDBUFF), 0);
+    return(1);
+}
+    
 /*
  * CONNECT request byte order for socks4
  *  

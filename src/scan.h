@@ -17,6 +17,7 @@ struct protocol_hash
 	scan_function w_handler;    /* Function to handle specific protocol */
 	unsigned int stat_num;
 	unsigned int stat_numopen;
+	int stage;                  /* Scan first (0) or second pass (1) */
 };
 
 struct scan_struct
