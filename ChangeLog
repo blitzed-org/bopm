@@ -1,3 +1,10 @@
+2002-02-16 18:43  andy
+
+	* configure, configure.in:
+
+	configure.in:
+		Added a bit about using GNU Make.
+	
 2002-02-16 18:36  strtok
 
 	* config.c:
