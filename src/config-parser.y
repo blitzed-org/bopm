@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2002  Erik Fears
+ * Copyright (C) 2002-2003  Erik Fears
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -255,7 +255,7 @@ channel_entry:
    node_t *node;
    struct ChannelConf *item;
 
-   item = MyMalloc(sizeof(struct ChannelConf));
+   item = MyMalloc(sizeof *item);
 
    item->name = DupString("");
    item->key = DupString("");
@@ -306,7 +306,7 @@ user_entry:
    node_t *node;
    struct UserConf *item;
 
-   item = MyMalloc(sizeof(struct UserConf));
+   item = MyMalloc(sizeof *item);
 
    item->masks = list_create();
    item->scanners = list_create();
@@ -352,7 +352,7 @@ scanner_entry:
    node_t *node;
    struct ScannerConf *item, *olditem;
 
-   item = MyMalloc(sizeof(struct ScannerConf));
+   item = MyMalloc(sizeof *item);
 
    /* Setup ScannerConf defaults */
    item->name = DupString("undefined");
@@ -475,7 +475,7 @@ scanner_protocol: PROTOCOL '=' PROTOCOLTYPE ':' NUMBER ';'
 
    node_t *node;
  
-   item = MyMalloc(sizeof(struct ProtocolConf));
+   item = MyMalloc(sizeof *item);
    item->type = $3;
    item->port = $5;
 
@@ -524,7 +524,7 @@ opm_blacklist_entry:
    node_t *node;
    struct BlacklistConf *item;
 
-   item = MyMalloc(sizeof(struct BlacklistConf));
+   item = MyMalloc(sizeof *item);
 
    item->name = DupString("");
    item->kline = DupString("");
@@ -593,7 +593,7 @@ blacklist_reply_item: NUMBER '=' STRING ';'
    struct BlacklistConf *blacklist = tmp;
    node_t *node;
 
-   item = MyMalloc(sizeof(struct BlacklistReplyConf));
+   item = MyMalloc(sizeof *item);
 
    item->number = $1;
    item->type = DupString($3);

@@ -1,7 +1,7 @@
 /* vim: set shiftwidth=3 softtabstop=3 expandtab: */ 
 
 /*
-Copyright (C) 2002  Erik Fears
+Copyright (C) 2002-2003  Erik Fears
  
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -54,6 +54,8 @@ along with this program; if not, write to the Free Software
 #include "malloc.h"
 #include "firedns.h"
 #include "main.h"
+
+RCSID("$Id$");
 
 static RETSIGTYPE do_signal(int signum);
 
@@ -109,8 +111,8 @@ int main(int argc, char **argv)
    lenl = strlen(LOGDIR) + strlen(CONFNAME) + strlen(LOGEXT) + 3;
    lenp = strlen(LOGDIR) + strlen(CONFNAME) + strlen(PIDEXT) + 3;
 
-   CONFFILE = MyMalloc(lenc * sizeof(*CONFFILE));
-   LOGFILE = MyMalloc(lenl * sizeof(*LOGFILE));
+   CONFFILE = MyMalloc(lenc * sizeof *CONFFILE);
+   LOGFILE = MyMalloc(lenl * sizeof *LOGFILE);
 
    snprintf(CONFFILE, lenc, "%s/%s.%s", CONFDIR, CONFNAME, CONFEXT);
    snprintf(LOGFILE, lenl, "%s/%s.%s", LOGDIR, CONFNAME, LOGEXT);

@@ -234,7 +234,7 @@ static struct Command *command_create(unsigned short type, char *param, char *ir
 {
    struct Command *ret;
 
-   ret = MyMalloc(sizeof(struct Command));
+   ret = MyMalloc(sizeof *ret);
 
    ret->type = type;
 

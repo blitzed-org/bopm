@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2002  Erik Fears
+ * Copyright (C) 2002-2003  Erik Fears
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,10 +23,13 @@
 
 #include "malloc.h"
 #include "list.h"
+#include "defs.h"
+
+RCSID("$Id$");
 
 node_t *node_create(void *data)
 {
-   node_t *node = MyMalloc(sizeof(node_t));
+   node_t *node = MyMalloc(sizeof *node);
    node->next = NULL;
    node->prev = NULL;
    node->data = (void *) data;
@@ -36,7 +39,7 @@ node_t *node_create(void *data)
 
 list_t *list_create()
 {
-   list_t *list = MyMalloc(sizeof(list_t));
+   list_t *list = MyMalloc(sizeof *list);
 
    list->head = NULL;
    list->tail = NULL;

@@ -1,7 +1,7 @@
 /* vim: set shiftwidth=3 softtabstop=3 expandtab: */ 
 
 /*
- * Copyright (C) 2002  Erik Fears
+ * Copyright (C) 2002-2003  Erik Fears
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -71,6 +71,8 @@
 #include "negcache.h"
 #include "malloc.h"
 #include "main.h"
+
+RCSID("$Id$");
 
 static void irc_init(void);
 static void irc_connect(void);
@@ -738,7 +740,7 @@ static struct UserInfo *userinfo_create(char *source)
       return NULL;
    }
 
-   ret = MyMalloc(sizeof(struct UserInfo));
+   ret = MyMalloc(sizeof *ret);
 
    ret->irc_nick     = DupString(nick);
    ret->irc_username = DupString(username);
@@ -1006,7 +1008,7 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
    /* Compile the regular expression if it has not been already */
    if(preg == NULL)
    {
-      preg = MyMalloc(sizeof(regex_t));
+      preg = MyMalloc(sizeof *preg);
 
       if((errnum = regcomp(preg, IRCItem->connregex, REG_ICASE | REG_EXTENDED)) != 0)
       {

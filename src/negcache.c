@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2002 Andy Smith
+Copyright (C) 2002-2003 Andy Smith
  
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -63,6 +63,9 @@ along with this program; if not, write to:
 #include "config.h"
 #include "malloc.h"
 #include "log.h"
+#include "defs.h"
+
+RCSID("$Id$");
 
 extern unsigned int OPT_DEBUG;
 
@@ -92,7 +95,7 @@ void nc_init(struct cnode **head)
       return;
    }
 
-   *head = MyMalloc(sizeof(**head));
+   *head = MyMalloc(sizeof **head);
 
    maxb = (sizeof((*head)->ip) * 8);
    (*head)->ip = 0;
@@ -161,7 +164,7 @@ static struct cnode *nc_insert(struct cnode *head, const unsigned long ip)
       x = GETBIT(ip, x->b) ? x->r : x->l;
    }
 
-   t = MyMalloc(sizeof(*t));
+   t = MyMalloc(sizeof *t);
    t->ip = ip;
    t->b = i;
    t->l = GETBIT(ip, t->b) ? x : t;

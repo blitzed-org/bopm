@@ -46,6 +46,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "log.h"
 #include "dnsbl.h"
 
+RCSID("$Id$");
+
 #define FIREDNS_TRIES 3
 #define min(a,b) (a < b ? a : b)
 
@@ -749,7 +751,7 @@ void firedns_cycle(void)
       return;
 
    if(ufds == NULL)
-      ufds = MyMalloc(sizeof(*ufds) * OptionsItem->dns_fdlimit);
+      ufds = MyMalloc((sizeof *ufds) * OptionsItem->dns_fdlimit);
 
    time(&timenow);
    size = 0;
