@@ -514,8 +514,29 @@ scanner {
         protocol = HTTPPOST:8080;
         protocol = HTTPPOST:8081;
 
+        /*
+         * IRCnet have seen many socks5 on these ports, more than on the
+         * standard ports even.
+         */
+        protocol = SOCKS5:4438;
+        protocol = SOCKS5:5104;
+        protocol = SOCKS5:5113;
+        protocol = SOCKS5:5262;
+        protocol = SOCKS5:5634;
+        protocol = SOCKS5:6552;
+        protocol = SOCKS5:6561;
+        protocol = SOCKS5:7464;
+        protocol = SOCKS5:7810;
+        protocol = SOCKS5:8130;
+        protocol = SOCKS5:8148;
+        protocol = SOCKS5:8520;
+        protocol = SOCKS5:8814;
+        protocol = SOCKS5:9100;
+        protocol = SOCKS5:9186;
+        protocol = SOCKS5:9447;
+        protocol = SOCKS5:9578;
 
-        fd = 128;
+        fd = 400;
         target_ip     = "127.0.0.1";   /* !!! CHANGE ME !!! */
         target_port   = 6667;
         target_string = "Looking up your hostname...";
