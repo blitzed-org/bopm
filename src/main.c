@@ -165,6 +165,12 @@ int main(int argc, char **argv)
       fwrite(spid, sizeof(char), strlen(spid), pidout);
       fclose(pidout);
    }
+   else
+   {
+      log("MAIN -> Error opening %s: %s", OptionsItem->pidfile,
+          strerror(errno));
+      exit(EXIT_FAILURE);
+   }
 
    /* Setup alarm & int handlers. */
 
