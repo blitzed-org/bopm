@@ -103,11 +103,12 @@ int dnsbl_check(const char *addr, const char *irc_nick,
    free(buf);
 
    /* we got an answer, so we need to kline this IP now */
+   irc_kline(irc_addr, (char *)addr);
    log("DNSBL -> %s appears in BL zone %s", addr, CONF_DNSBL_ZONE);
    irc_send("PRIVMSG %s :DNSBL: %s!%s@%s appears in BL zone %s",
-	    CONF_CHANNELS, irc_nick, irc_user, irc_addr,
-	    CONF_DNSBL_ZONE);
-   irc_kline(irc_addr, (char *)addr);
+            CONF_CHANNELS, irc_nick, irc_user, irc_addr,
+            CONF_DNSBL_ZONE);
+
    STAT_DNSBL_MATCHES++;
    return(1);
 }
