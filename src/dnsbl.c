@@ -155,10 +155,8 @@ void dnsbl_result(struct firedns_result *res)
    {
       /* Only report it if no other scans have found positives yet. */
       if(!ss->positive && (ss->manual_target == NULL))
-      {
          scan_positive(ss);
-         dnsbl_log_positive(ss, res->lookup, (unsigned char)res->text[3]);
-      }
+      dnsbl_log_positive(ss, res->lookup, (unsigned char)res->text[3]);
    }
    else
    {
