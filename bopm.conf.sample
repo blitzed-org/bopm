@@ -50,7 +50,7 @@ CHANSERV_INVITE CHANSERV :INVITE %s
 # SERVER <servername : IRC host BOPM will be monitoring connections on
 #
 
-SERVER thales.ath.cx
+SERVER myserver.blitzed.org
 
 
 
@@ -62,19 +62,20 @@ PORT 6667
 # CHANNELS <list> : Comma seperated list of channels bot will join/privmsg information.
 #                   There cannot be spaces between channels, only commas.
 
-CHANNELS #debug,#wg
+CHANNELS #bopm,#wg
 
 # OPER <user> <pass> : Username and Password of O line BOPM will be using
 #
 
-OPER bopm testpass
+OPER bopm operpss
 
 
 
 # SCANIP <ip> : IP to command possible open proxy to connect to. This is usually
 #               the same IP as the IRC host we're monitoring.
+#               Don't leave this 127.0.0.1
 
-SCANIP 216.175.103.145
+SCANIP 127.0.0.1
 
 
 
