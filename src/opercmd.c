@@ -53,6 +53,7 @@ static void command_free(struct Command *);
 static void cmd_check(char *, char *, struct ChannelConf *);
 static void cmd_stat(char *, char *, struct ChannelConf *);
 static void cmd_fdstat(char *, char *, struct ChannelConf *);
+static void cmd_op(char *, char *, struct ChannelConf *);
 
 static struct OperCommandHash COMMAND_TABLE[] =
    {
@@ -62,6 +63,7 @@ static struct OperCommandHash COMMAND_TABLE[] =
       {"STATS",  cmd_stat   },
       {"STATUS", cmd_stat   },
       {"FDSTAT", cmd_fdstat },
+      {"OP",     cmd_op }
    };
 
 
@@ -322,9 +324,9 @@ void command_userhost(char *reply)
  *    have to waste any time resolving a hostname.
  *
  * Parameters:
- *    param: Any parameters to the command
- *    channel: Channel the command was sent to
- *    source_p: Who sent the command
+ *    param: Parameters of the command
+ *    source: irc_nick of user who requested the command
+ *    target: channel command was sent to
  *
  */
 
@@ -340,9 +342,9 @@ static void cmd_check(char *param, char *source, struct ChannelConf *target)
  *   Send output of stats to channel.
  *
  * Parameters:
- *    param: Any parameters to the command
- *    channel: Channel the command was sent to
- *    source_p: Who sent the command
+ *    param: Parameters of the command
+ *    source: irc_nick of user who requested the command
+ *    target: channel command was sent to
  */
 
 static void cmd_stat(char *param, char *source, struct ChannelConf *target)
@@ -356,12 +358,28 @@ static void cmd_stat(char *param, char *source, struct ChannelConf *target)
  *   Send output of stats to channel.
  *
  * Parameters:
- *    param: Any parameters to the command
- *    channel: Channel the command was sent to
- *    source_p: Who sent the command
+ *    param: Parameters of the command
+ *    source: irc_nick of user who requested the command
+ *    target: channel command was sent to
  */
 
 static void cmd_fdstat(char *param, char *source, struct ChannelConf *target)
 {
    fdstats_output(target->name);
+}
+
+
+/* cmd_op
+ *
+ *   Op a user on the channel.
+ *
+ * Parameters:
+ *    param: Parameters of the command
+ *    source: irc_nick of user who requested the command
+ *    target: channel command was sent to
+ */
+
+static void cmd_op(char *param, char *source, struct ChannelConf *target)
+{
+   irc_send("MODE %s +o %s", target->name, param);
 }
