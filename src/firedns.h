@@ -33,24 +33,44 @@ struct in6_addr {
 };
 #endif
 
-#define FDNS_MAX              8                    /* max number of nameservers used */
-#define FDNS_CONFIG_PREF     BOPM_ETCDIR "/firedns.conf" /* preferred firedns config file */
-#define FDNS_CONFIG_FBCK     "/etc/resolv.conf"    /* fallback config file */
-#define FDNS_TIMEOUT         5                     /* Number of seconds to
-						      wait for a reply */
-#define FDNS_PORT            53                    /* DNS well known port */
-#define FDNS_QRY_A            1                    /* name to IP address */
-#define FDNS_QRY_AAAA        28                    /* name to IP6 address */
+/* max number of nameservers used */
+#define FDNS_MAX              8
+/* preferred firedns config file */
+#define FDNS_CONFIG_PREF     BOPM_ETCDIR "/firedns.conf"
+/* fallback config file */
+#define FDNS_CONFIG_FBCK     "/etc/resolv.conf"
+/* Number of seconds to wait for a reply */
+#define FDNS_TIMEOUT         5
+/* DNS well known port */
+#define FDNS_PORT            53
+/* name to IPv4 address */
+#define FDNS_QRY_A            1
+/* name to IPv6 address */
+#define FDNS_QRY_AAAA        28
 
-#define FDNS_ERR_NONE        0                     /* Success */
-#define FDNS_ERR_FORMAT      1                     /* Format error */
-#define FDNS_ERR_SERVFAIL    2                     /* Server failure */
-#define FDNS_ERR_NXDOMAIN    3                     /* Name error */
-#define FDNS_ERR_NOIMPT      4                     /* Not implemented */
-#define FDNS_ERR_REFUSED     5                     /* Refused */
-#define FDNS_ERR_TIMEOUT     6                     /* Timeout - local */
-#define FDNS_ERR_NETWORK     7                     /* Network error */
-#define FDNS_ERR_OTHER       8                     /* Other error */
+/* Success */
+#define FDNS_ERR_NONE        0
+/* Format error */
+#define FDNS_ERR_FORMAT      1
+/* Server failure */
+#define FDNS_ERR_SERVFAIL    2
+/* Name error */
+#define FDNS_ERR_NXDOMAIN    3
+/* Not implemented */
+#define FDNS_ERR_NOIMPT      4
+/* Refused */
+#define FDNS_ERR_REFUSED     5
+
+/* Local error codes */
+
+/* Timeout */
+#define FDNS_ERR_TIMEOUT     6
+/* Network error */
+#define FDNS_ERR_NETWORK     7
+/* FD Limit reached */
+#define FDNS_ERR_FDLIMIT     8
+/* Other error */
+#define FDNS_ERR_OTHER       9
 
 /* Used with the above error values */
 extern int fdns_errno;
@@ -65,11 +85,11 @@ struct firedns_result {
 };
 
 /* non-blocking functions */
-int firedns_getip4(const char * const name, void *info);
-int firedns_getip6(const char * const name, void *info);
+int firedns_getip(int type, const char * const name, void *info);
 struct firedns_result *firedns_getresult(const int fd);
 
 /* low-timeout blocking functions */
+char *firedns_resolveip(int type, const char * const name);
 struct in_addr *firedns_resolveip4(const char * const name);
 struct in6_addr *firedns_resolveip6(const char * const name);
 

@@ -82,18 +82,18 @@ void dnsbl_add(struct scan_struct *ss)
       snprintf(lookup, 128, "%d.%d.%d.%d.%s", d, c, b, a, bl->name);
 #endif
 
-		ds = (struct dnsbl_scan *) MyMalloc(sizeof(struct dnsbl_scan));
-		ds->ss = ss;
-		ds->bl = bl; 
+      ds = (struct dnsbl_scan *) MyMalloc(sizeof(struct dnsbl_scan));
+      ds->ss = ss;
+      ds->bl = bl; 
 
       if(OPT_DEBUG)
          log_printf("DNSBL -> Passed '%s' to resolver", lookup);
 
-      res = firedns_getip4(lookup, (void *) ds);
+      res = firedns_getip(FDNS_QRY_A, lookup, (void *) ds);
 
-      if(res == -1)
+      if(res == -1 && fdns_errno != FDNS_ERR_FDLIMIT)
       {
-         log_printf("DNSBL -> Error sending dns lookup  '%s'", lookup);
+         log_printf("DNSBL -> Error sending dns lookup for '%s': %s", lookup, firedns_strerror(fdns_errno));
          free(ds);
       }
       else
@@ -105,46 +105,46 @@ static void dnsbl_positive(struct scan_struct *ss, struct BlacklistConf *bl,
 		unsigned char type)
 {
    char text_type[128];
-	struct BlacklistReplyConf *item;
-	node_t *p;
-
-	text_type[0] = '\0';
-	
-	if(bl->type == A_BITMASK)
-	{
-	   LIST_FOREACH(p, bl->reply->head)
-	   {
-		   item = p->data;
-		   if(item->number & type)
-			{
-				strncat(text_type, item->type, sizeof(text_type) - strlen(text_type) - 2);
-				text_type[sizeof(text_type) - 2] = '\0';
-				strncat(text_type, ", ", sizeof(text_type) - strlen(text_type) - 1);
-				text_type[sizeof(text_type) - 1] = '\0';
-			}
-	   }
-		if(text_type[0] != '\0')
-			*(strrchr(text_type, ',')) = '\0';
-	}
-	else
-	{
-		LIST_FOREACH(p, bl->reply->head)
-		{
-			item = p->data;
-			if(item->number == type)
-			{
-				strncpy(text_type, item->type, sizeof(text_type));
-				break;
-			}
-		}
-	}
-
-	if(text_type[0] == '\0' && bl->ban_unknown == 0)
-	{
-		if(OPT_DEBUG)
-			log_printf("DNSBL -> Unknown result from BL zone %s (%d)", bl->name, type);
-		return;
-	}
+   struct BlacklistReplyConf *item;
+   node_t *p;
+   
+   text_type[0] = '\0';
+   
+   if(bl->type == A_BITMASK)
+   {
+      LIST_FOREACH(p, bl->reply->head)
+      {
+         item = p->data;
+         if(item->number & type)
+         {
+            strncat(text_type, item->type, sizeof(text_type) - strlen(text_type) - 2);
+            text_type[sizeof(text_type) - 2] = '\0';
+            strncat(text_type, ", ", sizeof(text_type) - strlen(text_type) - 1);
+            text_type[sizeof(text_type) - 1] = '\0';
+         }
+      }
+      if(text_type[0] != '\0')
+         *(strrchr(text_type, ',')) = '\0';
+   }
+   else
+   {
+      LIST_FOREACH(p, bl->reply->head)
+      {
+         item = p->data;
+         if(item->number == type)
+         {
+            strncpy(text_type, item->type, sizeof(text_type));
+            break;
+         }
+      }
+   }
+   
+   if(text_type[0] == '\0' && bl->ban_unknown == 0)
+   {
+      if(OPT_DEBUG)
+         log_printf("DNSBL -> Unknown result from BL zone %s (%d)", bl->name, type);
+      return;
+   }
 
    /* Only report it if no other scans have found positives yet. */
    if(ss->manual_target == NULL)
