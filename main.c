@@ -26,12 +26,18 @@ along with this program; if not, write to the Free Software
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <signal.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "extern.h"
 #include "irc.h"
 #include "log.h"
 #include "scan.h"
+
+void do_alarm(int);
+
+int ALARMED = 0;
 
 int main()
 {
@@ -43,13 +49,31 @@ int main()
 
     config_load("bopm.conf");
 
+    /* Setup alarm */
+    signal(SIGALRM,do_alarm);
+    alarm(1);
 
     while(1)     
      {
 	irc_cycle();
         scan_cycle();
+
+        if(ALARMED)
+         {
+            irc_timer();
+            scan_timer();
+            ALARMED = 0;
+         }
      }
     
     log_close();
     return 0;
 }
+
+
+void do_alarm(int notused)
+{
+   ALARMED = 0;
+   alarm(1);
+}
+

@@ -9,7 +9,8 @@
 
     #define STATE_ESTABLISHED 0
     #define STATE_SENT        1
-    
+    #define STATE_CLOSED      3   
+ 
     struct protocol_hash
      {
           char *type;               /* Plaintext name of protocol to scan   */
@@ -36,8 +37,8 @@
      void scan_del(scan_struct *ss);
      void scan_cycle();
      void scan_check();
+     void scan_timer();    
     
-
      int scan_w_squid(scan_struct *ss);
      int scan_r_squid(scan_struct *ss);
 #endif 

@@ -58,8 +58,6 @@ fd_set              IRC_FDSET;        /* fd_set for IRC data for select()      *
 struct timeval      IRC_TIMEOUT;      /* timeval struct for select() timeout   */
 
 
-
-
 /* Give one cycle to the IRC client, which
  * will allow it to poll for data and handle
  * that data if need be.
@@ -130,7 +128,7 @@ void irc_init()
                               log("IRC -> gethostbyname(): An unrecoverable error occured resolving (%s)", CONF_SERVER);
                               exit(1);
                     case TRY_AGAIN:
-                              log("IRC -> gethostbyname(): Temporary error occured with authoritive name server (%s)", CONF_SERVER);
+                              log("IRC -> gethostbyname(): Error occured with authoritive name server (%s)", CONF_SERVER);
                               exit(1);
                     default:
                               log("IRC -> gethostbyname(): Unknown error resolving (%s)", CONF_SERVER);
@@ -379,4 +377,8 @@ void do_perform()
          irc_send(pf->perform);       
          
        
+}
+
+void irc_timer()
+{
 }

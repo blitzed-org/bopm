@@ -7,6 +7,7 @@
       void irc_read();
       void irc_parse();
       void irc_kline();
-       
+      void irc_timer();
+        
       void do_perform();
 #endif

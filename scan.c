@@ -193,8 +193,8 @@ void scan_check()
                   if(FD_ISSET(ss->fd, &r_fdset))
                       (*ss->protocol->r_handler)(ss);
                   if(FD_ISSET(ss->fd, &w_fdset))                                                             
-                      (*ss->protocol->w_handler)(ss);
-                    
+                      if( !(*ss->protocol->w_handler)(ss) )   /*If read handler returns an error we know this socket is closed*/
+                           ss->state = STATE_CLOSED;
                }
      } 
 }
@@ -254,7 +254,7 @@ void scan_del(scan_struct *delconn)
                         /* Removing the head */
                    if(lastss == 0)
                      {
-                         CONNECTIONS = 0;
+                         CONNECTIONS = ss->next;
                          free(ss->addr);
                          free(ss->irc_addr);
                          free(ss);
@@ -273,6 +273,33 @@ void scan_del(scan_struct *delconn)
        }
  
 }
+
+/*  Alarm signaled, loop through connections and 
+ *  remove any we don't need anymore.
+ * 
+ */
+
+void scan_timer()
+{
+
+    scan_struct *ss;
+    scan_struct *nextss;
+    time_t present;
+   
+    time(&present);
+
+    for(ss = CONNECTIONS;ss;ss = ss->next)
+      {
+          if(((present - ss->create_time) >= 30) || (ss->state = STATE_CLOSED)) /* State closed or timed out, remove */ 
+            {
+                printf("Deleting struct for %s:%d", ss->irc_addr, ss->protocol->port);
+                nextss = ss->next;
+                scan_del(ss);
+                ss = nextss;
+            }
+      }
+}
+
 
 
 /* Functions for handling open http data 
