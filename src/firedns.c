@@ -34,6 +34,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "inet.h"
 #include "malloc.h"
 #include "firedns.h"
+#include "config.h"
 
 #define FIREDNS_TRIES 3
 #define min(a,b) (a < b ? a : b)
@@ -48,7 +49,6 @@ static struct in6_addr servers6[FDNS_MAX];
 static int wantclose = 0;
 static int lastcreate = -1;
 
-int fdns_fdlimit = 50;
 int fdns_errno = FDNS_ERR_NONE;
 int fdns_fdinuse = 0;
 
@@ -188,7 +188,7 @@ static int firedns_send_requests(struct s_header *h, struct s_connection *s, int
    struct sockaddr_in6 addr6;
 #endif
 
-   if(fdns_fdinuse > fdns_fdlimit)
+   if(fdns_fdinuse > OptionsItem->dns_fdlimit)
        return;
 
    /* set header flags */
@@ -668,7 +668,7 @@ void firedns_cycle(void) {
 	      if(res != NULL && res->info != NULL)
 		  dnsbl_result(res);
 	  }
-      }else if(fdns_fdinuse < fdns_fdlimit)
+      }else if(fdns_fdinuse < OptionsItem->dns_fdlimit)
       {
 	  firedns_doquery(p);
       }

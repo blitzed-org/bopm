@@ -96,6 +96,7 @@ AWAY                    { return AWAY;         }
 BLACKLIST               { return BLACKLIST;    }
 CHANNEL                 { return CHANNEL;      }
 CONNREGEX               { return CONNREGEX;    }
+DNS_FDLIMIT             { return DNS_FDLIMIT;  }
 DNSBL_FROM              { return DNSBL_FROM;   }
 DNSBL_TO                { return DNSBL_TO;     }
 FD                      { return FD;           }

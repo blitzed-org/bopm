@@ -37,6 +37,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token BLACKLIST
 %token CHANNEL
 %token CONNREGEX
+%token DNS_FDLIMIT
 %token DNSBL_FROM
 %token DNSBL_TO
 %token FD
@@ -101,6 +102,7 @@ options_items: options_items options_item |
 
 options_item: options_negcache |
               options_pidfile |
+				  options_dns_fdlimit |
               error;
 
 options_negcache: NEGCACHE '=' NUMBER ';'
@@ -112,6 +114,11 @@ options_pidfile: PIDFILE '=' STRING ';'
 {
    MyFree(OptionsItem->pidfile);
    OptionsItem->pidfile = DupString($3);
+};
+
+options_dns_fdlimit: DNS_FDLIMIT '=' NUMBER ';'
+{
+   OptionsItem->dns_fdlimit = $3;
 };
 
 /*************************** IRC BLOCK ***************************/

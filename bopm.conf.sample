@@ -6,7 +6,8 @@ BOPM sample configuration
 
 options {
 	pidfile = "bopm.pid";
-        negcache = 3600;
+	negcache = 3600;
+	dns_fdlimit = 50;
 };
 
 
@@ -37,7 +38,14 @@ IRC {
         connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
 
         /* Kline format */
-        kline = "KLINE %u@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information."
+        kline = "KLINE %u@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
+};
+
+OPM {
+	blacklist = "opm.blitzed.org";
+	#dnsbl_from = "";
+	#dnsbl_to = "";
+	#sendmail = "";
 };
 
 
