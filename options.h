@@ -27,5 +27,10 @@
  * Increase as needed, but should never need to be be over 512 bytes */
 
 #define SCANBUFFER 128
+
+/* Max data to read from any port before closing the connection
+ * (to avoid flood attempts)
+ */
+#define MAXREAD 4096
      
 #endif /* OPTIONS_H */

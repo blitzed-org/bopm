@@ -446,7 +446,7 @@ void scan_readready(scan_struct *conn)
                                continue;
                            }
                           /* Avoid freezing from reading endless data */
-                          if(conn->datasize >= SCANBUFFER)
+                          if(conn->bytes_read >= MAXREAD)
                            {
                                conn->state = STATE_CLOSED;
                                return;
