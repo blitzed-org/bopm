@@ -415,10 +415,14 @@ void irc_parse()
              }
                          
        }
-
+    
+    /* Handle nickserv identification */
 
     if(!strcasecmp(token[1], "NOTICE"))
       {
+          if(!strchr(token[0], '@'))  /* Ignore server notices */
+               return ;
+
           if(!strcasecmp(strtok(token[0] + 1, "!") , "NICKSERV"))
             {
                   time(&present);
@@ -427,8 +431,9 @@ void irc_parse()
                          irc_send(CONF_NICKSERV_IDENT);              /* Identify to nickserv */  
                          time(&IRC_NICKSERV_LAST);                   /* Record last ident    */
                     }
+                  return;
             }
-          return;
+          
       }
 
     /* Search for +c notices */
