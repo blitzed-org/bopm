@@ -92,6 +92,27 @@ void scan_end(OPM_T *, OPM_REMOTE_T *, int, void *);
 void scan_handle_error(OPM_T *, OPM_REMOTE_T *, int, void *);
 
 
+/* scan_cycle
+ *
+ *    Perform scanner tasks.
+ */
+
+void scan_cycle()
+{
+   node_t *p;
+   struct scanner_struct *scs;
+
+
+   /* Cycle each scanner object */
+   LIST_FOREACH(p, SCANNERS->head)
+   {
+      scs = (struct scanner_struct *) p->data;
+      opm_cycle(scs->scanner);
+   }
+}
+
+
+
 /* scan_init
 
       Initialize scanner and masks list based on configuration.

@@ -184,6 +184,7 @@ int main(int argc, char **argv)
     while (1)
     {
         irc_cycle();
+        scan_cycle();
 
         if (ALARMED)
         {
