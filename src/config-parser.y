@@ -40,6 +40,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token DNS_FDLIMIT
 %token DNSBL_FROM
 %token DNSBL_TO
+%token EXEMPT
 %token FD
 %token INVITE
 %token IRC
@@ -90,9 +91,10 @@ config:     /* empty */
 
 config_items: irc_entry     |
               options_entry |
-				  opm_entry     |
+              opm_entry     |
               user_entry    |
-              scanner_entry;
+              scanner_entry |
+              exempt_entry;
 
 
 /*************************** OPTIONS BLOCK ***********************/
@@ -473,5 +475,25 @@ opm_sendmail: SENDMAIL '=' STRING ';'
    MyFree(OpmItem->sendmail);
    OpmItem->sendmail = DupString($3);
 };
+
+
+/*************************** EXEMPT BLOCK ***************************/
+
+
+exempt_entry: EXEMPT '{' exempt_items  '}' ';' ;
+
+exempt_items: exempt_items exempt_item |
+              exempt_item;
+
+exempt_item: exempt_mask  |
+             error;
+
+exempt_mask: MASK '=' STRING ';'
+{
+   node_t *node;
+   node = node_create(DupString($3));
+
+   list_add(ExemptItem->masks, node);
+}
 
 %%

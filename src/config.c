@@ -38,6 +38,7 @@ void config_init();
 struct OptionsConf *OptionsItem = NULL;
 struct IRCConf *IRCItem = NULL;
 struct OpmConf *OpmItem = NULL;
+struct ExemptConf *ExemptItem = NULL;
 list_t *UserItemList = NULL;
 list_t *ScannerItemList = NULL;
 
@@ -88,6 +89,10 @@ void config_init()
 
    /* Init list of Scanner blocks */
    ScannerItemList = list_create();
+
+   /* Init list of Exempts */
+   ExemptItem = (struct ExemptConf *) MyMalloc(sizeof(struct ExemptConf));
+   ExemptItem->masks = list_create();
 }
 
 /* Setup structs that hold configuration data and then reset default values */

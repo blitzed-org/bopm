@@ -185,6 +185,7 @@ int main(int argc, char **argv)
       {
          irc_timer();
          scan_timer();
+         command_timer();
 
          ALARMED = 0;
       }

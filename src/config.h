@@ -91,10 +91,16 @@ struct OpmConf
    char   *sendmail;
 };
 
+struct ExemptConf
+{
+   list_t *masks;
+};
+
 /* Extern to actual config data declared in config.c */
 extern struct IRCConf *IRCItem;
 extern struct OptionsConf *OptionsItem;
 extern struct OpmConf *OpmItem;
+extern struct ExemptConf *ExemptItem;
 extern list_t *UserItemList;
 extern list_t *ScannerItemList;
 

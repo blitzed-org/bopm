@@ -75,6 +75,50 @@ void command_init()
 }
 
 
+
+
+/* command_timer
+ *
+ *    Perform ~1 second actions.
+ *
+ * Parameters: NONE
+ * 
+ * Return: NONE
+ *
+ */
+
+void command_timer()
+{
+
+   static unsigned short interval;
+
+   node_t *node, *next;
+   struct Command *cs;
+   time_t present;
+
+   /* Only perform command removal every COMMANDINTERVAL seconds */
+   if(interval++ < COMMANDINTERVAL)
+      return;
+   else
+      interval = 0;
+
+   time(&present);
+
+   LIST_FOREACH_SAFE(node, next, COMMANDS->head)
+   {
+      cs = (struct Command *) node->data;
+      if((present - cs->added) > COMMANDTIMEOUT)
+      {
+         command_free(cs);
+         list_remove(COMMANDS, node);
+         node_free(node);
+      }
+      else   /* Since the queue is in order, it's also ordered by time, no nodes after this will be timed out */
+         return;
+   }
+}
+
+
 /* command_parse
  *
  *    Parse a command to bopm (sent to a channel bopm is on). The command is parsed
@@ -101,6 +145,7 @@ void command_parse(char *command, char *msg, struct ChannelConf *target, struct 
     if(OPT_DEBUG)
       log("COMMAND -> Parsing command (%s) from %s [%s]", command, source_p->irc_nick, target->name);
 
+    /* Only allow COMMANDMAX commands in the queue */
     if(LIST_SIZE(COMMANDS) >= COMMANDMAX)
        return;
 

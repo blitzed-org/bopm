@@ -305,7 +305,7 @@ void scan_connect(char **user, char *msg)
       Some ircds use really mad values for these */
    static char mask[MSGLENMAX];
 
-   /* Check negcache before any scanning */
+   /* Check negcache before anything */
    if(OptionsItem->negcache > 0)
    {
       if (!inet_pton(AF_INET, user[3], &(ip.sa4.sin_addr))) 
@@ -325,17 +325,27 @@ void scan_connect(char **user, char *msg)
       }
    }
 
+   /* Generate user mask */
+   snprintf(mask, MSGLENMAX, "%s!%s@%s", user[0], user[1], user[2]);
+
+
+   /* Check exempt list now that we have a mask */
+   if(scan_checkexempt(mask))
+   {
+      if(OPT_DEBUG)
+         log("SCAN -> %s is exempt from scanning", mask);
+      return;
+   }
+
    /* create scan_struct */
    ss = scan_create(user, msg);
 
    /* Store ss in the remote struct, so that in callbacks we have ss */
    ss->remote->data = ss;
 
+   /* Start checking our DNSBLs */
    if(LIST_SIZE(OpmItem->blacklists) > 0)
       dnsbl_add(ss);
-
-   /* Generate user mask */
-   snprintf(mask, MSGLENMAX, "%s!%s@%s", ss->irc_nick, ss->irc_username, ss->irc_hostname);
 
    /* Add ss->remote to all matching scanners */
    LIST_FOREACH(p, MASKS->head)
@@ -926,4 +936,33 @@ void scan_manual(char *param, struct ChannelConf *target)
       else
          ss->scans++; /* Increase scan count only if OPM_SUCCESS */
    }
+}
+
+
+
+/* scan_checkexempt
+ * 
+ *    Check mask against exempt list.
+ * 
+ * Paramters:
+ *     mask: Mask to check
+ * 
+ * Return:
+ *     1 if mask is in list
+ *     0 if mask is not in list 
+ */
+
+int scan_checkexempt(char *mask)
+{
+   node_t *node;
+   char *exempt_mask;
+
+   LIST_FOREACH(node, ExemptItem->masks->head)
+   {
+      exempt_mask = (char *) node->data;
+      if(match(exempt_mask, mask))
+         return 1;
+   }
+
+   return 0;
 }

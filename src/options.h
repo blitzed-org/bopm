@@ -15,7 +15,13 @@
 #define PIDEXT "pid"
 
 /* Maximum commands to queue */
-#define COMMANDMAX 32
+#define COMMANDMAX 64
+
+/* Interval (in seconds) to check command queue for timed out commands */
+#define COMMANDINTERVAL 10
+
+/* Timeout of commands (in seconds) */
+#define COMMANDTIMEOUT 180
 
 /* How long (in seconds) between rebuilds of the negative cache.  The negcache
  * is only rebuilt to free up memory used by entries that are too old.  You

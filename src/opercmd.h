@@ -40,4 +40,5 @@ struct OperCommandHash
 
 extern void command_init();
 extern void command_userhost(char *);
+extern void command_timer();
 #endif
