@@ -649,7 +649,6 @@ void firedns_cycle(void) {
 
       prev = p;
    }
-   printf("There are %d\n", COUNT);
 
    i = select(t + 1, &s, NULL, NULL, &tv);
    if(i < 1)
