@@ -189,8 +189,8 @@ void scan_init()
    /* Setup each individual scanner */
    LIST_FOREACH(p, ScannerItemList->head)
    {
-      sc = (struct ScannerConf *) p->data;
-      scs = (struct scanner_struct *) MyMalloc(sizeof(struct scanner_struct));
+      sc = p->data;
+      scs = MyMalloc(sizeof *scs);
 
       if(OPT_DEBUG)
          log_printf("SCAN -> Setting up scanner [%s]", sc->name);
@@ -417,7 +417,7 @@ struct scan_struct *scan_create(char **user, char *msg)
 {
    struct scan_struct *ss;
 
-   ss = (struct scan_struct *) MyMalloc(sizeof(struct scan_struct));
+   ss = MyMalloc(sizeof *ss);
 
    ss->irc_nick = (char *) DupString(user[0]);
    ss->irc_username = (char *) DupString(user[1]);
@@ -944,7 +944,7 @@ void scan_manual(char *param, struct ChannelConf *target)
       scannername++;
    }
 
-   ss = (struct scan_struct *) MyMalloc(sizeof(struct scan_struct));
+   ss = MyMalloc(sizeof *ss);
 
    /* If IP is a hostname, resolve it using gethostbyname (which will block!) */
    if (!(addr = firedns_resolveip4(ip)))

@@ -106,8 +106,8 @@ int main(int argc, char **argv)
    lenl = strlen(LOGDIR) + strlen(CONFNAME) + strlen(LOGEXT) + 3;
    lenp = strlen(LOGDIR) + strlen(CONFNAME) + strlen(PIDEXT) + 3;
 
-   CONFFILE = (char *) MyMalloc(lenc * sizeof(*CONFFILE));
-   LOGFILE = (char *) MyMalloc(lenl * sizeof(*LOGFILE));
+   CONFFILE = MyMalloc(lenc * sizeof(*CONFFILE));
+   LOGFILE = MyMalloc(lenl * sizeof(*LOGFILE));
 
    snprintf(CONFFILE, lenc, "%s/%s.%s", CONFDIR, CONFNAME, CONFEXT);
    snprintf(LOGFILE, lenl, "%s/%s.%s", LOGDIR, CONFNAME, LOGEXT);

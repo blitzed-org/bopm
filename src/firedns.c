@@ -44,6 +44,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "config.h"
 #include "list.h"
 #include "log.h"
+#include "dnsbl.h"
 
 #define FIREDNS_TRIES 3
 #define min(a,b) (a < b ? a : b)
@@ -51,7 +52,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 /* Global variables */
 
 int fdns_errno = FDNS_ERR_NONE;
-int fdns_fdinuse = 0;
+unsigned int fdns_fdinuse = 0;
 
 /* Variables local to this file */
 
@@ -340,7 +341,7 @@ static struct s_connection *firedns_add_query(void)
    struct s_connection *s;
 
    /* create new connection object */
-   s = MyMalloc(sizeof(struct s_connection));
+   s = MyMalloc(sizeof *s);
 
    /* verified by firedns_getresult() */
    s->id[0] = rand() % 255;
@@ -720,15 +721,15 @@ void firedns_cycle(void)
    struct s_connection *p;
    struct firedns_result *res, new_result;
    static struct pollfd *ufds = NULL;
-   int i, fd;
-   unsigned int size;
+   int fd;
+   unsigned int size, i;
    time_t timenow;
 
    if(LIST_SIZE(CONNECTIONS) == 0)
       return;
 
    if(ufds == NULL)
-      ufds = MyMalloc(sizeof(struct pollfd) * OptionsItem->dns_fdlimit);
+      ufds = MyMalloc(sizeof(*ufds) * OptionsItem->dns_fdlimit);
 
    time(&timenow);
    size = 0;

@@ -75,18 +75,18 @@ void config_load(const char *filename)
 void config_init()
 {
    /* Init IRC block */
-   IRCItem = (struct IRCConf *) MyMalloc(sizeof(struct IRCConf));
-   memset(IRCItem, 0, sizeof(struct IRCConf));
+   IRCItem = MyMalloc(sizeof *IRCItem);
+   memset(IRCItem, 0, sizeof *IRCItem);
    IRCItem->channels = list_create();
    IRCItem->performs = list_create();
 
    /* Init Options block */
-   OptionsItem = (struct OptionsConf *) MyMalloc(sizeof(struct OptionsConf));
-   memset(OptionsItem, 0, sizeof(struct OptionsConf));
+   OptionsItem = MyMalloc(sizeof *OptionsItem);
+   memset(OptionsItem, 0, sizeof *OptionsItem);
 
    /* Init OPM block */
-   OpmItem = (struct OpmConf *) MyMalloc(sizeof(struct OpmConf));
-   memset(OpmItem, 0, sizeof(struct OpmConf));
+   OpmItem = MyMalloc(sizeof *OpmItem);
+   memset(OpmItem, 0, sizeof *OpmItem);
    OpmItem->blacklists = list_create();
 
    /* Init list of User blocks */
@@ -96,7 +96,7 @@ void config_init()
    ScannerItemList = list_create();
 
    /* Init list of Exempts */
-   ExemptItem = (struct ExemptConf *) MyMalloc(sizeof(struct ExemptConf));
+   ExemptItem = MyMalloc(sizeof *ExemptItem);
    ExemptItem->masks = list_create();
 }
 

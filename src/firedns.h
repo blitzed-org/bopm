@@ -74,7 +74,7 @@ struct in6_addr {
 
 /* Used with the above error values */
 extern int fdns_errno;
-extern int fdns_fdinuse;
+extern unsigned int fdns_fdinuse;
 
 void firedns_init(void);
 
