@@ -421,7 +421,7 @@ int firedns_getip4(const char * const name, void *info)
 
    if(firedns_doquery(s) == -1)
    {
-      free(s);
+      MyFree(s);
       return -1;
    }
 
