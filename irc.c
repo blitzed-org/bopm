@@ -57,7 +57,8 @@ struct hostent     *IRC_HOST;         /* Hostent struct for IRC server         *
 fd_set              IRC_FDSET;        /* fd_set for IRC data for select()      */
 
 struct timeval      IRC_TIMEOUT;      /* timeval struct for select() timeout   */
-time_t              IRC_NICKSERV_LAST = 0; /* Last notice from nickserv             */
+time_t              IRC_NICKSERV_LAST = 0; /* Last notice from nickserv        */
+time_t              IRC_LAST = 0;     /* Last full line of data from irc server*/
 
 /* Give one cycle to the IRC client, which
  * will allow it to poll for data and handle
@@ -85,7 +86,15 @@ void irc_cycle()
       switch(select((IRC_FD + 1), &IRC_FDSET, 0, 0, &IRC_TIMEOUT))
        {
             case -1:
-		  return;    /* Generate ERROR here */
+                  switch(errno)		 
+                   {        /* Bad file desc ?! */
+                       case EBADF: 
+                       case EINVAL:
+                              IRC_FD = 0;  /* Set 0 so next call of irc_cycle() reconnects */                
+                              return;
+                       default:
+                              return;
+                   }
 		  break;
             case 0:
 		  break;
@@ -338,10 +347,15 @@ void irc_parse()
    int   i, h, len;
    time_t present;
 
+
+   time(&IRC_LAST); /*     Update timeout tracking    */ 
+
+
    if(OPT_DEBUG >= 2)
     {
  	log("IRC READ -> %s", IRC_RAW);
     }
+
 
     /* Tokenize the first 16 words in the incoming data, we really don't need to worry
       about anything else and we don't need the original string for anything. */
@@ -518,4 +532,13 @@ void do_perform()
 
 void irc_timer()
 {
+   time_t present;
+   time(&present);
+   
+   /* No data in 5 minutes */
+   if((present - IRC_LAST) >= 300)
+     {
+         IRC_FD = 0;      /* Set FD to 0, cycle will catch this and init/reconnct */
+         time(&IRC_LAST); /* Make sure we dont do this again for another 5 minutes */
+     }
 }
