@@ -816,9 +816,6 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
          continue;
 
       if(strlen(channel->key) > 0)
-         continue;
-
-      if(strlen(channel->key) > 0)
          irc_send("JOIN %s %s", channel->name, channel->key);
       else
          irc_send("JOIN %s", channel->name);
