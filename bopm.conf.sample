@@ -46,7 +46,7 @@ IRC {
 
         */
 
-        kline = "KLINE %u@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
+        kline = "KLINE *@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
 };
 
 OPM {
