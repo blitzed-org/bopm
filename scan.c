@@ -435,10 +435,12 @@ int scan_w_socks4(struct scan_struct *ss)
      unsigned long laddr;
      int len;
  
-     inet_aton(CONF_SCANIP, &addr);
+     if(inet_aton(CONF_SCANIP, &addr) == 0)
+          log("SCAN -> scan_w_socks4 : %s is not a valid IP", CONF_SCANIP);
+    
      laddr = htonl(addr.s_addr);
  
-     len = snprintf(SENDBUFF, 512, "%c%c%c%c%c%c%c%cBOPM%c",  
+     len = snprintf(SENDBUFF, 512, "%c%c%c%c%c%c%c%c%c",  
                                         4,
                                         1,
                                         (((unsigned short) CONF_SCANPORT) >> 8) & 0xFF,
