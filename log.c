@@ -53,8 +53,8 @@ void log_close()
 void log(char *data, ...)
 {
         time_t present;
- 
         va_list arglist;
+ 
         char data2[513];
         char tolog[513];	
 
@@ -65,11 +65,13 @@ void log(char *data, ...)
         time(&present);
  
         va_start(arglist, data);
-        vsprintf(data2, data, arglist);
+        vsnprintf(data2, 512, data, arglist);
         va_end(arglist);
 
         snprintf(tolog, 512, "[%d] %s\n", (int) present, data2);
+
         fwrite(tolog,1,strlen(tolog),logfile);
 
         fflush(logfile);
 }
+

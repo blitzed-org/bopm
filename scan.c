@@ -123,16 +123,19 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user)
 
             memset(&(newconn->sockaddr), 0, sizeof(struct sockaddr_in));
 
-            newconn->sockaddr.sin_family = AF_INET;                       /* Fill in sockaddr with information about remote host */
+            newconn->sockaddr.sin_family = AF_INET;                    /* Fill in sockaddr with information about remote host */
             newconn->sockaddr.sin_port = htons(newconn->protocol->port); 
             newconn->sockaddr.sin_addr.s_addr = inet_addr(addr);
       
-            newconn->fd = socket(PF_INET, SOCK_STREAM, 0);                /* Request file descriptor for socket */
+            newconn->fd = socket(PF_INET, SOCK_STREAM, 0);             /* Request file descriptor for socket */
 
-            if(newconn->fd == -1)                                         /* If error, free memory for this struct and continue */
+            if(newconn->fd == -1)                                      /* If error, free memory for this struct and continue */
               {
                  log("SCAN -> Error allocating file descriptor.");
                  free(newconn->addr);
+                 free(newconn->irc_addr);
+                 free(newconn->irc_user);
+                 free(newconn->irc_nick);
                  free(newconn);
                  continue;
               }
@@ -242,7 +245,6 @@ void scan_check()
                       if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed and kline*/
                          {
                            irc_kline(ss->irc_addr);
-
 
                            log("SCAN -> %s: %s!%s@%s (%d)", ss->protocol->type , ss->irc_nick, ss->irc_user, 
                                          ss->irc_addr, ss->protocol->port);
