@@ -34,7 +34,7 @@
 	  int verbose;                 /* report progress to channel verbosely?            */
      };
 
-
+     void do_scan_init();
      void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user, int verbose);
      void scan_add(scan_struct *newcon);
      void scan_del(scan_struct *ss);

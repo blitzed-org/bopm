@@ -49,7 +49,6 @@ char SENDBUFF[513];
 char RECVBUFF[513];
 
 
-extern protocol_hash SCAN_PROTOCOLS[];
 
 /*    Protocol Name, Port, Write Handler, Read Handler */ 
 
@@ -64,7 +63,12 @@ protocol_hash SCAN_PROTOCOLS[] = {
 
 };
 
+size_t SCAN_NUMPROTOCOLS;
 
+void do_scan_init()
+{
+   SCAN_NUMPROTOCOLS = sizeof(SCAN_PROTOCOLS) / sizeof(protocol_hash);
+}
 
 
 void scan_memfail()

@@ -59,7 +59,7 @@ int main(int argc, char **argv)
    char spid[16];
 
    do_stats_init();
-
+   do_scan_init();
    while(1)
     {
        c = getopt(argc, argv, "d");

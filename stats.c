@@ -40,8 +40,8 @@ along with this program; if not, write to the Free Software
 time_t STAT_START_TIME;
 int STAT_NUM_CONNECTS;
 
-extern struct protocol_hash **SCAN_PROTOCOLS;
-
+extern protocol_hash SCAN_PROTOCOLS[];
+extern size_t SCAN_NUMPROTOCOLS;
 
 void do_stats_init()
 {
@@ -57,10 +57,10 @@ void do_stats(const char *target)
 	    dissect_time(time(NULL) - STAT_START_TIME));
 
 
-   for(i = 0; i < sizeof(SCAN_PROTOCOLS) / sizeof(protocol_hash);i++)
+   for(i = 0; i < SCAN_NUMPROTOCOLS;i++)
       irc_send("PRIVMSG %s :Found %u [%s], %u open.", target,  
-               SCAN_PROTOCOLS[i]->stat_num, SCAN_PROTOCOLS[i]->type,
-               SCAN_PROTOCOLS[i]->stat_numopen);
+               SCAN_PROTOCOLS[i].stat_num, SCAN_PROTOCOLS[i].type,
+               SCAN_PROTOCOLS[i].stat_numopen);
         
    irc_send("PRIVMSG %s :Number of connects: %u", target, STAT_NUM_CONNECTS);      
 
