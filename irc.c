@@ -42,9 +42,9 @@ along with this program; if not, write to the Free Software
  * so global scope is given */
 
 
-char                IRC_RAW[513];     /* Buffer to read data into */
-char                IRC_SENDBUFF[513];/* Send buffer */
-int                 IRC_RAW_LEN = 0;  /* Position of IRC_RAW */
+char                IRC_RAW[513];     /* Buffer to read data into              */
+char                IRC_SENDBUFF[513];/* Send buffer                           */
+int                 IRC_RAW_LEN = 0;  /* Position of IRC_RAW                   */
 
 int                 IRC_FD = -1;      /* File descriptor for IRC client        */
 struct sockaddr_in  IRC_SVR;          /* Sock Address Struct for IRC server    */
@@ -63,19 +63,19 @@ struct timeval      IRC_TIMEOUT;      /* timeval struct for select() timeout   *
 
 void irc_cycle()
 {
-      /* No socket open */
+   
 	
-      if(IRC_FD <= 0)
+      if(IRC_FD <= 0)                 /* No socket open */
           irc_connect();
 
       IRC_TIMEOUT.tv_sec  = 0;
-      IRC_TIMEOUT.tv_usec = 500000;   /* .5 seconds to avoid excessive CPU use on select() */
+      IRC_TIMEOUT.tv_usec = 500000;   /* block .5 seconds to avoid excessive CPU use on select() */
            
       FD_ZERO(&IRC_FDSET);
       FD_SET(IRC_FD, &IRC_FDSET);
       
-      //Poll for data using select
-
+      
+                                
       switch(select((IRC_FD + 1), &IRC_FDSET, 0, 0, &IRC_TIMEOUT))
        {
             case -1:
@@ -84,7 +84,7 @@ void irc_cycle()
             case 0:
 		  break;
             default:
-		   if(FD_ISSET(IRC_FD, &IRC_FDSET))
+		   if(FD_ISSET(IRC_FD, &IRC_FDSET))     /* Check if IRC data is available */
 		        irc_read();
 
         }
@@ -114,15 +114,14 @@ void irc_connect()
        if(IRC_SVR.sin_addr.s_addr == INADDR_NONE)
             return;   /* Generate ERROR here */
 
-       /* Request File Descriptor for Socket */
-
-       IRC_FD = socket(PF_INET, SOCK_STREAM, 0);
+   
+       IRC_FD = socket(PF_INET, SOCK_STREAM, 0);  /* Request file desc for IRC client socket */
 
        if(IRC_FD == -1)
             return;  /* Generate ERROR here */
 
-       /* Connect to IRC Server */
-
+      
+                                                  /* Connect to IRC server as client */
        if(connect(IRC_FD, (struct sockaddr *) &IRC_SVR , sizeof(IRC_SVR)) == -1)
             return; /* Generate ERROR here */
 
@@ -146,10 +145,10 @@ void irc_read()
       while(read(IRC_FD, &c, 1))
 	{
 	   
-	   if(c == '\n')
+	   if(c == '\r')
 	       continue;
 
-	   if(c == '\r')       
+	   if(c == '\n')       
 	   {
 	       IRC_RAW[IRC_RAW_LEN] = 0;  /* Null string */
 	       irc_parse();               /* Parse Line */
@@ -171,17 +170,43 @@ void irc_read()
 void irc_parse()
 {
 
-    char *first;
-    
-    printf("%s\n", IRC_RAW); 
+   /* This function will be rewritten with better
+    * structure later on. 
+    */
 
-    first = strtok(IRC_RAW, " ");   /* Parse First Token */
-    
-    if(!strcasecmp(first, "PING"))
+    char *cmd;   
+    char *second; 
+
+    printf("%s\n", IRC_RAW);      /* Will be removed */
+
+    cmd = strtok(IRC_RAW, " ");   /* Parse First Token */
+    second = strtok(NULL, " ");   /* Parse Second Token */
+
+    if(!strcasecmp(cmd, "PING"))
        {
-            snprintf(IRC_SENDBUFF, 512, "PONG %s", strtok(NULL, ""));
+            snprintf(IRC_SENDBUFF, 512, "PONG %s\n", second);
             send(IRC_FD, IRC_SENDBUFF, 512, 0);
 	    return;
        }
+
+    if(!strcasecmp(second, "001"))
+       {
+            printf("Hit perform\n");
+            do_perform();
+       }  
     
+}
+
+
+void do_perform()
+{
+   
+      struct perform_hash *pf;
+
+      for(pf = CONF_PERFORM; pf; pf = pf->next)
+       {       
+           printf("SENDING %s\n", pf->perform);
+           snprintf(IRC_SENDBUFF, 512, "%s\n", pf->perform);
+           send(IRC_FD, IRC_SENDBUFF, 512, 0);
+       }
 }

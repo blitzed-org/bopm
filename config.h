@@ -3,6 +3,7 @@
 
       typedef int (*config_function) (char *);
       typedef struct config_hash config_hash;
+      typedef struct perform_hash perform_hash;
 
       struct config_hash
        {
@@ -11,7 +12,11 @@
        };
 
 
-
+       struct perform_hash
+       {
+           perform_hash *next;
+           char *perform;
+       };
 
 
        /* Config Functions */
@@ -22,5 +27,6 @@
        int param_port(char *args);
        int param_user(char *args);
        int param_nick(char *args);
+       int param_perform(char *args);
 
 #endif

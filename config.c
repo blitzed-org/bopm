@@ -27,24 +27,25 @@ along with this program; if not, write to the Free Software
 #include <stdlib.h>
 
 #include "config.h"
-
+#include "log.h"
 
 /* Global Configuration Variables */
 
-char *CONF_SERVER = 0;
-char *CONF_USER   = 0;
-char *CONF_NICK   = 0;
-int  CONF_PORT    = 0;
+char *CONF_SERVER          = 0;
+char *CONF_USER            = 0;
+char *CONF_NICK            = 0;
+int  CONF_PORT             = 0;
 
+perform_hash *CONF_PERFORM = 0;
 
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
 
 config_hash hash[] = {
-
        {"SERVER",   &(param_server)   },
        {"PORT",     &(param_port)     },
        {"USER",     &(param_user)     },
-       {"NICK",     &(param_nick)     }
+       {"NICK",     &(param_nick)     },
+       {"PERFORM",  &(param_perform)  }
 };
 
 
@@ -79,10 +80,25 @@ void config_load(char *filename)
 
             for(i = 0; i < (sizeof(hash) / sizeof(config_hash)); i++)
               if(!strcasecmp(key, hash[i].key))
-                 (int*) hash[i].function(args);                 
-              
+                {
+                  if(!(int*) hash[i].function(args))
+                     log("CONFIG -> Bad line: %s",line);
+                  continue;
+                }
+
+            log("CONFIG -> Unknown Parameter: %s",line);   
       }
     
+}
+
+/*  Called when memory allocation somewhere returns
+ *  an error
+ */
+
+void config_memfail()
+{
+     log("CONFIG -> Error allocating memory.");
+     exit(1);
 }
 
 
@@ -100,7 +116,10 @@ int param_server(char *args)
 	   free(CONF_SERVER);
 	
         CONF_SERVER = strdup(args);
-	
+
+        if(!CONF_SERVER)
+            config_memfail();
+            	  	
         return 1;
 }
 
@@ -119,7 +138,10 @@ int param_user(char *args)
 	    free(CONF_USER);
 
 	CONF_USER = strdup(args);
-	 
+
+        if(!CONF_USER)
+	     config_memfail();
+	
 	return 1;
 }
 
@@ -130,5 +152,48 @@ int param_nick(char *args)
 
 	CONF_NICK = strdup(args);
 
+        if(!CONF_NICK)
+           config_memfail();
+	
 	return 1;
 }
+
+int param_perform(char *args)
+{
+
+        perform_hash *newpf;
+        perform_hash *pf;
+	
+        if(strlen(args) == 0)
+            return 0;
+
+        printf("READING PERFORM %s\n", args);        
+	newpf = malloc(sizeof(perform_hash));
+	
+	if(!newpf)
+	     config_memfail();
+
+        if(!CONF_PERFORM)            //First perform 
+	 {              
+	      newpf->perform = strdup(args);
+	      newpf->next = 0;
+              CONF_PERFORM = newpf;
+	      return 1;
+         }
+	
+	for(pf = CONF_PERFORM; pf; pf = pf->next)
+	 {
+             if(!pf->next)
+	       {
+                   newpf->perform = strdup(args);
+		   pf->next = newpf;
+		   newpf->next = 0;
+		   break;
+	       }
+         }
+
+        return 1;
+}
+
+
+

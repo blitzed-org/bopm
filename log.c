@@ -20,6 +20,7 @@ along with this program; if not, write to the Free Software
 
 */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -31,7 +32,7 @@ FILE *logfile;
 
 void log_open(char *filename)
 {
-    logfile = fopen(filename, "a");
+    logfile = fopen(filename, "a+");
     
     if(!logfile)
       {
@@ -54,9 +55,10 @@ void log(char *data, ...)
         if(!logfile)
             return;
 
-
-
         va_start(arglist, data);
         vfprintf(logfile, data, arglist);
         va_end(arglist);
+
+        fwrite("\n",1,1,logfile);
+
 }

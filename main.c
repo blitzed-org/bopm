@@ -29,10 +29,16 @@ along with this program; if not, write to the Free Software
 
 int main()
 {
+
     log_open("bopm.log"); 
+
+    log("MAIN -> BOPM started.");
+    log("MAIN -> Reading configuration file...");
+
     config_load("bopm.conf");
 
-    while(1)
+
+    while(1)     
      {
 	irc_cycle();
      }
