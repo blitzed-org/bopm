@@ -63,6 +63,7 @@ void config_setup()
     IRCItem->realname = DupString("Blitzed Open Proxy Monitor");
     IRCItem->server = DupString("myserver.blitzed.org");
     IRCItem->vhost = DupString("");
+    IRCItem->connregex = DupString("\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*");
 
 
     /* Setup options block defaults */

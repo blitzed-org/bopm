@@ -32,6 +32,9 @@ IRC {
            name = "#bopm";
            #key = "somekey";
         };
+       
+        /* Hybrid */
+        connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
 };
 
 user {
