@@ -192,6 +192,10 @@ int main(int argc, char **argv)
       /* Restart bopm if main_restart() was called (usually happens by m_kill in irc.c) */
       if(RESTART)
       {
+         /* If restarted in debug mode, die */
+         if(OPT_DEBUG)
+            return; 
+
          log("MAIN -> Restarting process");
 
          /* Get upper file descriptor limit */
@@ -201,12 +205,8 @@ int main(int argc, char **argv)
             return; 
          }
 
-         if(OPT_DEBUG)
-            log("MAIN RESTART -> Setting file descriptors %d-%d F_SETFL", STDERR_FILENO + 1,
-                  rlim.rlim_cur);
-
-         /* Set file descriptors strderr-rlim_cur close on exec */
-         for(i = STDERR_FILENO + 1; i < rlim.rlim_cur; i++)
+         /* Set file descriptors 0-rlim_cur close on exec */
+         for(i = 0; i < rlim.rlim_cur; i++)
             fcntl(i, F_SETFD, FD_CLOEXEC);
 
          /* execute new process */
