@@ -2,7 +2,7 @@ Introduction
 ------------
 
 BOPM (Blitzed Open Proxy Monitor) is an open proxy monitoring bot designed for
-Dalnet based ircds.  The bot is designed to monitor an individual server (all
+Bahamut based ircds.  The bot is designed to monitor an individual server (all
 servers on the network have to run their own bot) with a local o: line and
 monitor connections.  When a client connects to the server, BOPM will scan the
 connection for insecure proxies.  Insecure proxies are determined by attempting
@@ -11,6 +11,19 @@ to connect the proxy back to another host (usually the IRC server in question).
 BOPM is written ground-up in C language, concept derived from wgmon.  It
 improves on wgmon with HTTP support, faster scanning (it can scan clients
 simultaneously), better layout (scalability), and dnsbl support.
+
+Compatibility
+-------------
+
+BOPM is designed for ircds based on bahamut. It would be easily portable
+to any other ircd with little modification (to the +c notice code). However,
+if an ircd does not send IP's in a connection notice (bahamut sends [IP]),
+BOPM will not be effective because the time it takes to resolve a hostname
+would be a significant factor to BOPM's efficiency.
+
+Any questions regarding compatibility should be sent to the developers. If
+feasible we might be able to add compatibility to multiple ircd types
+to the project in the future.
 
 
 Operator Channel Commands
@@ -34,3 +47,6 @@ Credits
    David Leadbeater <dg@blitzed.org> 
          Developed perl script (see proxy-tools in Blitzed CVS repository)
          to test BOPM's support for scanning many clients at once.
+
+
+   For supprt, irc.blitzed.org #blitzed before emailing a developer. Thank you.
