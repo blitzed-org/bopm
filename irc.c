@@ -156,8 +156,9 @@ void irc_init()
                                case EACCES:
                                  log("IRC -> bind(): No access to bind to %s", CONF_BINDIRC);
                                  exit(1);
+                               
                                default:
-                                 log("IRC -> bind(): Error binding to %s", CONF_BINDIRC);
+                                 log("IRC -> bind(): Error binding to %s (%d)", CONF_BINDIRC, errno);
                                  exit(1);
     
                         }

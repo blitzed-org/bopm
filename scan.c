@@ -32,6 +32,7 @@ along with this program; if not, write to the Free Software
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/time.h>
 
 #include "irc.h"
 #include "log.h"
