@@ -43,6 +43,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "firedns.h"
 #include "config.h"
 #include "list.h"
+#include "log.h"
 
 #define FIREDNS_TRIES 3
 #define min(a,b) (a < b ? a : b)
@@ -117,7 +118,10 @@ struct s_header
    unsigned char payload[512]; /* DNS question, populated by firedns_build_query_payload() */
 };
 
-void firedns_init()
+int firedns_doquery(struct s_connection *);
+char *firedns_getresult_i(const int fd);
+
+void firedns_init(void)
 {
    /* on first call only: populates servers4 (or -6) struct with up to FDNS_MAX nameserver IP addresses from /etc/firedns.conf (or /etc/resolv.conf) */
    FILE *f;
@@ -149,7 +153,7 @@ void firedns_init()
       f = fopen(FDNS_CONFIG_FBCK,"r");
       if (f == NULL)
       {
-         log("Unable to open %s", FDNS_CONFIG_FBCK);
+         log_printf("Unable to open %s", FDNS_CONFIG_FBCK);
          return;
       }
       file = FDNS_CONFIG_FBCK;
@@ -212,7 +216,7 @@ void firedns_init()
 #endif
      )
    {
-      log("FIREDNS -> No nameservers found in %s", file);
+      log_printf("FIREDNS -> No nameservers found in %s", file);
       exit(EXIT_FAILURE);
    }
 }
@@ -703,7 +707,8 @@ void firedns_cycle(void)
    struct s_connection *p;
    struct firedns_result *res, new_result;
    static struct pollfd *ufds = NULL;
-   int size, i, fd;
+   int i, fd;
+   unsigned int size;
    time_t timenow;
 
    if(LIST_SIZE(CONNECTIONS) == 0)

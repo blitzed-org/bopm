@@ -56,7 +56,7 @@ struct in6_addr {
 extern int fdns_errno;
 extern int fdns_fdinuse;
 
-void firedns_init();
+void firedns_init(void);
 
 struct firedns_result {
    char text[1024];

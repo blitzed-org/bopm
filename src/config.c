@@ -53,11 +53,11 @@ void config_load(const char *filename)
    config_init();
    config_setup(); /* Setup/clear current configuration */
 
-   log("CONFIG -> Loading %s", filename);
+   log_printf("CONFIG -> Loading %s", filename);
 
    if((yyin = fopen(filename, "r")) == NULL)
    {
-      log("CONFIG -> Error opening %s", filename);
+      log_printf("CONFIG -> Error opening %s", filename);
       exit(1);
    }
 
@@ -135,6 +135,6 @@ void config_setup()
 
 void yyerror(const char *str)
 {
-   log("CONFIG -> %s: line %d", str, linenum);
+   log_printf("CONFIG -> %s: line %d", str, linenum);
    exit(EXIT_FAILURE);
 }

@@ -217,7 +217,7 @@ static void irc_init(void)
    /* Resolve IRC host. */
    if ((irc_host = firedns_resolveip4(IRCItem->server)) == NULL)
    {
-      log("IRC -> firedns_resolveip4(\"%s\"): %s", IRCItem->server,
+      log_printf("IRC -> firedns_resolveip4(\"%s\"): %s", IRCItem->server,
             firedns_strerror(fdns_errno));
       exit(EXIT_FAILURE);
    }
@@ -228,7 +228,7 @@ static void irc_init(void)
 
    if (IRC_SVR.sa4.sin_addr.s_addr == INADDR_NONE)
    {
-      log("IRC -> Unknown error resolving remote host (%s)",
+      log_printf("IRC -> Unknown error resolving remote host (%s)",
           IRCItem->server);
       exit(EXIT_FAILURE);
    }
@@ -242,27 +242,27 @@ static void irc_init(void)
       {
          case EINVAL:
          case EPROTONOSUPPORT:
-            log("IRC -> socket(): SOCK_STREAM is not "
+            log_printf("IRC -> socket(): SOCK_STREAM is not "
                 "supported on this domain");
             break;
          case ENFILE:
-            log("IRC -> socket(): Not enough free file "
+            log_printf("IRC -> socket(): Not enough free file "
                 "descriptors to allocate IRC socket");
             break;
          case EMFILE:
-            log("IRC -> socket(): Process table overflow when "
+            log_printf("IRC -> socket(): Process table overflow when "
                 "requesting file descriptor");
             break;
          case EACCES:
-            log("IRC -> socket(): Permission denied to create "
+            log_printf("IRC -> socket(): Permission denied to create "
                 "socket of type SOCK_STREAM");
             break;
          case ENOMEM:
-            log("IRC -> socket(): Insufficient memory to "
+            log_printf("IRC -> socket(): Insufficient memory to "
                 "allocate socket");
             break;
          default:
-            log("IRC -> socket(): Unknown error allocating "
+            log_printf("IRC -> socket(): Unknown error allocating "
                 "socket");
             break;
       }
@@ -275,7 +275,7 @@ static void irc_init(void)
       int bindret = 0;
       if (!inet_pton(AF_INET, IRCItem->vhost, &(IRC_LOCAL.in4.s_addr)))
       {
-         log("IRC -> bind(): %s is an invalid address", IRCItem->vhost);
+         log_printf("IRC -> bind(): %s is an invalid address", IRCItem->vhost);
          exit(EXIT_FAILURE);
       }
       bsaddr.sa4.sin_addr.s_addr = IRC_LOCAL.in4.s_addr;
@@ -289,11 +289,11 @@ static void irc_init(void)
          switch(errno)
          {
             case EACCES:
-               log("IRC -> bind(): No access to bind to %s",
+               log_printf("IRC -> bind(): No access to bind to %s",
                    IRCItem->vhost);
                break;
             default:
-               log("IRC -> bind(): Error binding to %s (%d)",
+               log_printf("IRC -> bind(): Error binding to %s (%d)",
                    IRCItem->vhost, errno);
                break;
          }
@@ -341,14 +341,14 @@ void irc_send(char *data, ...)
    va_end(arglist);
 
    if (OPT_DEBUG >= 2)
-      log("IRC SEND -> %s", data2);
+      log_printf("IRC SEND -> %s", data2);
 
    snprintf(tosend, MSGLENMAX, "%s\n", data2);
 
    if (send(IRC_FD, tosend, strlen(tosend), 0) == -1)
    {
       /* Return of -1 indicates error sending data; we reconnect. */
-      log("IRC -> Error sending data to server\n");
+      log_printf("IRC -> Error sending data to server\n");
       irc_reconnect();
    }
 }
@@ -404,25 +404,25 @@ static void irc_connect(void)
             /* Already connected */
             return;
          case ECONNREFUSED:
-            log("IRC -> connect(): Connection refused by (%s)",
+            log_printf("IRC -> connect(): Connection refused by (%s)",
                 IRCItem->server);
             break;
          case ETIMEDOUT:
-            log("IRC -> connect(): Timed out connecting to (%s)",
+            log_printf("IRC -> connect(): Timed out connecting to (%s)",
                 IRCItem->server);
             break;
          case ENETUNREACH:
-            log("IRC -> connect(): Network unreachable");
+            log_printf("IRC -> connect(): Network unreachable");
             break;
          case EALREADY:
             /* Previous attempt not complete */
             return;
          default:
-            log("IRC -> connect(): Unknown error connecting to (%s)",
+            log_printf("IRC -> connect(): Unknown error connecting to (%s)",
                 IRCItem->server);
 
             if (OPT_DEBUG >= 1)
-               log(strerror(errno));
+               log_printf("%s", strerror(errno));
       }
       /* Try to connect again */
       irc_reconnect();
@@ -472,7 +472,7 @@ static void irc_reconnect(void)
    /* Set IRC_FD 0 for reconnection on next irc_cycle(). */
    IRC_FD = 0;
 
-   log("IRC -> Connection to (%s) failed, reconnecting.", IRCItem->server);
+   log_printf("IRC -> Connection to (%s) failed, reconnecting.", IRCItem->server);
 }
 
 
@@ -536,7 +536,7 @@ static void irc_parse(void)
 {
    struct UserInfo *source_p;
    char *pos;
-   int i;
+   unsigned int i;
 
    /*
       parv stores the parsed token, parc is the count of the parsed 
@@ -556,7 +556,7 @@ static void irc_parse(void)
       return;
 
    if (OPT_DEBUG >= 2)
-      log("IRC READ -> %s", IRC_RAW);
+      log_printf("IRC READ -> %s", IRC_RAW);
 
    time(&IRC_LAST);
 
@@ -640,7 +640,7 @@ void irc_timer(void)
    /* No data in NODATA_TIMEOUT minutes (set in options.h). */
    if (delta >= NODATA_TIMEOUT)
    {
-      log("IRC -> Timeout awaiting data from server.");
+      log_printf("IRC -> Timeout awaiting data from server.");
       irc_reconnect();
       /* Make sure we dont do this again for a while */
       time(&IRC_LAST);
@@ -793,7 +793,7 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
    node_t *node;
    struct ChannelConf *channel;
 
-   log("IRC -> Connected to %s:%d", IRCItem->server, IRCItem->port);
+   log_printf("IRC -> Connected to %s:%d", IRCItem->server, IRCItem->port);
 
    /* Identify to nickserv if needed */
    if(strlen(IRCItem->nickserv))
@@ -843,7 +843,7 @@ static void m_ping(char **parv, unsigned int parc, char *msg, struct UserInfo *s
       return;
 
    if(OPT_DEBUG >= 2)
-      log("IRC -> PING? PONG!");
+      log_printf("IRC -> PING? PONG!");
 
    irc_send("PONG %s", parv[2]);
 }
@@ -869,7 +869,7 @@ static void m_invite(char **parv, unsigned int parc, char *msg, struct UserInfo 
    if(parc < 4)
       return;
 
-   log("IRC -> Invited to %s by %s", parv[3], parv[0]);
+   log_printf("IRC -> Invited to %s by %s", parv[3], parv[0]);
 
    if((channel = get_channel(parv[3])) == NULL)
       return;
@@ -903,7 +903,7 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
       return;
 
    /* CTCP */
-   if(parv[3][0] == '\001');
+   if(parv[3][0] == '\001')
       m_ctcp(parv, parc, msg, source_p);
 
    /* Only interested in privmsg to channels */
@@ -989,8 +989,8 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
       {
 
          regerror(errnum, preg, errmsg, 256);
-         log("IRC REGEX -> Error when compiling regular expression");
-         log("IRC REGEX -> %s", errmsg);
+         log_printf("IRC REGEX -> Error when compiling regular expression");
+         log_printf("IRC REGEX -> %s", errmsg);
 
          MyFree(preg);
          preg = NULL;
@@ -1003,11 +1003,11 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
       return;
 
    if(OPT_DEBUG > 0)
-      log("IRC REGEX -> Regular expression caught connection notice. Parsing.");
+      log_printf("IRC REGEX -> Regular expression caught connection notice. Parsing.");
 
    if(pmatch[4].rm_so == -1)
    {
-      log("IRC REGEX -> pmatch[4].rm_so is -1 while parsing??? Aborting.");
+      log_printf("IRC REGEX -> pmatch[4].rm_so is -1 while parsing??? Aborting.");
       return;
    }
 
@@ -1028,7 +1028,7 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
    }
 
    if(OPT_DEBUG > 0)
-      log("IRC REGEX -> Parsed %s!%s@%s [%s] from connection notice.",
+      log_printf("IRC REGEX -> Parsed %s!%s@%s [%s] from connection notice.",
           user[0], user[1], user[2], user[3]);
 
    /*FIXME (reminder) In the case of any rehash to the regex, preg MUST be freed first.

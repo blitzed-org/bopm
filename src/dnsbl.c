@@ -61,7 +61,7 @@ void dnsbl_add(struct scan_struct *ss)
 
    if (!inet_aton(ss->ip, &in))
    {
-      log("DNSBL -> Invalid address '%s', ignoring.", ss->ip);
+      log_printf("DNSBL -> Invalid address '%s', ignoring.", ss->ip);
       return;
    }
 
@@ -85,12 +85,12 @@ void dnsbl_add(struct scan_struct *ss)
 		ds->bl = bl; 
 
       if(OPT_DEBUG)
-         log("DNSBL -> Passed '%s' to resolver", lookup);
+         log_printf("DNSBL -> Passed '%s' to resolver", lookup);
 
       res = firedns_getip4(lookup, (void *) ds);
 
       if(res == -1)
-         log("DNSBL -> Error sending dns lookup  '%s'", lookup);
+         log_printf("DNSBL -> Error sending dns lookup  '%s'", lookup);
       else
          ss->scans++; /* Increase scan count - one for each blacklist */
    }
@@ -137,7 +137,7 @@ static void dnsbl_positive(struct scan_struct *ss, struct BlacklistConf *bl,
 	if(text_type[0] == '\0' && bl->ban_unknown == 0)
 	{
 		if(OPT_DEBUG)
-			log("DNSBL -> Unknown result from BL zone %s (%d)", bl->name, type);
+			log_printf("DNSBL -> Unknown result from BL zone %s (%d)", bl->name, type);
 		return;
 	}
 
@@ -147,7 +147,7 @@ static void dnsbl_positive(struct scan_struct *ss, struct BlacklistConf *bl,
 
    if(ss->manual_target == NULL)
    {
-      log("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick, ss->irc_username,
+      log_printf("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick, ss->irc_username,
           ss->irc_hostname, bl->name, text_type);
       irc_send_channels("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick,
                         ss->irc_username, ss->irc_hostname, bl->name, text_type);
@@ -165,7 +165,7 @@ void dnsbl_result(struct firedns_result *res)
 	struct dnsbl_scan *ds = res->info;
 
    if(OPT_DEBUG)
-      log("DNSBL -> Lookup result for %s!%s@%s (%s) %d.%d.%d.%d (error: %d)",
+      log_printf("DNSBL -> Lookup result for %s!%s@%s (%s) %d.%d.%d.%d (error: %d)",
           ds->ss->irc_nick,
           ds->ss->irc_username,
           ds->ss->irc_hostname,
@@ -198,7 +198,7 @@ void dnsbl_result(struct firedns_result *res)
       dnsbl_positive(ds->ss, ds->bl, (unsigned char)res->text[3]);
    else
 	{
-      log("DNSBL -> Lookup error on %s: %s", res->lookup,
+      log_printf("DNSBL -> Lookup error on %s: %s", res->lookup,
 	      firedns_strerror(fdns_errno));
 		if(fdns_errno != FDNS_ERR_TIMEOUT)
 			irc_send_channels("DNSBL -> Lookup error on %s: %s", res->lookup,
@@ -243,11 +243,11 @@ void dnsbl_report(struct scan_struct *ss)
 	    ss->proof);
 
    if(OPT_DEBUG >= 3)
-      log("DNSBL -> Sending following email:\n%s\n", buf);
+      log_printf("DNSBL -> Sending following email:\n%s\n", buf);
 
    if ((fp = popen(cmdbuf, "w")) == NULL)
    {
-      log("DNSBL -> Failed to create pipe to '%s' for email report!", cmdbuf);
+      log_printf("DNSBL -> Failed to create pipe to '%s' for email report!", cmdbuf);
       irc_send_channels("I was trying to create a pipe to'%s' to send a DNSBL "
                         "report, and it failed! I'll give up for now.",
                         cmdbuf);
@@ -257,7 +257,7 @@ void dnsbl_report(struct scan_struct *ss)
    fputs(buf, fp);
    pclose(fp);
 
-   log("DNSBL -> Sent report to %s [%s]", OpmItem->dnsbl_to, ss->ip);
+   log_printf("DNSBL -> Sent report to %s [%s]", OpmItem->dnsbl_to, ss->ip);
    /* record send in stats */
    stats_dnsblsend();
 }

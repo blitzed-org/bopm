@@ -67,7 +67,7 @@ void scanlog_open(char *filename)
 
    if(!scanlogfile)
    {
-      log("Failed to open scan log file: %s", strerror(errno));
+      log_printf("Failed to open scan log file: %s", strerror(errno));
    }
 }
 
@@ -77,7 +77,7 @@ void scanlog_close(void)
       fclose(scanlogfile);
 }
 
-void log(char *data, ...)
+void log_printf(char *data, ...)
 {
    char data2[513];
    char buf_present[25];

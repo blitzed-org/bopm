@@ -83,7 +83,7 @@ struct ScannerConf
 struct ProtocolConf
 {
    int type;
-   int port;
+   unsigned int port;
 };
 
 struct OpmConf

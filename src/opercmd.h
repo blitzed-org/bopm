@@ -38,7 +38,7 @@ struct OperCommandHash
    oper_command handler;
 };
 
-extern void command_init();
+extern void command_init(void);
 extern void command_userhost(char *);
-extern void command_timer();
+extern void command_timer(void);
 #endif

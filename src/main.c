@@ -72,7 +72,8 @@ int main(int argc, char **argv)
 {
    char spid[16];
    pid_t pid;
-   int c, lenc, lenl, lenp;
+   int c;
+   size_t lenc, lenl, lenp;
    unsigned int nc_counter, i;
    FILE *pidout;
    struct rlimit rlim;
@@ -144,11 +145,11 @@ int main(int argc, char **argv)
       log_open(LOGFILE);
    }
    else
-      log("MAIN -> Debug level %d", OPT_DEBUG);
+      log_printf("MAIN -> Debug level %d", OPT_DEBUG);
 
 
-   log("MAIN -> BOPM %s started.", VERSION);
-   log("MAIN -> Reading configuration file...");
+   log_printf("MAIN -> BOPM %s started.", VERSION);
+   log_printf("MAIN -> Reading configuration file...");
 
    config_load(CONFFILE);
 
@@ -167,7 +168,7 @@ int main(int argc, char **argv)
    }
    else
    {
-      log("MAIN -> Error opening %s: %s", OptionsItem->pidfile,
+      log_printf("MAIN -> Error opening %s: %s", OptionsItem->pidfile,
           strerror(errno));
       exit(EXIT_FAILURE);
    }
@@ -200,15 +201,15 @@ int main(int argc, char **argv)
       {
          /* If restarted in debug mode, die */
          if(OPT_DEBUG)
-            return; 
+            return(1); 
 
-         log("MAIN -> Restarting process");
+         log_printf("MAIN -> Restarting process");
 
          /* Get upper file descriptor limit */
          if(getrlimit(RLIMIT_NOFILE, &rlim) == -1) 
          {
-            log("MAIN RESTART -> getrlimit() error retrieving RLIMIT_NOFILE (%s)", strerror(errno));
-            return; 
+            log_printf("MAIN RESTART -> getrlimit() error retrieving RLIMIT_NOFILE (%s)", strerror(errno));
+            return(1); 
          }
 
          /* Set file descriptors 0-rlim_cur close on exec */
@@ -217,7 +218,7 @@ int main(int argc, char **argv)
 
          /* execute new process */
          if(execve(argv[0], argv, NULL) == -1)
-            log("MAIN RESTART -> Execution of \"%s\" failed. ERROR: %s", argv[0], strerror(errno));
+            log_printf("MAIN RESTART -> Execution of \"%s\" failed. ERROR: %s", argv[0], strerror(errno));
 
          /* Should only get here if execve failed */
          RESTART = 0;
@@ -255,7 +256,7 @@ static void do_signal(int signum)
          alarm(1);
          break;
       case SIGINT:
-         log("MAIN -> Caught SIGINT, bye!");
+         log_printf("MAIN -> Caught SIGINT, bye!");
          exit(0);
          break;
    }

@@ -33,9 +33,9 @@ struct protocol_assoc
    char *name;
 };
 
-extern void scan_init();
+extern void scan_init(void);
 extern char *scan_gettype(int);
-extern void scan_cycle();
+extern void scan_cycle(void);
 extern void scan_connect(char **, char *);
 extern void scan_checkfinished(struct scan_struct *);
 extern void scan_manual(char *, struct ChannelConf *);

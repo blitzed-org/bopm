@@ -31,6 +31,12 @@ along with this program; if not, write to the Free Software
 # include <stdlib.h>
 #endif
 
+#ifdef HAVE_STRINGS_H
+# include <strings.h>
+#elif HAVE_STRING_H
+# include <string.h>
+#endif
+
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -51,6 +57,7 @@ along with this program; if not, write to the Free Software
 #include <errno.h>
 
 #include "irc.h"
+#include "log.h"
 #include "misc.h"
 #include "stats.h"
 #include "config.h"
@@ -85,7 +92,7 @@ static struct StatsHash STATS_PROXIES[] =
  * 
  */
 
-void stats_init()
+void stats_init(void)
 {
    time(&STATS_UPTIME);
 }
@@ -125,7 +132,7 @@ void stats_openproxy(int type)
  */
 
 
-void stats_connect()
+void stats_connect(void)
 {
    STATS_CONNECTIONS++;
 }
@@ -141,7 +148,7 @@ void stats_connect()
  *
  */
 
-void stats_dnsblrecv()
+void stats_dnsblrecv(void)
 {
    STATS_DNSBLRECV++;
 }
@@ -158,7 +165,7 @@ void stats_dnsblrecv()
  *
  */
 
-void stats_dnsblsend()
+void stats_dnsblsend(void)
 {
    STATS_DNSBLSENT++;
 }
@@ -224,7 +231,7 @@ void fdstats_output(char *target)
    /* Get file descriptor ceiling */
    if(getrlimit(RLIMIT_NOFILE, &rlim) == -1)
    {
-      log("FDSTAT -> getrlimit() error retrieving RLIMIT_NOFILE (%s)", strerror(errno));
+      log_printf("FDSTAT -> getrlimit() error retrieving RLIMIT_NOFILE (%s)", strerror(errno));
       irc_send("PRIVMSG %s :FDSTAT -> getrlimit() error retrieving RLIMIT_NOFILE (%s)",
                 target,  strerror(errno));
       return;
@@ -266,7 +273,7 @@ void fdstats_output(char *target)
 
             default:
                /* We don't expect any other errors. */
-               log("fd %u errno = %u (%s)", i, errno, strerror(errno));
+               log_printf("fd %u errno = %u (%s)", i, errno, strerror(errno));
                break;
          }
       }

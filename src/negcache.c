@@ -129,7 +129,7 @@ static struct cnode *nc_search(struct cnode *head, const unsigned long ip)
  */
 static struct cnode *nc_insert(struct cnode *head, const unsigned long ip)
 {
-   int i;
+   unsigned int i;
    struct cnode *p, *t, *x;
 
    i = maxb;
@@ -211,7 +211,7 @@ void negcache_insert(const char *ipstr)
 
    if (!inet_pton(AF_INET, ipstr, &(ip.sa4.sin_addr)))
    {
-      log("NEGCACHE -> Invalid IPv4 address '%s'", ipstr);
+      log_printf("NEGCACHE -> Invalid IPv4 address '%s'", ipstr);
       return;
    }
 
@@ -271,7 +271,7 @@ static void nc_rebuild(struct cnode *old_head, struct cnode *new_head,
    }
    else if (OPT_DEBUG >= 2)
    {
-      log("NEGCACHE -> Deleting negcache node for %lu added at %lu", n->ip,
+      log_printf("NEGCACHE -> Deleting negcache node for %lu added at %lu", n->ip,
           n->seen);
    }
 

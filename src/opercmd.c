@@ -145,14 +145,14 @@ void command_timer()
 
 void command_parse(char *command, char *msg, struct ChannelConf *target, struct UserInfo *source_p)
 {
-   int i;
+   unsigned int i;
    char *param; /* Parsed parameters */
 
    struct Command *cs;
    node_t *node;
 
    if(OPT_DEBUG)
-      log("COMMAND -> Parsing command (%s) from %s [%s]", command, source_p->irc_nick, target->name);
+      log_printf("COMMAND -> Parsing command (%s) from %s [%s]", command, source_p->irc_nick, target->name);
 
    /* Only allow COMMANDMAX commands in the queue */
    if(LIST_SIZE(COMMANDS) >= COMMANDMAX)
@@ -187,7 +187,7 @@ void command_parse(char *command, char *msg, struct ChannelConf *target, struct 
    else
       param = "";
 
-   log("COMMAND -> parsed [%s] [%s]", command, param);
+   log_printf("COMMAND -> parsed [%s] [%s]", command, param);
 
    /* Lookup the command in the table */
    for(i = 0; i < sizeof(COMMAND_TABLE) / sizeof(struct OperCommandHash); i++)

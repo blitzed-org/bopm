@@ -148,7 +148,7 @@ void scan_timer()
           * cache.
           */
          if(OPT_DEBUG)
-            log("SCAN -> Rebuilding negative cache");
+            log_printf("SCAN -> Rebuilding negative cache");
 
          negcache_rebuild();
          nc_counter = 0;
@@ -193,7 +193,7 @@ void scan_init()
       scs = (struct scanner_struct *) MyMalloc(sizeof(struct scanner_struct));
 
       if(OPT_DEBUG)
-         log("SCAN -> Setting up scanner [%s]", sc->name);
+         log_printf("SCAN -> Setting up scanner [%s]", sc->name);
 
       /* Build the scanner */
       scs->scanner = opm_create();
@@ -226,11 +226,11 @@ void scan_init()
          pc = (struct ProtocolConf *) p2->data;
 
          if(OPT_DEBUG >= 2)
-            log("SCAN -> Adding protocol %s:%d to scanner [%s]", scan_gettype(pc->type), pc->port,
+            log_printf("SCAN -> Adding protocol %s:%d to scanner [%s]", scan_gettype(pc->type), pc->port,
                 scs->name);
 
          if(opm_addtype(scs->scanner, pc->type, pc->port) == OPM_ERR_BADPROTOCOL)
-            log("SCAN -> Error bad protocol %s:%d in scanner [%s]", scan_gettype(pc->type), pc->port,
+            log_printf("SCAN -> Error bad protocol %s:%d in scanner [%s]", scan_gettype(pc->type), pc->port,
                 scs->name);
       }
 
@@ -258,7 +258,7 @@ void scan_init()
                   mask = (char *) p4->data;
 
                   if(OPT_DEBUG)
-                     log("SCAN -> Linking the mask [%s] to scanner [%s]", mask, scannername);
+                     log_printf("SCAN -> Linking the mask [%s] to scanner [%s]", mask, scannername);
 
                   node = node_create(DupString(mask));
                   list_add(scs->masks, node);
@@ -273,7 +273,7 @@ void scan_init()
    if (OptionsItem->negcache > 0)
    {
       if(OPT_DEBUG >= 2)
-         log("SCAN -> Initializing negative cache");
+         log_printf("SCAN -> Initializing negative cache");
       nc_init(&nc_head);
    }
 }
@@ -316,7 +316,7 @@ void scan_connect(char **user, char *msg)
    {
       if (!inet_pton(AF_INET, user[3], &(ip.sa4.sin_addr)))
       {
-         log("SCAN -> Invalid IPv4 address '%s'!", user[3]);
+         log_printf("SCAN -> Invalid IPv4 address '%s'!", user[3]);
          return;
       }
       else
@@ -324,7 +324,7 @@ void scan_connect(char **user, char *msg)
          if(check_neg_cache(ip.sa4.sin_addr.s_addr) != NULL)
          {
             if(OPT_DEBUG)
-               log("SCAN -> %s!%s@%s (%s) is negatively cached. Skipping all tests.",
+               log_printf("SCAN -> %s!%s@%s (%s) is negatively cached. Skipping all tests.",
                    user[0], user[1], user[2], user[3]);
             return;
          }
@@ -339,7 +339,7 @@ void scan_connect(char **user, char *msg)
    if(scan_checkexempt(mask, ipmask))
    {
       if(OPT_DEBUG)
-         log("SCAN -> %s is exempt from scanning", mask);
+         log_printf("SCAN -> %s is exempt from scanning", mask);
       return;
    }
 
@@ -363,7 +363,7 @@ void scan_connect(char **user, char *msg)
          if(match(scsmask, mask))
          {
             if(OPT_DEBUG)
-               log("SCAN -> Passing %s to scanner [%s]", mask, scs->name);
+               log_printf("SCAN -> Passing %s to scanner [%s]", mask, scs->name);
 
             if((ret = opm_scan(scs->scanner, ss->remote)) != OPM_SUCCESS)
             {
@@ -373,10 +373,10 @@ void scan_connect(char **user, char *msg)
                      continue;
                      break;
                   case OPM_ERR_BADADDR:
-                     log("OPM -> Bad address %s.", ss->manual_target->name, ss->ip);
+                     log_printf("OPM -> Bad address %s.", ss->manual_target->name, ss->ip);
                      break;
                   default:
-                     log("OPM -> Unknown error %s.", ss->manual_target->name, ss->ip);
+                     log_printf("OPM -> Unknown error %s.", ss->manual_target->name, ss->ip);
                      break;
                }
             }
@@ -501,7 +501,7 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
                          ss->irc_hostname, remote->ip, remote->port, scan_gettype(remote->protocol), 
                          scs->name);
 
-      log("SCAN -> OPEN PROXY %s!%s@%s %s:%d (%s) [%s]", ss->irc_nick, ss->irc_username, ss->irc_hostname,
+      log_printf("SCAN -> OPEN PROXY %s!%s@%s %s:%d (%s) [%s]", ss->irc_nick, ss->irc_username, ss->irc_hostname,
                         remote->ip, remote->port, scan_gettype(remote->protocol), scs->name);
 
    }
@@ -510,7 +510,7 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
       irc_send("PRIVMSG %s :CHECK -> OPEN PROXY %s:%d (%s) [%s]", ss->manual_target->name, remote->ip, 
                 remote->port, scan_gettype(remote->protocol), scs->name);
 
-      log("SCAN -> OPEN PROXY %s:%d (%s) [%s]", remote->ip, remote->port, 
+      log_printf("SCAN -> OPEN PROXY %s:%d (%s) [%s]", remote->ip, remote->port, 
            scan_gettype(remote->protocol), scs->name);
    }
 
@@ -546,7 +546,7 @@ void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, 
    ss = (struct scan_struct *) remote->data;
 
    if(OPT_DEBUG)
-      log("SCAN -> Negotiation failed %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
+      log_printf("SCAN -> Negotiation failed %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
           scan_gettype(remote->protocol), scs->name, remote->bytes_read);
 
    if(ss->manual_target != NULL)
@@ -582,7 +582,7 @@ void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
    ss = (struct scan_struct *) remote->data;
 
    if(OPT_DEBUG)
-      log("SCAN -> Negotiation timed out %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
+      log_printf("SCAN -> Negotiation timed out %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
           scan_gettype(remote->protocol), scs->name, remote->bytes_read);
 
    if(ss->manual_target != NULL)
@@ -615,7 +615,7 @@ void scan_end(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
    ss = (struct scan_struct *) remote->data;
 
    if(OPT_DEBUG)
-      log("SCAN -> Scan %s [%s] completed", remote->ip, scs->name);
+      log_printf("SCAN -> Scan %s [%s] completed", remote->ip, scs->name);
 
    ss->scans--;
    scan_checkfinished(ss);
@@ -651,7 +651,7 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
    {
       case OPM_ERR_MAX_READ:
          if(OPT_DEBUG >= 2)
-            log("SCAN -> Max read on %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
+            log_printf("SCAN -> Max read on %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
                 scan_gettype(remote->protocol), scs->name, remote->bytes_read);
   
          if(ss->manual_target != NULL)
@@ -660,11 +660,11 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
                       scs->name, remote->bytes_read);
          break;
       case OPM_ERR_BIND:
-         log("SCAN -> Bind error on %s:%d (%s) [%s]", remote->ip, remote->port,
+         log_printf("SCAN -> Bind error on %s:%d (%s) [%s]", remote->ip, remote->port,
                 scan_gettype(remote->protocol), scs->name);
          break;
       case OPM_ERR_NOFD:
-         log("SCAN -> File descriptor allocation error %s:%d (%s) [%s]", remote->ip, remote->port,
+         log_printf("SCAN -> File descriptor allocation error %s:%d (%s) [%s]", remote->ip, remote->port,
                 scan_gettype(remote->protocol), scs->name);
          if(ss->manual_target != NULL)
             irc_send("PRIVMSG %s :CHECK -> Scan failed %s:%d (%s) [%s] (file descriptor allocation error)",
@@ -673,7 +673,7 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
          break;
       default:   /* Unknown Error! */
          if(OPT_DEBUG)
-            log("SCAN -> Unknown error %s:%d (%s) [%s]", remote->ip, remote->port,
+            log_printf("SCAN -> Unknown error %s:%d (%s) [%s]", remote->ip, remote->port,
                 scan_gettype(remote->protocol), scs->name);
          break;
    }
@@ -773,7 +773,7 @@ void scan_negative(struct scan_struct *ss)
    if(OptionsItem->negcache > 0)
    {
       if(OPT_DEBUG >= 2)
-         log("SCAN -> Adding %s to negative cache", ss->ip);
+         log_printf("SCAN -> Adding %s to negative cache", ss->ip);
       negcache_insert(ss->ip);
    }
 }
@@ -892,7 +892,7 @@ void scan_checkfinished(struct scan_struct *ss)
       else
       {
          if(OPT_DEBUG) /* If there was a manual_target, then irc_nick, etc is NULL */
-            log("SCAN -> All tests on %s!%s@%s complete.", ss->irc_nick, ss->irc_username, ss->irc_hostname);
+            log_printf("SCAN -> All tests on %s!%s@%s complete.", ss->irc_nick, ss->irc_username, ss->irc_hostname);
 
          /* Scan was a negative */
          if(!ss->positive)
@@ -991,7 +991,7 @@ void scan_manual(char *param, struct ChannelConf *target)
             continue;
 
       if(OPT_DEBUG)
-         log("SCAN -> Passing %s to scanner [%s] (MANUAL SCAN)", ip, scs->name);
+         log_printf("SCAN -> Passing %s to scanner [%s] (MANUAL SCAN)", ip, scs->name);
 
       if((ret = opm_scan(scs->scanner, ss->remote)) != OPM_SUCCESS)
       {
