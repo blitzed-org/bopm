@@ -1,3 +1,18 @@
+2003-01-04 18:37  strtok
+
+	* src/firedns.c: Added more verbose error when firedns can't find
+	any nameservers
+
+2003-01-03 20:30  andy
+
+	* bopm.conf.blitzed, bopm.conf.sample: A whole lot of extra socks5
+	ports identified by Gael Martinez. :(
+
+2003-01-03 20:13  strtok
+
+	* ChangeLog, configure, configure.in: Version is now 3.01 Updated
+	ChangeLog
+
 2003-01-02 23:09  strtok
 
 	* src/scan.c: Fixed it so it doesn't pass the address of the
