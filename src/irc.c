@@ -922,7 +922,7 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
    
    /* message is a command */
    if(strncasecmp(parv[3], IRCItem->nick, nick_len) == 0  ||
-         strcasecmp(msg, "!all") == 0)
+         strncasecmp(parv[3], "!all", 4) == 0)
    {
       /* XXX command_parse will alter parv[3]. */
       command_parse(parv[3], msg, channel, source_p);
