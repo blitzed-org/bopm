@@ -116,7 +116,12 @@ SCANIP 127.0.0.1
 
 
 # SCANPORT <port> : Port to command possible open proxy to connect to.
-#                   This is usually an IRC related port (such as 6667).
+#                   This is usually an IRC related port (such as 6667).  THIS
+#                   HAS NOTHING TO DO WITH WHAT PORTS ARE SCANNED!  When BOPM
+#                   connects to the client, this is the port ON YOUR SERVER
+#                   that BOPM tries to make it connect to.  This should
+#                   normally be a port that your ircd is listening on.  You
+#                   therefore only need one SCANPORT directive.
 
 SCANPORT 6667
 
