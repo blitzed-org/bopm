@@ -16,6 +16,12 @@ simultaneously), better layout (scalability), and dnsbl support.
 Compatibility
 -------------
 
+Bahamut (tested with 1.4.28)
+Hybrid (tested with 2.8/hybrid-5.3p8)
+Unreal (tested with 3.1.2)
+Xnet (tested with 6.1.3)
+
+
 BOPM is designed for the Bahamut and Hybrid IRCds It would be easily portable
 to any other ircd with little modification (to the +c notice code). However,
 if an ircd does not send IP's in a connection notice (bahamut sends [IP]),
