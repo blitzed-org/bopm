@@ -644,17 +644,15 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
                      remote->ip, remote->port, scan_gettype(remote->protocol), scs->name, remote->bytes_read);
          break;
       case OPM_ERR_BIND:
-         if(OPT_DEBUG >= 2)
-            log("SCAN -> Bind error on %s:%d (%s) [%s]", remote->ip, remote->port,
+         log("SCAN -> Bind error on %s:%d (%s) [%s]", remote->ip, remote->port,
                 scan_gettype(remote->protocol), scs->name);
          break;
       case OPM_ERR_NOFD:
-         if(OPT_DEBUG >= 2)
-            log("SCAN -> File descriptor allocation error %s:%d (%s) [%s]", remote->ip, remote->port,
+         log("SCAN -> File descriptor allocation error %s:%d (%s) [%s]", remote->ip, remote->port,
                 scan_gettype(remote->protocol), scs->name);
          break;
       default:   /* Unknown Error! */
-         if(OPT_DEBUG >=2)
+         if(OPT_DEBUG)
             log("SCAN -> Unknown error %s:%d (%s) [%s]", remote->ip, remote->port,
                 scan_gettype(remote->protocol), scs->name);
          break;
