@@ -8,4 +8,3 @@ bopm.pid
 *.dat
 *.gcov
 gmon.out
-bopchecker
