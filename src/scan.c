@@ -57,6 +57,9 @@ along with this program; if not, write to the Free Software
 #include "dnsbl.h"
 #include "extern.h"
 #include "options.h"
+#include "negcache.h"
+
+extern unsigned int CONF_NEG_CACHE;
 
 static void scan_memfail(void);
 static void scan_establish(scan_struct *conn);
@@ -73,6 +76,7 @@ static int scan_w_socks4(struct scan_struct *conn);
 static int scan_w_socks5(struct scan_struct *conn);
 static int scan_w_cisco(struct scan_struct *conn);
 static int scan_w_wingate(struct scan_struct *conn);
+static int scans_active_for_addr(const char *ip);
 
 /* Linked list head for connections. */
 struct scan_struct *CONNECTIONS = 0;
@@ -151,7 +155,9 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
 		newconn->irc_addr = strdup(irc_addr);
 		newconn->irc_nick = strdup(irc_nick);
 		newconn->irc_user = strdup(irc_user);
-		/* This is allocated later on in scan_establish to save on
+		
+		/*
+		 * This is allocated later on in scan_establish to save on
 		 * memory.
 		 */
 		newconn->data = 0;
@@ -159,6 +165,7 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
 		newconn->bytes_read = 0; 
 		newconn->fd = 0;
      		newconn->aftype = aftype;
+		
 		if (conn_notice)
 			newconn->conn_notice = strdup(conn_notice);
 		else
@@ -170,24 +177,32 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
 		 */
 		newconn->protocol = &(SCAN_PROTOCOLS[i]);
 
-        memset(&(newconn->sockaddr), 0, sizeof(struct bopm_sockaddr));
+		memset(&(newconn->sockaddr), 0, sizeof(struct bopm_sockaddr));
 
 #ifdef IPV6
-        if (aftype == AF_INET6) {
-		/* Fill in sockaddr with information about remote host */
-		newconn->sockaddr.sas.sa6.sin6_family = AF_INET6;
-		newconn->sockaddr.sas.sa6.sin6_port =
-		    htons(newconn->protocol->port);
-		inetpton(aftype, addr, &newconn->sockaddr.sas.sa6.sin6_addr);
-        } else {
+		if (aftype == AF_INET6) {
+			/*
+			 * Fill in sockaddr with information about remote
+			 * host.
+			 */
+			newconn->sockaddr.sas.sa6.sin6_family = AF_INET6;
+			newconn->sockaddr.sas.sa6.sin6_port =
+			    htons(newconn->protocol->port);
+			inetpton(aftype, addr,
+			    &newconn->sockaddr.sas.sa6.sin6_addr);
+		} else {
 #endif   
-		/* Fill in sockaddr with information about remote host */
-		newconn->sockaddr.sas.sa4.sin_family = AF_INET;
-		newconn->sockaddr.sas.sa4.sin_port =
-		    htons(newconn->protocol->port);
-		inetpton(aftype, addr, &newconn->sockaddr.sas.sa4.sin_addr);
+			/*
+			 * Fill in sockaddr with information about remote
+			 * host.
+			 */
+			newconn->sockaddr.sas.sa4.sin_family = AF_INET;
+			newconn->sockaddr.sas.sa4.sin_port =
+			    htons(newconn->protocol->port);
+			inetpton(aftype, addr,
+			    &newconn->sockaddr.sas.sa4.sin_addr);
 #ifdef IPV6
-        }
+		}
 #endif
 		newconn->state = STATE_UNESTABLISHED;
 
@@ -470,6 +485,17 @@ static void scan_negfail(scan_struct *conn)
 		    conn->irc_addr, conn->bytes_read);
 	}
 	conn->state = STATE_CLOSED;
+
+	if (CONF_NEG_CACHE && conn->aftype == AF_INET) {
+		/*
+		 * We now have to check if there are any other scans for the
+		 * same address in progress.  If not then the last scan just
+		 * failed and we can add this to our negative cache.
+		 */
+		if (!scans_active_for_addr(conn->addr))
+			negcache_insert(conn->addr);
+	}
+ 
 }
 
 /*
@@ -554,16 +580,14 @@ static void scan_openproxy(scan_struct *conn)
 	 * Flag connections with the same addr CLOSED aswell, but only if this
 	 * is not a verbose check.  When it is verbose/manual, we care about
 	 * all types of proxy.  When it is automatic (i.e. when a user
-	 * connects) we want them killed quickly sow e can move on.
+	 * connects) we want them killed quickly so we can move on.
 	 */
-#if 0
 	if (!conn->verbose) {
-		for (ss = CONNECTIONS;ss;ss = ss->next) {
-			if (!strcmp(conn->irc_addr, ss->irc_addr)) /* TimeMr14C */
+		for (ss = CONNECTIONS; ss; ss = ss->next) {
+			if (!strcmp(conn->addr, ss->addr))
 				ss->state = STATE_CLOSED;
 		}
 	}
-#endif
 }
 
 /*
@@ -657,8 +681,10 @@ static void scan_del(scan_struct *delconn)
  */
 void scan_timer()
 {
+	int aftype;
 	scan_struct *ss;
 	scan_struct *nextss;
+	char *ipaddr;
  
 	time_t present;
 	time(&present);
@@ -710,10 +736,33 @@ void scan_timer()
 					    ss->irc_addr);
 				}
 			}
- 
-			nextss = ss->next;
-			scan_del(ss);
-			ss = nextss;
+
+			if (CONF_NEG_CACHE && ss->state != STATE_CLOSED &&
+			    ss->aftype == AF_INET) {
+				/* Needed below after ss is deleted. */
+				ipaddr = strdup(ss->addr);
+				aftype = ss->aftype;
+				
+				nextss = ss->next;
+				scan_del(ss);
+				ss = nextss;
+
+				/*
+				 * We now have to check if there are any other
+				 * scans for the same address in progress.  If
+				 * not then the last scan just failed and we
+				 * can add this to our negative cache.
+				 */
+				if (!scans_active_for_addr(ipaddr))
+					negcache_insert(ipaddr);
+
+				free(ipaddr);
+			} else {
+				nextss = ss->next;
+				scan_del(ss);
+				ss = nextss;
+			}
+
 			continue;
 		}
    		ss = ss->next;
@@ -932,3 +981,19 @@ void do_manual_check(struct command *c)
 	scan_connect(ip, c->param, "*", "*", 1, he->h_addrtype, 0);
 }
 
+
+/*
+ * Are there scans currently active (not STATE_CLOSED) for a given IP
+ * address (in ASCII format)?  Return 1 if there are, 0 if not.
+ */
+static int scans_active_for_addr(const char *ip)
+{
+	scan_struct *ss;
+
+	for (ss = CONNECTIONS; ss; ss = ss->next) {
+		if (ss->state != STATE_CLOSED && strcmp(ip, ss->addr) == 0)
+			return(1);
+	}
+
+	return(0);
+}
