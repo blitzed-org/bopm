@@ -666,8 +666,8 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
       case OPM_ERR_NOFD:
          log("SCAN -> File descriptor allocation error %s:%d (%s) [%s]", remote->ip, remote->port,
                 scan_gettype(remote->protocol), scs->name);
-
-         irc_send("PRIVMSG %s :CHECK -> Scan failed %s:%d (%s) [%s] (file descriptor allocation error)",
+         if(ss->manual_target != NULL)
+            irc_send("PRIVMSG %s :CHECK -> Scan failed %s:%d (%s) [%s] (file descriptor allocation error)",
                    ss->manual_target->name, remote->ip, remote->port, scan_gettype(remote->protocol),
                    scs->name);
          break;
