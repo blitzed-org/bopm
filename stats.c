@@ -40,7 +40,7 @@ along with this program; if not, write to the Free Software
 #include "stats.h"
 
 time_t STAT_START_TIME;
-int STAT_NUM_CONNECTS;
+unsigned int STAT_NUM_CONNECTS;
 unsigned int STAT_DNSBL_MATCHES;
 
 extern protocol_hash SCAN_PROTOCOLS[];
@@ -54,7 +54,7 @@ void do_stats_init()
 
 void do_stats(const char *target)
 {
-   int i;
+   size_t i;
    time_t now = time(NULL);
    time_t uptime = now - STAT_START_TIME;
  

@@ -127,7 +127,7 @@ char *dissect_time(time_t time)
 char *clean(char *str)
 {
 
-    int i;
+    size_t i;
     int lastnon;  /* Position of last non space */
     int firstnon; /* Position of first non space */
 

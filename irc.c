@@ -385,9 +385,9 @@ void irc_parse()
 
    char *token[32];
    int   tokens = 0;
-   int   i, h, len;
    time_t present;
    char *key;
+   size_t i, h, len;
 
    time(&IRC_LAST); /*     Update timeout tracking    */ 
 
@@ -720,6 +720,10 @@ void do_hybrid_connect(int tokens, char **token)
 	char *irc_nick;
 	char conn_notice[MSGLENMAX];
 
+	/* Paranoia. */
+	if (tokens < 11)
+		return;
+
 	STAT_NUM_CONNECTS++;
 
 	/* take a copy of the original connect notice now in case we need it
@@ -765,6 +769,10 @@ void do_trircd_connect(int tokens, char **token)
 	char *irc_nick;
 	char conn_notice[MSGLENMAX];
 
+	/* Paranoia. */
+	if (tokens < 9)
+		return;
+
 	STAT_NUM_CONNECTS++;
 
 	/* take a copy of the original connect notice now in case we need it
@@ -809,6 +817,10 @@ void do_ultimateircd_connect(int tokens, char **token)
 	char *irc_user;     
 	char *irc_nick;
 	char conn_notice[MSGLENMAX];
+
+	/* Paranoia. */
+	if (tokens < 17)
+		return;
 
 	STAT_NUM_CONNECTS++;
 
@@ -859,6 +871,10 @@ void do_xnet_connect(int tokens, char **token)
 	char *irc_nick;
 	char conn_notice[MSGLENMAX];
 
+	/* Paranoia. */
+	if (tokens < 11)
+		return;
+
 	STAT_NUM_CONNECTS++;
 
 	/* take a copy of the original connect notice now in case we need
@@ -900,9 +916,9 @@ void do_xnet_connect(int tokens, char **token)
  */
 static char *get_chan_key(const char *channel)
 {
-	size_t len;
-	int i, h, ci, ki;
+	int ci, ki;
 	char *kp;
+	size_t i, h, len;
 
 	ci = 0;
 	

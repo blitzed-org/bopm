@@ -61,9 +61,9 @@ char *CONF_AWAY            = 0;
 char *CONF_TARGET_STRING   = 0;
 string_list *CONF_EXCLUDE  = 0;
 
-int  CONF_SCANPORT         = 0;
-int  CONF_PORT             = 0;
-int  CONF_FDLIMIT          = 0;
+unsigned int  CONF_SCANPORT         = 0;
+unsigned int  CONF_PORT             = 0;
+unsigned int  CONF_FDLIMIT          = 0;
 
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
 /*      NAME                  , TYPE   , REQ, REQMET, PTR TO VAR        */
@@ -111,7 +111,7 @@ void config_load(char *filename)
 
     string_list *list, *oldlist, *nextlist;
 
-    int i;
+    size_t i;
 
     if(!(in = fopen(filename, "r")))
      {
@@ -221,7 +221,7 @@ void config_load(char *filename)
 
 void config_checkreq()
 {
-      int i;
+      size_t i;
       int errfnd = 0;
       string_list *list;
 

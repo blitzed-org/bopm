@@ -50,7 +50,7 @@ void do_oper_cmd(const char *nick, const char *cmd, const char *param,
 		  "checking, yo.", target, nick);
 	 return;
        }
-      checkoper(nick, cmd, param, target, CMD_CHECK);
+      checkoper(nick, param, target, CMD_CHECK);
     }
    else
     {
@@ -60,8 +60,8 @@ void do_oper_cmd(const char *nick, const char *cmd, const char *param,
    return;
 }
 
-void checkoper(const char *nick, const char *cmd, const char *param,
-	       const char *target, unsigned int cmd_type)
+void checkoper(const char *nick, const char *param, const char *target,
+    unsigned int cmd_type)
 {
    int i;
 

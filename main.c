@@ -47,12 +47,11 @@ along with this program; if not, write to the Free Software
 #include "options.h"
 #include "version.h"
 
-RETSIGTYPE do_alarm(int);
-RETSIGTYPE do_int(int);
+RETSIGTYPE do_signal(int signum);
 
 int ALARMED = 0;
 
-int OPT_DEBUG = 0;
+unsigned int OPT_DEBUG = 0;
 char *CONFNAME = DEFAULTNAME;
 
 char *CONFDIR = VARDIR;
@@ -160,9 +159,9 @@ int main(int argc, char **argv)
 
     /* Setup alarm & int handlers */
  
-    ALARMACTION.sa_handler = &(do_alarm);  
+    ALARMACTION.sa_handler = &(do_signal);  
     ALARMACTION.sa_flags = SA_RESTART;
-    INTACTION.sa_handler = &(do_int);
+    INTACTION.sa_handler = &(do_signal);
     
     sigaction(SIGALRM, &ALARMACTION, 0);
     sigaction(SIGINT, &INTACTION, 0);
@@ -190,15 +189,16 @@ int main(int argc, char **argv)
     return 0;
 }
 
-
-void do_alarm(int notused)
+void do_signal(int signum)
 {
-   ALARMED = 1;
-   alarm(1);
-}
-
-void do_int(int notused)
-{
-   log("MAIN -> Caught SIGINT, bye!");
-   exit(0);
+	switch (signum) {
+	case SIGALRM:
+		ALARMED = 1;
+		alarm(1);
+		break;
+	case SIGINT:
+		log("MAIN -> Caught SIGINT, bye!");
+		exit(0);
+		break;
+	}
 }

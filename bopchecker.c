@@ -213,18 +213,27 @@ void log(char *data,...)
 
 void irc_kline(char *addr, char *ip)
 {
+	/* Just enough to shut gcc up */
+	if (addr || ip)
+		return;
 }
 
 void dnsbl_report(struct scan_struct *ss)
 {
+	if (ss)
+		return;
 }
 
 void irc_send(char *data, ...)
 {
+	if (data)
+		return;
 }
 
 int dnsbl_check(const char *addr, const char *irc_nick,
 		const char *irc_user, char *irc_addr)
 {
+	if (addr || irc_nick || irc_user || irc_addr)
+		return(0);
 	return(0);
 }

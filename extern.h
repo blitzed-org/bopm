@@ -29,12 +29,12 @@
     extern char *CONF_TARGET_STRING;
     extern string_list *CONF_EXCLUDE;
 
-    extern int   CONF_PORT;
-    extern int   CONF_SCANPORT;
-    extern int   CONF_FDLIMIT;
+    extern unsigned int CONF_PORT;
+    extern unsigned int CONF_SCANPORT;
+    extern unsigned int CONF_FDLIMIT;
 
-    extern int   OPT_DEBUG;
+    extern unsigned int OPT_DEBUG;
  
-    extern    time_t STAT_START_TIME;
-    extern    int STAT_NUM_CONNECTS;
+    extern time_t STAT_START_TIME;
+    extern unsigned int STAT_NUM_CONNECTS;
 #endif    

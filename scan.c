@@ -116,7 +116,7 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
 		  char *irc_user, int verbose, char *conn_notice)
 {
 
-      int i;                
+      size_t i;                
       scan_struct *newconn; 
 
       if(OPT_DEBUG)
@@ -258,8 +258,7 @@ void scan_check()
 
 #ifdef HAVE_SYS_POLL_H
     static struct pollfd ufds[MAX_POLL];  /* MAX_POLL is defined in options.h */
-    int i;
-    unsigned long size;
+    unsigned long size, i;
 #else /* select() */
     fd_set w_fdset;
     fd_set r_fdset;

@@ -36,9 +36,8 @@
 
 	void do_oper_cmd(const char *nick, const char *cmd,
 			 const char *param, const char *target);
-	void checkoper(const char *nick, const char *cmd,
-		       const char *param, const char *target,
-		       unsigned int cmd_type);
+	void checkoper(const char *nick, const char *param,
+	    const char *target, unsigned int cmd_type);
 	void check_userhost(const char *userhost);
 	void delete_command(unsigned int index);
 	void reap_commands(time_t present);
