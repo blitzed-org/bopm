@@ -3,21 +3,12 @@
 
       typedef int (*config_function) (char *);
       typedef struct config_hash config_hash;
-      typedef struct perform_struct perform_struct;
 
       struct config_hash
        {
            char *key;
            config_function function;
        };
-
-
-       struct perform_struct
-       {
-           perform_struct *next;
-           char *perform;
-       };
-
 
        /* Config Functions */
 
@@ -28,11 +19,11 @@
        int param_user(char *args);
        int param_nick(char *args);
        int param_oper(char *args);
-       int param_perform(char *args);
        int param_reason(char *args);
        int param_scanip(char *args);
        int param_scanport(char *args);
        int param_bindirc(char *args);
        int param_bindscan(char *args);
+       int param_channels(char *args);
 
 #endif

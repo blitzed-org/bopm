@@ -401,16 +401,22 @@ void irc_parse()
 
 }
 
+/*
+ *  Perform on connect functions.
+ *
+ *
+ */
+
 
 void do_perform()
-{   
-      struct perform_struct *pf;
-
-      for(pf = CONF_PERFORM; pf; pf = pf->next)
-         irc_send(pf->perform);       
-         
-       
+{    
+      irc_send("JOIN %s", CONF_CHANNELS);
 }
+
+/*
+ *  Functions we need to perform ~1 seconds.
+ *
+ */
 
 void irc_timer()
 {

@@ -13,10 +13,10 @@
     extern char *CONF_SCANIP;
     extern char *CONF_BINDIRC;
     extern char *CONF_BINDSCAN;
+    extern char *CONF_CHANNELS;
 
     extern int   CONF_PORT;
     extern int   CONF_SCANPORT;
 
-    extern perform_struct *CONF_PERFORM;
 
 #endif    

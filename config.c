@@ -39,11 +39,11 @@ char *CONF_REASON          = 0;
 char *CONF_SCANIP          = 0;
 char *CONF_BINDIRC         = 0;
 char *CONF_BINDSCAN        = 0;
+char *CONF_CHANNELS        = 0;
 
 int  CONF_SCANPORT         = 0;
 int  CONF_PORT             = 0;
 
-perform_struct *CONF_PERFORM = 0;
 
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
 
@@ -52,13 +52,13 @@ config_hash hash[] = {
        {"PORT",     &(param_port)     },
        {"USER",     &(param_user)     },
        {"NICK",     &(param_nick)     },
-       {"PERFORM",  &(param_perform)  },
        {"OPER",     &(param_oper)     },
        {"REASON",   &(param_reason)   },
        {"SCANIP",   &(param_scanip)   },
        {"SCANPORT", &(param_scanport) },
        {"BINDIRC",  &(param_bindirc)  },
        {"BINDSCAN", &(param_bindscan) },
+       {"CHANNELS", &(param_channels) }
 };
 
 
@@ -131,6 +131,20 @@ int param_server(char *args)
         if(!CONF_SERVER)
             config_memfail();
             	  	
+        return 1;
+}
+
+
+int param_channels(char *args)
+{
+        if(CONF_CHANNELS)
+           free(CONF_CHANNELS);
+   
+        CONF_CHANNELS = strdup(args);
+
+        if(!CONF_CHANNELS)
+              config_memfail();
+ 
         return 1;
 }
 
@@ -244,42 +258,3 @@ int param_scanip(char *args)
 
           return 1;
 }
-
-int param_perform(char *args)
-{
-
-        perform_struct *newpf;
-        perform_struct *pf;
-	
-        if(strlen(args) == 0)
-            return 0;
-    
-	newpf = malloc(sizeof(perform_struct));
-	
-	if(!newpf)
-	     config_memfail();
-
-        if(!CONF_PERFORM)            //First perform 
-	 {              
-	      newpf->perform = strdup(args);
-	      newpf->next = 0;
-              CONF_PERFORM = newpf;
-	      return 1;
-         }
-	
-	for(pf = CONF_PERFORM; pf; pf = pf->next)
-	 {
-             if(!pf->next)
-	       {
-                   newpf->perform = strdup(args);
-		   pf->next = newpf;
-		   newpf->next = 0;
-		   break;
-	       }
-         }
-
-        return 1;
-}
-
-
-
