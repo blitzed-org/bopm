@@ -63,6 +63,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token PROTOCOL
 %token PROTOCOLTYPE
 %token REALNAME
+%token SCANLOG
 %token SCANNER
 %token SENDMAIL
 %token SERVER
@@ -108,6 +109,7 @@ options_items: options_items options_item |
 options_item: options_negcache |
               options_pidfile |
               options_dns_fdlimit |
+              options_scanlog |
               error;
 
 options_negcache: NEGCACHE '=' NUMBER ';'
@@ -125,6 +127,12 @@ options_dns_fdlimit: DNS_FDLIMIT '=' NUMBER ';'
 {
    OptionsItem->dns_fdlimit = $3;
 };
+
+options_scanlog: SCANLOG '=' STRING ';'
+{
+   MyFree(OptionsItem->scanlog);
+   OptionsItem->scanlog = DupString($3);
+}
 
 /*************************** IRC BLOCK ***************************/
 

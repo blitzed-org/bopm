@@ -1,3 +1,5 @@
+/* vim: set shiftwidth=3 softtabstop=3 expandtab: */ 
+
 /*
  * Copyright (C) 2002  Erik Fears
  *
@@ -88,6 +90,7 @@ void scan_free(struct scan_struct *);
 void scan_irckline(struct scan_struct *);
 void scan_positive(struct scan_struct *);
 void scan_negative(struct scan_struct *);
+static void scan_log(OPM_REMOTE_T *);
 
 /** Callbacks for LIBOPM */
 void scan_open_proxy(OPM_T *, OPM_REMOTE_T *, int, void *);
@@ -96,6 +99,7 @@ void scan_timeout(OPM_T *, OPM_REMOTE_T *, int, void *);
 void scan_end(OPM_T *, OPM_REMOTE_T *, int, void *);
 void scan_handle_error(OPM_T *, OPM_REMOTE_T *, int, void *);
 
+extern FILE *scanlogfile;
 
 /* scan_cycle
  *
@@ -471,6 +475,9 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
    struct scan_struct *ss;
    struct scanner_struct *scs;
 
+   /* Record that a scan happened */
+   scan_log(remote);
+
    scs = (struct scanner_struct *) data;
    ss = (struct scan_struct *) remote->data;
 
@@ -515,6 +522,9 @@ void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, 
    struct scan_struct *ss;
    struct scanner_struct *scs;
 
+   /* Record that a scan happened */
+   scan_log(remote);
+
    scs = (struct scanner_struct *) data;
    ss = (struct scan_struct *) remote->data;
 
@@ -546,6 +556,9 @@ void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 {
    struct scan_struct *ss;
    struct scanner_struct *scs;
+
+   /* Record that a scan happened */
+   scan_log(remote);
 
    scs = (struct scanner_struct *) data;
    ss = (struct scan_struct *) remote->data;
@@ -961,7 +974,7 @@ void scan_manual(char *param, struct ChannelConf *target)
  * 
  *    Check mask against exempt list.
  * 
- * Paramters:
+ * Parameters:
  *     mask: Mask to check
  * 
  * Return:
@@ -982,4 +995,32 @@ int scan_checkexempt(char *mask)
    }
 
    return 0;
+}
+
+
+/* scan_log
+ *
+ *    Log the fact that a given ip/port/protocol has just been scanned, if the
+ *    user has asked for this to be logged.
+ *
+ * Parameters:
+ *     remote: OPM_REMOTE_T for the remote end
+ */
+
+static void scan_log(OPM_REMOTE_T *remote)
+{
+   char buf_present[25];
+   time_t present;
+   struct tm *tm_present;
+
+   if(!(OptionsItem->scanlog && scanlogfile))
+      return;
+
+   time(&present);
+   tm_present = gmtime(&present);
+   strftime(buf_present, sizeof(buf_present), "%b %d %H:%M:%S %Y", tm_present);
+
+   fprintf(scanlogfile, "[%s] %s:%d (%s)\n", buf_present, remote->ip,
+       remote->port, scan_gettype(remote->protocol));
+   fflush(scanlogfile);
 }

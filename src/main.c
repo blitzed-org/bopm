@@ -1,3 +1,5 @@
+/* vim: set shiftwidth=3 softtabstop=3 expandtab: */ 
+
 /*
 Copyright (C) 2002  Erik Fears
  
@@ -145,6 +147,9 @@ int main(int argc, char **argv)
 
    config_load(CONFFILE);
 
+   if (OptionsItem->scanlog)
+      scanlog_open(OptionsItem->scanlog);
+
    pid = getpid();
 
    pidout = fopen(OptionsItem->pidfile, "w");
@@ -187,6 +192,9 @@ int main(int argc, char **argv)
 
    if (!OPT_DEBUG)
       log_close();
+
+   /* If there's no scanlog open then this will do nothing anyway */
+   scanlog_close();
 
    return(0);
 }

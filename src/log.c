@@ -1,3 +1,5 @@
+/* vim: set shiftwidth=3 softtabstop=3 expandtab: */ 
+
 /*
 Copyright (C) 2002  Erik Fears
  
@@ -12,9 +14,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
  
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
- 
-      Foundation, Inc.
+along with this program; if not, write to
+
+      The Free Software Foundation, Inc.
       59 Temple Place - Suite 330
       Boston, MA  02111-1307, USA.
  
@@ -23,6 +25,7 @@ along with this program; if not, write to the Free Software
 #include "setup.h"
 
 #include <stdio.h>
+#include <errno.h>
 
 #ifdef STDC_HEADERS
 #include <stdlib.h>
@@ -38,12 +41,13 @@ along with this program; if not, write to the Free Software
 
 
 FILE *logfile;
+FILE *scanlogfile;
 
 void log_open(char *filename)
 {
    logfile = fopen(filename, "a");
 
-   if (!logfile)
+   if(!logfile)
    {
       perror("Cannot open log file. Aborting.");
       exit(EXIT_FAILURE);
@@ -55,6 +59,22 @@ void log_close(void)
    fclose(logfile);
 }
 
+void scanlog_open(char *filename)
+{
+   scanlogfile = fopen(filename, "a");
+
+   if(!scanlogfile)
+   {
+      log("Failed to open scan log file: %s", strerror(errno));
+   }
+}
+
+void scanlog_close(void)
+{
+   if(scanlogfile)
+      fclose(scanlogfile);
+}
+
 void log(char *data, ...)
 {
    char data2[513];
@@ -63,7 +83,7 @@ void log(char *data, ...)
    time_t present;
    struct tm *tm_present;
 
-   if (!OPT_DEBUG && !logfile)
+   if(!OPT_DEBUG && !logfile)
       return;
 
    time(&present);
@@ -74,7 +94,7 @@ void log(char *data, ...)
    vsnprintf(data2, 512, data, arglist);
    va_end(arglist);
 
-   if (OPT_DEBUG)
+   if(OPT_DEBUG)
    {
       fprintf(stderr, "[%s] %s\n", buf_present, data2);
    }

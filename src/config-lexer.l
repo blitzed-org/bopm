@@ -121,6 +121,7 @@ PIDFILE                 { return PIDFILE;      }
 PORT                    { return PORT;         }
 PROTOCOL                { return PROTOCOL;     }
 REALNAME                { return REALNAME;     }
+SCANLOG                 { return SCANLOG;      }
 SCANNER                 { return SCANNER;      }
 SENDMAIL                { return SENDMAIL;     }
 SERVER                  { return SERVER;       }

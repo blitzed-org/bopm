@@ -52,6 +52,7 @@ struct OptionsConf
    int negcache;
    int dns_fdlimit;
    char *pidfile;
+   char *scanlog;
 };
 
 struct UserConf

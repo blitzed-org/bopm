@@ -123,6 +123,7 @@ void config_setup()
    OptionsItem->negcache = 0;   /* 0 disabled negcache */
    OptionsItem->pidfile = DupString("bopm.pid");
    OptionsItem->dns_fdlimit = 50;
+   OptionsItem->scanlog = NULL;
 
    /* Setup OPM block defaults */
    OpmItem->sendmail = DupString("/usr/sbin/sendmail");
