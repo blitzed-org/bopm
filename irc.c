@@ -67,7 +67,10 @@ void irc_cycle()
    
 	
       if(IRC_FD <= 0)                 /* No socket open */
-          irc_connect();
+        {
+          irc_init();                 /* Resolve remote host */
+          irc_connect();              /* Connect to remote host */
+        }
 
       IRC_TIMEOUT.tv_sec  = 0;
       IRC_TIMEOUT.tv_usec = 500000;   /* block .5 seconds to avoid excessive CPU use on select() */
@@ -94,39 +97,44 @@ void irc_cycle()
 }
 
 
-/* Create socket and connect to IRC server
- * specificied in config file (CONF_SERVER)
- * with port CONF_PORT
+/*  Allocate socket file descriptor for connection,
+ *  and resolve remote host.
+ *
  */
 
-
-void irc_connect()
+void irc_init()
 {
+
+
+       if(IRC_FD)
+          close(IRC_FD);  
+
+
        memset(&IRC_SVR, 0, sizeof(IRC_SVR));
-   
+
        /* Resolve IRC host */
-       if(!(IRC_HOST = gethostbyname(CONF_SERVER)))          
+       if(!(IRC_HOST = gethostbyname(CONF_SERVER)))
                switch(h_errno)
-		{
+                {
 
 
                     case HOST_NOT_FOUND:
                               log("IRC -> gethostbyname(): The specified host (%s) is unknown", CONF_SERVER);
-			      exit(1);
-	            case NO_ADDRESS:
-			      log("IRC -> gethostbyname(): The specified name (%s) exists, but does not have an IP", CONF_SERVER);
-		              exit(1);
-		    case NO_RECOVERY:
-			      log("IRC -> gethostbyname(): An unrecoverable error occured resolving (%s)", CONF_SERVER);
-			      exit(1);
+                              exit(1);
+                    case NO_ADDRESS:
+                              log("IRC -> gethostbyname(): The specified name (%s) exists, but does not have an IP", CONF_SERVER);
+                              exit(1);
+                    case NO_RECOVERY:
+                              log("IRC -> gethostbyname(): An unrecoverable error occured resolving (%s)", CONF_SERVER);
+                              exit(1);
                     case TRY_AGAIN:
-			      log("IRC -> gethostbyname(): Temporary error occured with authoritive name server (%s)", CONF_SERVER);
-			      exit(1);
+                              log("IRC -> gethostbyname(): Temporary error occured with authoritive name server (%s)", CONF_SERVER);
+                              exit(1);
                     default:
-			      log("IRC -> gethostbyname(): Unknown error resolving (%s)", CONF_SERVER);
+                              log("IRC -> gethostbyname(): Unknown error resolving (%s)", CONF_SERVER);
+                              exit(1);
+                }
 
-		}
-          
 
        IRC_SVR.sin_family      = AF_INET;
        IRC_SVR.sin_port        = htons(CONF_PORT);
@@ -135,38 +143,51 @@ void irc_connect()
        if(IRC_SVR.sin_addr.s_addr == INADDR_NONE)
           {
                log("IRC -> Unknown error resolving remote host (%s)", CONF_SERVER);
-	       exit(1);
-	  }    
+               exit(1);
+          }
 
-   
+
        IRC_FD = socket(PF_INET, SOCK_STREAM, 0);  /* Request file desc for IRC client socket */
+
+
 
        if(IRC_FD == -1)
               switch(errno)
-		{
+                {
                    case EINVAL:
-		   case EPROTONOSUPPORT: 
-			       log("IRC -> socket(): SOCK_STREAM is not supported on this domain");
-			       exit(1);
-	           case ENFILE:
-			       log("IRC -> socket(): Not enough free file descriptors to allocate IRC socket");
-			       exit(1);
+                   case EPROTONOSUPPORT:
+                               log("IRC -> socket(): SOCK_STREAM is not supported on this domain");
+                               exit(1);
+                   case ENFILE:
+                               log("IRC -> socket(): Not enough free file descriptors to allocate IRC socket");
+                               exit(1);
                    case EMFILE:
-			       log("IRC -> socket(): Process table overflow when requesting file descriptor");
-			       exit(1);
-	           case EACCES:
-			       log("IRC -> socket(): Permission denied to create socket of type SOCK_STREAM");
+                               log("IRC -> socket(): Process table overflow when requesting file descriptor");
                                exit(1);
-	           case ENOMEM:
-			       log("IRC -> socket(): Insufficient memory to allocate socket");
+                   case EACCES:
+                               log("IRC -> socket(): Permission denied to create socket of type SOCK_STREAM");
                                exit(1);
-	           default:
-			       log("IRC -> socket(): Unknown error allocating socket");
-			       exit(1);
+                   case ENOMEM:
+                               log("IRC -> socket(): Insufficient memory to allocate socket");
+                               exit(1);
+                   default:
+                               log("IRC -> socket(): Unknown error allocating socket");
+                               exit(1);
 
                 }
 
-      
+
+}
+
+
+/* Create socket and connect to IRC server
+ * specificied in config file (CONF_SERVER)
+ * with port CONF_PORT
+ */
+
+
+void irc_connect()
+{
                                                   /* Connect to IRC server as client */
        if(connect(IRC_FD, (struct sockaddr *) &IRC_SVR , sizeof(IRC_SVR)) == -1)
               switch(errno)
@@ -254,23 +275,19 @@ void irc_parse()
 	    return;
        }
 
-    if(!strcasecmp(second, "001"))
-       {
-            printf("Hit perform\n");
-            do_perform();
-       }  
+    if(!strcasecmp(second, "001"))       
+       do_perform();
+        
     
 }
 
 
 void do_perform()
-{
-   
+{   
       struct perform_hash *pf;
 
       for(pf = CONF_PERFORM; pf; pf = pf->next)
        {       
-           printf("SENDING %s\n", pf->perform);
            snprintf(IRC_SENDBUFF, 512, "%s\n", pf->perform);
            send(IRC_FD, IRC_SENDBUFF, 512, 0);
        }

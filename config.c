@@ -164,8 +164,7 @@ int param_perform(char *args)
 	
         if(strlen(args) == 0)
             return 0;
-
-        printf("READING PERFORM %s\n", args);        
+    
 	newpf = malloc(sizeof(perform_hash));
 	
 	if(!newpf)
