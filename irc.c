@@ -425,10 +425,8 @@ void irc_parse()
        !strcasecmp(token[1], "475"))
 
        { 
-            if(!CONF_CHANSERV_INVITE)            
-                return;
-
-            irc_send(CONF_CHANSERV_INVITE, token[3]); /* 4th token is channel we can't join */             
+            if(CONF_CHANSERV_INVITE)                            
+                 irc_send(CONF_CHANSERV_INVITE, token[3]); /* 4th token is channel we can't join */             
             return;
        }
 
@@ -694,8 +692,12 @@ void irc_parse()
 
 void do_perform()
 {    
-      log("IRC -> Connected to %s:%d", CONF_SERVER, CONF_PORT);
-      irc_send(CONF_NICKSERV_IDENT);       /* Identify to nickserv */
+      log("rc_send(CONF_NICKSERV_IDENT);       /* Identify to nickserv */
+IRC -> Connected to %s:%d", CONF_SERVER, CONF_PORT);
+
+      if(CONF_NICKSERV_IDENT)
+          irc_send(CONF_NICKSERV_IDENT);       /* Identify to nickserv */
+
       irc_send("JOIN %s", CONF_CHANNELS);  /* Join all listed channels */
 
 }

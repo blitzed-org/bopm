@@ -5,9 +5,10 @@
     typedef struct scan_struct scan_struct;
     typedef int (*scan_function) (scan_struct *);
 
-    #define STATE_ESTABLISHED 0
-    #define STATE_SENT        1
-    #define STATE_CLOSED      3   
+    #define STATE_UNESTABLISHED 1
+    #define STATE_ESTABLISHED   2
+    #define STATE_SENT          3
+    #define STATE_CLOSED        4   
  
     struct protocol_hash
      {

@@ -55,7 +55,7 @@ char *CONF_AWAY            = 0;
 
 int  CONF_SCANPORT         = 0;
 int  CONF_PORT             = 0;
-
+int  CONF_FDLIMIT          = 0;
 
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
 /*      NAME                  , TYPE   , REQ, REQMET, PTR TO VAR        */
@@ -71,6 +71,7 @@ config_hash hash[] = {
        {"SCANPORT",            TYPE_INT   , 1,0,    &CONF_SCANPORT           },
        {"BINDIRC",             TYPE_STRING, 0,0,    &CONF_BINDIRC            },
        {"BINDSCAN",            TYPE_STRING, 0,0,    &CONF_BINDSCAN           },
+       {"FDLIMIT",             TYPE_INT   , 0,0,    &CONF_FDLIMIT            },
        {"CHANNELS",            TYPE_STRING, 1,0,    &CONF_CHANNELS           },
        {"NICKSERV_IDENT",      TYPE_STRING, 0,0,    &CONF_NICKSERV_IDENT     },
        {"CHANSERV_INVITE",     TYPE_STRING, 0,0,    &CONF_CHANSERV_INVITE    },
