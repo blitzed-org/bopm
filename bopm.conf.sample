@@ -48,7 +48,8 @@ CHANSERV_INVITE CHANSERV :INVITE %s
 # BINDIRC <ip> : IP to bind to for IRC connection.  You only need to use
 #                this if you need to control which interface BOPM will
 #                bind to when it connects to IRC.  Most people can leave
-#                this commented.
+#                this commented.  LEAVE THIS COMMENTED OUT IF YOU DON'T
+#                UNDERSTAND WHAT IT DOES OR WHY YOU MIGHT NEED IT!
 #
 
 #BINDIRC 127.0.0.1
@@ -66,7 +67,8 @@ CHANSERV_INVITE CHANSERV :INVITE %s
 # BINDSCAN <ip> : IP to bind to for scan connections.  You only need to use
 #                 this if you need to control which interface BOPM will
 #                 bind to when scanning clients.  Most people can leave
-#                 this commented.
+#                 this commented.  LEAVE THIS COMMENTED OUT IF YOU DON'T
+#                 UNDERSTAND WHAT IT DOES OR WHY YOU MIGHT NEED IT!
 #
 
 #BINDSCAN 127.0.0.1
