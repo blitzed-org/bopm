@@ -6,8 +6,9 @@
       void irc_connect();
       void irc_read();
       void irc_parse();
-      void irc_kline();
+      void irc_kline(char *addr);
       void irc_timer();
-        
+      void irc_send(char *data, ...);       
+ 
       void do_perform();
 #endif

@@ -76,7 +76,7 @@ void scan_memfail()
  * with the connecting IP, where we will begin
  * to establish the proxy testing */
 
-void scan_connect(char *addr, char *irc_addr)
+void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user)
 {
 
       int i;                
@@ -114,6 +114,8 @@ void scan_connect(char *addr, char *irc_addr)
 
             newconn->addr = strdup(addr);
             newconn->irc_addr = strdup(irc_addr);
+            newconn->irc_nick = strdup(irc_nick);
+            newconn->irc_user = strdup(irc_user);
                  
             newconn->protocol = &(SCAN_PROTOCOLS[i]); /* Give struct a link to information about the protocol
                                                          it will be handling. */
@@ -239,6 +241,16 @@ void scan_check()
                       if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed and kline*/
                          {
                            irc_kline(ss->irc_addr);
+
+
+                           log("SCAN -> %s: %s!%s@%s (%d)", ss->protocol->type , ss->irc_nick, ss->irc_user, 
+                                         ss->irc_addr, ss->protocol->port);
+
+                           irc_send("PRIVMSG %s :%s: %s!%s@%s (%d)", 
+                                         CONF_CHANNELS, ss->protocol->type, ss->irc_nick, ss->irc_user, 
+                                         ss->irc_addr, ss->protocol->port);
+
+
                            ss->state = STATE_CLOSED;               
                          }
                   if(FD_ISSET(ss->fd, &w_fdset))                                                             
@@ -302,11 +314,14 @@ void scan_del(scan_struct *delconn)
              if(ss == delconn)
                {     
                         /* Removing the head */
+                                   
                    if(lastss == 0)
                      {
                          CONNECTIONS = ss->next;
                          free(ss->addr);
                          free(ss->irc_addr);
+                         free(ss->irc_nick);
+                         free(ss->irc_user);
                          free(ss);
                      }
                    else
@@ -314,6 +329,8 @@ void scan_del(scan_struct *delconn)
                          lastss->next = ss->next;
                          free(ss->addr);
                          free(ss->irc_addr);
+                         free(ss->irc_nick);
+                         free(ss->irc_user);
                          free(ss);
                      }
                    break;

@@ -23,6 +23,9 @@ along with this program; if not, write to the Free Software
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
+
+#include <time.h>
 
 #include "log.h"
 
@@ -49,16 +52,24 @@ void log_close()
 
 void log(char *data, ...)
 {
-
+        time_t present;
+ 
         va_list arglist;
-	
+        char data2[513];
+        char tolog[513];	
+
+
         if(!logfile)
             return;
 
+        time(&present);
+ 
         va_start(arglist, data);
-        vfprintf(logfile, data, arglist);
+        vsprintf(data2, data, arglist);
         va_end(arglist);
 
-        fwrite("\n",1,1,logfile);
+        snprintf(tolog, 512, "[%d] %s\n", (int) present, data2);
+        fwrite(tolog,1,strlen(tolog),logfile);
+
         fflush(logfile);
 }

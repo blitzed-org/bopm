@@ -242,7 +242,7 @@ void irc_send(char *data,...)
  * 
  */
 
-void irc_kline(char *addr, char *reason)
+void irc_kline(char *addr)
 {
      irc_send(CONF_KLINE_COMMAND, addr);
 }
@@ -325,6 +325,8 @@ void irc_parse()
 
    char *addr;           /* IP of remote host in connection notices */
    char *irc_addr;       /* IRC host address of the remote host     */
+   char *irc_user;     
+   char *irc_nick;
 
    char *token[16];
    int   tokens = 0;
@@ -389,12 +391,18 @@ void irc_parse()
                   addr = strtok(addr, "]");        /* Replace ] with a /0              */
 
 
-                 /* Token 10 is (user@host), we want to parse the host out
-                  * for future reference in case we need to kline the host */
+                  /* Token 9 is the nickname of the connecting client */
+                  irc_nick = token[8];
 
-                  irc_addr = strtok((strchr(token[9], '@') + 1) , ")"); 
+                 /* Token 10 is (user@host), we want to parse the user/host out
+                  * for future reference in case we need to kline the host */
+                  
+                  irc_user = token[9] + 1;          /* Shift one byte over to discard '(' */
+                  irc_user = strtok(irc_user, "@"); /* username is everything before the '@' */
+                     
+                  irc_addr = strtok(NULL , ")");    /* irc_addr is everything between '@' and closing ')' */
                                 
-                  scan_connect(addr, irc_addr);
+                  scan_connect(addr, irc_addr, irc_nick, irc_user);
             }
      }
 
@@ -410,6 +418,7 @@ void irc_parse()
 
 void do_perform()
 {    
+      log("IRC -> Connected to %s:%d", CONF_SERVER, CONF_PORT);
       irc_send("JOIN %s", CONF_CHANNELS);
 }
 
