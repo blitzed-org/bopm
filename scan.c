@@ -525,7 +525,7 @@ static void scan_openproxy(scan_struct *conn)
 	 */
 	if (!conn->verbose) {
 		for (ss = CONNECTIONS;ss;ss = ss->next) {
-			if (!strcmp(conn->irc_addr, ss->irc_addr))
+			if (conn->sockaddr.sin_addr.s_addr == ss->sockaddr.sin_addr.s_addr)
 				ss->state = STATE_CLOSED;
 		}
 	}

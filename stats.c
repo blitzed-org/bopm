@@ -47,6 +47,7 @@ unsigned int STAT_DNSBL_MATCHES;
 extern protocol_hash SCAN_PROTOCOLS[];
 extern size_t SCAN_NUMPROTOCOLS;
 
+extern unsigned int FD_USE;
 
 void do_stats_init(void)
 {
@@ -63,6 +64,7 @@ void do_stats(const char *target)
 	uptime = now - STAT_START_TIME;
  
 	irc_send("PRIVMSG %s :Uptime: %s", target, dissect_time(uptime));
+        irc_send("PRIVMSG %s :Using %d/%d file descriptors", target, FD_USE, CONF_FDLIMIT);
 
 	if (CONF_DNSBL_ZONE) {
 		irc_send("PRIVMSG %s :DNSBL: %u successful lookup%s from "
