@@ -20,6 +20,7 @@
     extern char *CONF_DNSBL_ZONE;
     extern char *CONF_DNSBL_FROM;
     extern char *CONF_DNSBL_TO;
+    extern char *CONF_SENDMAIL;
 
     extern int   CONF_PORT;
     extern int   CONF_SCANPORT;

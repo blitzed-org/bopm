@@ -35,12 +35,12 @@ along with this program; if not, write to the Free Software
 #include <sys/time.h>
 
 #include "config.h"
-#include "dnsbl.h"
 #include "irc.h"
 #include "log.h"
 #include "opercmd.h"
 #include "scan.h"
 #include "stats.h"
+#include "dnsbl.h"
 #include "extern.h"
 
 
@@ -86,7 +86,8 @@ void scan_memfail()
  * with the connecting IP, where we will begin
  * to establish the proxy testing */
 
-void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user, int verbose)
+void scan_connect(char *addr, char *irc_addr, char *irc_nick,
+		  char *irc_user, int verbose, char *conn_notice)
 {
 
       int i;                
@@ -130,6 +131,9 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user, in
             newconn->irc_user = strdup(irc_user);
 	    newconn->verbose = verbose;
                  
+	    if(conn_notice)
+	       newconn->conn_notice = strdup(conn_notice);
+
             newconn->protocol = &(SCAN_PROTOCOLS[i]); /* Give struct a link to information about the protocol
                                                          it will be handling. */
 
@@ -148,6 +152,8 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user, in
                  free(newconn->irc_addr);
                  free(newconn->irc_user);
                  free(newconn->irc_nick);
+		 if(newconn->conn_notice)
+		    free(newconn->conn_notice);
                  free(newconn);
                  continue;
               }
@@ -260,6 +266,12 @@ void scan_check()
                          {
                            irc_kline(ss->irc_addr);
 
+			   if(CONF_DNSBL_FROM && CONF_DNSBL_TO &&
+			      CONF_SENDMAIL)
+			    {
+			      dnsbl_report(ss);
+			    }
+
                            log("SCAN -> %s: %s!%s@%s (%d)", ss->protocol->type , ss->irc_nick, ss->irc_user, 
                                          ss->irc_addr, ss->protocol->port);
 
@@ -367,6 +379,8 @@ void scan_del(scan_struct *delconn)
                          free(ss->irc_addr);
                          free(ss->irc_nick);
                          free(ss->irc_user);
+			 if(ss->conn_notice)
+			   free(ss->conn_notice);
                          free(ss);
                      }
                    else
@@ -376,6 +390,8 @@ void scan_del(scan_struct *delconn)
                          free(ss->irc_addr);
                          free(ss->irc_nick);
                          free(ss->irc_user);
+			 if(ss->conn_notice)
+			   free(ss->conn_notice);
                          free(ss);
                      }
                    break;
@@ -687,7 +703,7 @@ void do_manual_check(struct command *c)
    if(CONF_DNSBL_ZONE)
       dnsbl_check(ip, "*", "*", c->param);
 
-   scan_connect(ip, c->param, "*", "*", 1);    /* Scan using verbose */
+   scan_connect(ip, c->param, "*", "*", 1, NULL);    /* Scan using verbose */
                                            
 }
 

@@ -31,9 +31,11 @@ along with this program; if not, write to the Free Software
 #include <time.h>
 #include <errno.h>
 
+#include "irc.h"
+#include "opercmd.h"
+#include "scan.h"
 #include "dnsbl.h"
 #include "extern.h"
-#include "irc.h"
 #include "log.h"
 
 extern unsigned int STAT_DNSBL_MATCHES;
@@ -108,4 +110,10 @@ int dnsbl_check(const char *addr, const char *irc_nick,
    irc_kline(irc_addr);
    STAT_DNSBL_MATCHES++;
    return(1);
+}
+
+/* send an email to report this open proxy */
+void dnsbl_report(struct scan_struct *ss)
+{
+   log("Would be emailing now");
 }

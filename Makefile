@@ -23,7 +23,7 @@ all: bopm
 	rm -f *.da
 
 config.o:  config.h                        log.h
-dnsbl.o:            dnsbl.h extern.h irc.h log.h
+dnsbl.o:            dnsbl.h extern.h irc.h log.h        opercmd.h scan.h
 irc.o:     config.h dnsbl.h extern.h irc.h log.h        opercmd.h scan.h
 log.o:                      extern.h       log.h
 main.o:                     extern.h irc.h log.h        opercmd.h scan.h stats.h

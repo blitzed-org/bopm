@@ -38,9 +38,9 @@ along with this program; if not, write to the Free Software
 #include "irc.h"
 #include "log.h"
 #include "config.h"
-#include "dnsbl.h"
 #include "opercmd.h"
 #include "scan.h"
+#include "dnsbl.h"
 #include "stats.h"
 #include "extern.h"
 #include "options.h"
@@ -562,7 +562,18 @@ void irc_parse()
 
           if(!strcmp(token[7], "connecting:"))
             { 
+		 char conn_notice[513];
 		 STAT_NUM_CONNECTS++;
+
+		 /* take a copy of the original connect notice now in case
+		  * we need it for evidence later */
+		 snprintf(conn_notice, sizeof(conn_notice),
+			  "%s %s %s %s %s %s %s %s %s %s %s", token[0],
+			  token[1], token[2], token[3], token[4], token[5],
+			  token[6], token[7], token[8], token[9], token[10]);
+
+		 /* make sure it is null terminated */
+		 conn_notice[512] = '\0';
 
                  /* Token 11 is the IP of the remote host 
                   * enclosed in [ ]. We need to remove it from
@@ -585,7 +596,7 @@ void irc_parse()
                   if(CONF_DNSBL_ZONE && dnsbl_check(addr, irc_nick,
 					            irc_user, irc_addr))
 	             return;
-                  scan_connect(addr, irc_addr, irc_nick, irc_user, 0);
+                  scan_connect(addr, irc_addr, irc_nick, irc_user, 0, conn_notice);
             }
      }
 

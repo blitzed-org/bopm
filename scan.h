@@ -26,6 +26,8 @@
           char *irc_addr;              /* Hostname of user on IRC (for kline)              */ 
           char *irc_nick;              /* Nickname of user on IRC (for logging)            */
           char *irc_user;              /* Username of user on IRC (for logging)            */
+	  char *conn_notice;           /* original server notice for this connect, used
+					* for evidence                                     */
           int fd;                      /* File descriptor of socket                        */
           struct sockaddr_in sockaddr; /* holds information about remote host for socket() */
           time_t create_time;          /* Creation time, for timeout                       */         
@@ -35,7 +37,8 @@
      };
 
      void do_scan_init();
-     void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user, int verbose);
+     void scan_connect(char *addr, char *irc_addr, char *irc_nick,
+		       char *irc_user, int verbose, char *conn_notice);
      void scan_add(scan_struct *newcon);
      void scan_del(scan_struct *ss);
      void scan_cycle();
