@@ -29,7 +29,7 @@ NICKSERV_IDENT NICKSERV :IDENTIFY password1234
 
 
 
-# NICKSERV_INVITE <line> : Line to send to nickserv to request invite to a
+# CHANSERV_INVITE <line> : Line to send to chanserv to request invite to a
 #                          channel. %s must exist in the line and is the
 #                          channel.  Leave commented to not use.
 
