@@ -189,7 +189,7 @@ void scan_check()
     fd_set w_fdset;
     fd_set r_fdset;
 
-    struct timeval timeout;
+    struct timeval scan_timeout;
     struct scan_struct *ss;
 
     int highfd = 0;
@@ -223,10 +223,10 @@ void scan_check()
            }
       }
 
-    timeout.tv_sec      = 0;  /* No timeout */
-    timeout.tv_usec     = 0;
+    scan_timeout.tv_sec      = 0;  /* No timeout */
+    scan_timeout.tv_usec     = 0;
 
-    switch(select((highfd + 1), &r_fdset, &w_fdset, 0, &timeout)) 
+    switch(select((highfd + 1), &r_fdset, &w_fdset, 0, &scan_timeout)) 
      {
 
         case -1:
