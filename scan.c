@@ -53,8 +53,8 @@ protocol_hash SCAN_PROTOCOLS[] = {
        {"OpenSquid", 8080, &(scan_w_squid),  &(scan_r_squid)  },
        {"OpenSquid", 3128, &(scan_w_squid),  &(scan_r_squid)  },
        {"OpenSquid",   80, &(scan_w_squid),  &(scan_r_squid)  },
-
-       {"Socks4"   , 1080, &(scan_w_socks4), &(scan_r_socks4) }
+       {"Socks4"   , 1080, &(scan_w_socks4), &(scan_r_socks4) },
+       {"Socks5"   , 1080, &(scan_w_socks5), &(scan_r_socks5) }
 };
 
 
@@ -298,8 +298,7 @@ void scan_timer()
     for(ss = CONNECTIONS;ss;)
       {
           if(((present - ss->create_time) >= 30) || (ss->state == STATE_CLOSED)) /* State closed or timed out, remove */ 
-            {
-                printf("Removing %s:%d %d %d\n", ss->irc_addr, ss->protocol->port, (present - ss->create_time), ss->state);
+            { 
                 nextss = ss->next;
                 scan_del(ss);
                 ss = nextss;
@@ -337,7 +336,6 @@ int scan_r_squid(struct scan_struct *ss)
 	
   if(len <= 0)
        return 0;
-
  
   if(!strncasecmp(RECVBUFF, "HTTP/1.0 200", 12))   
         return 1;
@@ -423,7 +421,66 @@ int scan_r_socks4(struct scan_struct *ss)
        return 0;
 
    if(RECVBUFF[0] == 0 && RECVBUFF[1] == 90)
-      return 1;
+       return 1; 
+
+   return 0;
+}
+
+
+/*
+ *   Functions for handling socks5 data
+ *
+ */
+
+
+/*  Send version authentication selection message to socks5
+ *
+ *      +----+----------+----------+
+ *      |VER | NMETHODS | METHODS  |
+ *      +----+----------+----------+
+ *      | 1  |    1     | 1 to 255 |
+ *      +----+----------+----------+
+ *                                                                                               
+ *  VER always contains 5, for socks version 5
+ *  Method 0 is 'No authentication required'
+ *  
+ */
+
+int scan_w_socks5(struct scan_struct *ss)
+{
+   int len;
+
+                              /* Version 5, 1 number of methods, 0 method (no auth) */
+   len = snprintf(SENDBUFF, 512, "%c%c%c", 5, 1, 0);
+   send(ss->fd, SENDBUFF, len, 0);
+
+   return 1;
+}
+
+/*  Authentication selection reply message.
+ *       +----+--------+
+ *       |VER | METHOD |
+ *       +----+--------+
+ *       | 1  |   1    |
+ *       +----+--------+
+ *                                                                                                                              
+ *   Version should always be 5, method should
+ *   return back method selected by server for  
+ *   authentication. Method 0 indicates no authentication
+ *   which indicates an open proxy.
+ */
+
+int scan_r_socks5(struct scan_struct *ss)
+{
+
+   int len;
+
+   len = recv(ss->fd, RECVBUFF, 512, 0);
+   RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
+
+   /* Version is 5 and method is 0 (no auth) */
+   if(RECVBUFF[0] == 5 && RECVBUFF[1] == 0)
+       return 1;
 
    return 0;
 }

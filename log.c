@@ -32,7 +32,7 @@ FILE *logfile;
 
 void log_open(char *filename)
 {
-    logfile = fopen(filename, "a+");
+    logfile = fopen(filename, "a");
     
     if(!logfile)
       {
