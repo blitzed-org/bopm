@@ -125,6 +125,7 @@ int main(int argc, char **argv)
 		int still_alive = 0;
 		
 		scan_cycle();
+		scan_timer();
 
 		for (ss = CONNECTIONS; ss; ss = ss->next) {
 			if (ss->protocol->stat_numopen)
