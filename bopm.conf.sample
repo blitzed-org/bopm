@@ -69,6 +69,10 @@ SERVER myserver.blitzed.org
 
 
 # PORT <port> : Port of IRC host BOPM will be monitoring connections on
+#               This is the port that BOPM will connect to in order to get on
+#               IRC itself, it is nothing to do with what ports it checks on
+#               clients, nor do you need to list every port your ircd
+#               accepts clients on.  You need only 1 PORT definition.
 #
 
 PORT 6667
