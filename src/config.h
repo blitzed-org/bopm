@@ -106,6 +106,7 @@ struct BlacklistConf
    enum BlacklistType type;
    int     ban_unknown;
    list_t *reply;
+   unsigned int stats_recv;
 };
 
 struct BlacklistReplyConf

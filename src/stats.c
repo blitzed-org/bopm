@@ -71,7 +71,6 @@ along with this program; if not, write to the Free Software
 
 static time_t STATS_UPTIME;
 static unsigned int STATS_CONNECTIONS;
-static unsigned int STATS_DNSBLRECV;
 static unsigned int STATS_DNSBLSENT;
 
 static struct StatsHash STATS_PROXIES[] =
@@ -145,14 +144,14 @@ void stats_connect(void)
  *
  *    Record that a user was found in the blacklist.
  *
- * Parameters: NONE
+ * Parameters: BlacklistConf structure
  * Return: NONE
  *
  */
 
-void stats_dnsblrecv(void)
+void stats_dnsblrecv(struct BlacklistConf *bl)
 {
-   STATS_DNSBLRECV++;
+   bl->stats_recv++;
 }
 
 
@@ -190,16 +189,22 @@ void stats_output(char *target)
    unsigned int i;
    time_t present;
    time_t uptime;
+   node_t *p;
+   struct BlacklistConf *bl;
 
    time(&present);
    uptime = present - STATS_UPTIME;
 
    irc_send("PRIVMSG %s :Uptime: %s", target, dissect_time(uptime));
 
-   if(STATS_DNSBLRECV > 0)
+   LIST_FOREACH(p, OpmItem->blacklists->head)
    {
-      irc_send("PRIVMSG %s :DNSBL: %u successful lookups from blacklists",
-            target, STATS_DNSBLRECV);
+      bl = p->data;
+      if(bl->stats_recv > 0)
+      {
+         irc_send("PRIVMSG %s :DNSBL: %u successful lookups from %s",
+            target, bl->stats_recv, bl->name);
+      }
    }
 
    if(STATS_DNSBLSENT > 0)

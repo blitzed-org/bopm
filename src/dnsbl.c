@@ -76,7 +76,7 @@ void dnsbl_add(struct scan_struct *ss)
 
    LIST_FOREACH(p, OpmItem->blacklists->head)
    {
-		bl = (struct BlacklistConf *) p->data;
+		bl = p->data;
 
 #ifdef WORDS_BIGENDIAN
       snprintf(lookup, 128, "%d.%d.%d.%d.%s", a, b, c, d, bl->name);
@@ -163,7 +163,7 @@ static void dnsbl_positive(struct scan_struct *ss, struct BlacklistConf *bl,
                ss->manual_target->name, ss->ip, bl->name, text_type);
 
    /* record stat */
-   stats_dnsblrecv();
+   stats_dnsblrecv(bl);
 }
 
 void dnsbl_result(struct firedns_result *res)

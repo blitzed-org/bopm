@@ -2,6 +2,7 @@
 #define STATS_H
 
 #include "irc.h"
+#include "config.h"
 
 struct StatsHash
 {
@@ -13,7 +14,7 @@ struct StatsHash
 extern void stats_init(void);
 extern void stats_openproxy(int);
 extern void stats_connect(void);
-extern void stats_dnsblrecv(void);
+extern void stats_dnsblrecv(struct BlacklistConf *);
 extern void stats_dnsblsend(void);
 extern void stats_output(char *);
 
