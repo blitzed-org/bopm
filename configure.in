@@ -83,7 +83,7 @@ if test "$with_select" = "yes" || test "$have_sys_poll_h" = "no"; then
  fi
 fi
 
-AC_CHECK_FUNCS(inet_aton socket strdup strstr)
+AC_CHECK_FUNCS(inet_aton inet_pton socket strdup strstr)
 
 dnl Check if we can use gethostbyname2 for ipv6
 AC_CHECK_FUNCS(gethostbyname gethostbyname2)

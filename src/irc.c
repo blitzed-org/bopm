@@ -283,7 +283,7 @@ static void irc_init(void)
    if (strlen(IRCItem->vhost) > 0)
    {
       int bindret = 0;
-      if (!inetpton(AF_INET, IRCItem->vhost, &(IRC_LOCAL.in4.s_addr)))
+      if (!inet_pton(AF_INET, IRCItem->vhost, &(IRC_LOCAL.in4.s_addr)))
       {
          log("IRC -> bind(): %s is an invalid address", IRCItem->vhost);
          exit(EXIT_FAILURE);

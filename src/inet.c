@@ -12,9 +12,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
  
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
- 
-      Foundation, Inc.
+along with this program; if not, write to:
+
+      The Free Software Foundation, Inc.
       59 Temple Place - Suite 330
       Boston, MA  02111-1307, USA.
  
@@ -322,7 +322,7 @@ const char *inetntop(int af, const void *src, char *dst, unsigned int size)
  */
 
 /* int
- * inetpton(af, src, dst)
+ * inet_pton(af, src, dst)
  *      convert from presentation format (which usually means ASCII printable)
  *      to network format (which is usually some kind of binary format).
  * return:
@@ -344,6 +344,7 @@ const char *inetntop(int af, const void *src, char *dst, unsigned int size)
  *      Paul Vixie, 1996.
  */
 
+#ifndef HAVE_INET_PTON
 static int inet_pton4(src, dst)
 const char *src;
 unsigned char *dst;
@@ -502,8 +503,9 @@ unsigned char *dst;
    memcpy(dst, tmp, IN6ADDRSZ);
    return (1);
 }
-#endif
-int inetpton(af, src, dst)
+#endif	/* IPv6 */
+
+int inet_pton(af, src, dst)
 int af;
 const char *src;
 void *dst;
@@ -524,13 +526,14 @@ void *dst;
       }
       else
          return (inet_pton6(src, dst));
-#endif
+#endif	/* IPv6 */
 
    default:
       return (-1);
    }
    /* NOTREACHED */
 }
+#endif
 
 /*
  * bopm_gethostbyname
