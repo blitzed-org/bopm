@@ -41,6 +41,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token DNSBL_FROM
 %token DNSBL_TO
 %token FD
+%token INVITE
 %token IRC
 %token KLINE
 %token KEY
@@ -103,7 +104,7 @@ options_items: options_items options_item |
 
 options_item: options_negcache |
               options_pidfile |
-				  options_dns_fdlimit |
+              options_dns_fdlimit |
               error;
 
 options_negcache: NEGCACHE '=' NUMBER ';'
@@ -133,7 +134,7 @@ irc_item: irc_away      |
           irc_connregex |
           irc_kline     |
           irc_nick      |
-			 irc_nickserv  |
+          irc_nickserv  |
           irc_mode      |
           irc_oper      |
           irc_password  |
@@ -234,6 +235,7 @@ channel_entry:
 
    item->name = DupString("");
    item->key = DupString("");
+   item->invite = DupString("");
 
    node = node_create(item);
    list_add(IRCItem->channels, node);
@@ -245,8 +247,9 @@ CHANNEL '{' channel_items '}' ';';
 channel_items: channel_items channel_item |
                channel_item;
 
-channel_item:  channel_name |
-               channel_key;
+channel_item:  channel_name  |
+               channel_key   |
+	       channel_invite;
 
 channel_name: NAME '=' STRING ';'
 {
@@ -262,6 +265,14 @@ channel_key: KEY '=' STRING ';'
 
    MyFree(item->key);
    item->key = DupString($3);
+};
+
+channel_invite: INVITE '=' STRING ';'
+{
+   struct ChannelConf *item = tmp;
+
+   MyFree(item->invite);
+   item->invite = DupString($3);
 };
 
 /*************************** USER BLOCK ***************************/

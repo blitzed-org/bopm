@@ -27,7 +27,7 @@ IRC {
 	server = "myserver.blitzed.org";
 	port = 6667;
 	
-	#nickserv = "nickserv :identify password";
+	#nickserv = "privmsg nickserv :identify password";
 
 	oper = "bopm operpass";
 
@@ -41,6 +41,7 @@ IRC {
 	channel {
 	   name = "#bopm";
 	   #key = "somekey";
+		#invite = "privmsg chanserv :invite #bopm";
 	};
 
 	/*

@@ -100,6 +100,7 @@ DNS_FDLIMIT             { return DNS_FDLIMIT;  }
 DNSBL_FROM              { return DNSBL_FROM;   }
 DNSBL_TO                { return DNSBL_TO;     }
 FD                      { return FD;           }
+INVITE                  { return INVITE;       }
 IRC                     { return IRC;          }
 KLINE                   { return KLINE;        }
 KEY                     { return KEY;          }

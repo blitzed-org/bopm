@@ -43,6 +43,7 @@ struct ChannelConf
 {
    char *name;
    char *key;
+   char *invite;
 };
 
 struct OptionsConf

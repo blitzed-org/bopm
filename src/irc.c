@@ -88,6 +88,7 @@ static void m_notice(char **, unsigned int, char *, struct UserInfo *);
 static void m_perform(char **, unsigned int, char *, struct UserInfo *);
 static void m_versioncheck(char **, unsigned int, char *, struct UserInfo *);
 static void m_userhost(char **, unsigned int, char *, struct UserInfo *);
+static void m_cannot_join(char **, unsigned int, char *, struct UserInfo *);
 
 extern struct cnode *nc_head;
 
@@ -123,6 +124,10 @@ static struct CommandHash COMMAND_TABLE[] = {
            {"001",                  m_perform },
            {"002",                  m_versioncheck },
            {"302",                  m_userhost},
+           {"471",                  m_cannot_join},
+           {"473",                  m_cannot_join},
+           {"474",                  m_cannot_join},
+           {"475",                  m_cannot_join},
 };
 
 /* irc_cycle
@@ -970,3 +975,37 @@ void m_userhost(char **parv, unsigned int parc, char *msg, struct UserInfo *sour
 
    command_userhost(parv[3]);
 }
+
+/* m_cannot_join
+ *
+ * parv[0]  = source
+ * parv[1]  = numeric
+ * parv[2]  = target (bopm)
+ * parv[3]  = channel
+ * parv[4]  = error text
+ *
+ */
+
+void m_cannot_join(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+{
+   node_t *node;
+   struct ChannelConf *channel;
+
+   if(parc < 5)
+      return;
+
+   LIST_FOREACH(node, IRCItem->channels->head)
+   {
+      channel = (struct ChannelConf *) node->data;
+
+      if(strlen(channel->name) == 0 || strlen(channel->invite) == 0)
+         continue;
+
+      if(strcmp(channel->name, parv[3]) != 0)
+         continue;
+
+      irc_send("%s", channel->invite);
+      break;
+   }
+}
+
