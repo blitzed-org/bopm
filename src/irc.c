@@ -163,7 +163,7 @@ void irc_cycle(void)
 
 static void irc_init(void)
 {
-	struct bopm_sockaddr bsadr;
+	struct bopm_sockaddr bsaddr;
 
 	ssize = sizeof(struct bopm_sockaddr);
 	isize = sizeof(struct bopm_ircaddr);
@@ -173,7 +173,7 @@ static void irc_init(void)
 
 	memset(&IRC_SVR, 0, ssize);
 	memset(&IRC_LOCAL, 0, isize);
-	memset(&bsadr, 0, sizeof(struct bopm_sockaddr));
+	memset(&bsaddr, 0, sizeof(struct bopm_sockaddr));
 
 	/* Resolve IRC host. */
 	if (!(IRC_HOST = bopm_gethostbyname(CONF_SERVER))) {
@@ -276,31 +276,35 @@ static void irc_init(void)
 	}
 
 	if (CONF_BINDIRC) {
+		int bindret = 0;
 #ifdef IPV6
         	if (bindto_ipv6) {
             		if (!inetpton(AF_INET6, CONF_BINDIRC, &(IRC_LOCAL.ins.in6.s6_addr))) {
                 		log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
                  		exit(EXIT_FAILURE);
             		}   
-			copy_s_addr(bsadr.sas.sa6.sin6_addr.s6_addr,
+			copy_s_addr(bsaddr.sas.sa6.sin6_addr.s6_addr,
 			    IRC_LOCAL.ins.in6.s6_addr);
-			bsadr.sas.sa6.sin6_family = AF_INET6;
-			bsadr.sas.sa6.sin6_port = htons(0);
+			bsaddr.sas.sa6.sin6_family = AF_INET6;
+			bsaddr.sas.sa6.sin6_port = htons(0);
+			bindret = bind(IRC_FD, (struct sockaddr *) &(bsaddr.sas.sa6),
+				sizeof(struct bopm_sockaddr));
         	} else {
 #endif
             		if (!inetpton(AF_INET, CONF_BINDIRC, &(IRC_LOCAL.ins.in4.s_addr))) {
                 		log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
                  		exit(EXIT_FAILURE);
             		}
-			bsadr.sas.sa4.sin_addr.s_addr = IRC_LOCAL.ins.in4.s_addr;
-                        bsadr.sas.sa4.sin_family = AF_INET;
-                        bsadr.sas.sa4.sin_port = htons(0);
+			bsaddr.sas.sa4.sin_addr.s_addr = IRC_LOCAL.ins.in4.s_addr;
+                        bsaddr.sas.sa4.sin_family = AF_INET;
+                        bsaddr.sas.sa4.sin_port = htons(0);
+			bindret = bind(IRC_FD, (struct sockaddr *) &(bsaddr.sas.sa4),
+                                sizeof(struct bopm_sockaddr));
 #ifdef IPV6
         	}
 #endif
 
-		if (bind(IRC_FD, (struct sockaddr *)&bsadr,
-		    sizeof(struct bopm_sockaddr))) {
+		if (bindret) {
 			switch(errno) {
 			case EACCES:
 				log("IRC -> bind(): No access to bind to %s",
