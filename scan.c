@@ -245,7 +245,8 @@ void scan_check()
              for(ss = CONNECTIONS; ss; ss = ss->next)
                {
                   if(FD_ISSET(ss->fd, &r_fdset) && (ss->state == STATE_SENT))
-                      if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed and kline*/
+                    {
+                        if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed and kline*/
                          {
                            irc_kline(ss->irc_addr);
 
@@ -264,6 +265,14 @@ void scan_check()
                                      tss->state = STATE_CLOSED;
                              }               
                          }
+                      else      
+                          {
+                            /* Read returned false, we discard the connection as a closed proxy
+                             * to save CPU. */
+                            ss->state = STATE_CLOSED; 
+                          }
+                     }
+
                   if(FD_ISSET(ss->fd, &w_fdset))                                                             
                       if((*ss->protocol->w_handler)(ss)) /* If write returns true, flag STATE_SENT */  
                            ss->state = STATE_SENT;
@@ -414,7 +423,6 @@ int scan_r_squid(struct scan_struct *ss)
   if(!strncasecmp(RECVBUFF, "HTTP/1.0 200", 12))   
         return 1;
    
-
   return 0;
 }
 
