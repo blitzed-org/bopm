@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 	else
 		host = argv[1];
 
-	if(!(he = gethostbyname(host))) {
+	if(!(he = bopm_gethostbyname(host))) {
 		switch(h_errno) {
 			case HOST_NOT_FOUND:
 				fprintf(stderr, "Host '%s' is unknown.\n",
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Checking %s [%s] for open proxies\n", host, ip);
 
 	/* Scan using verbose. */
-	scan_connect(ip, host, "*", "*", 1, 0);
+	scan_connect(ip, host, "*", "*", 1, he->h_addrtype, 0);
 
 	do {
 		still_alive = 0;

@@ -30,12 +30,6 @@ along with this program; if not, write to the Free Software
 # include <string.h>
 #endif
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -132,7 +126,7 @@ static void scan_memfail(void)
  */
 
 void scan_connect(char *addr, char *irc_addr, char *irc_nick,
-    char *irc_user, int verbose, char *conn_notice)
+    char *irc_user, int verbose, int aftype, char *conn_notice)
 {
 	size_t i;                
 	scan_struct *newconn; 
@@ -164,7 +158,7 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
 		newconn->verbose = verbose;
 		newconn->bytes_read = 0; 
 		newconn->fd = 0;
-     
+     		newconn->aftype = aftype;
 		if (conn_notice)
 			newconn->conn_notice = strdup(conn_notice);
 		else
@@ -176,14 +170,21 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
 		 */
 		newconn->protocol = &(SCAN_PROTOCOLS[i]);
 
-		memset(&(newconn->sockaddr), 0, sizeof(struct sockaddr_in));
+        memset(&(newconn->sockaddr), 0, sizeof(struct bopm_sockaddr));
 
-		/* Fill in sockaddr with information about remote host. */
-		newconn->sockaddr.sin_family = AF_INET;
-		newconn->sockaddr.sin_port =
-		    htons(newconn->protocol->port); 
-		newconn->sockaddr.sin_addr.s_addr = inet_addr(addr);
-		/* Queue connection. */
+#ifdef IPV6
+        if (aftype == AF_INET6) {
+            newconn->sockaddr.sas.sa6.sin6_family = AF_INET6;   /* Fill in sockaddr with information about remote host */
+            newconn->sockaddr.sas.sa6.sin6_port = htons(newconn->protocol->port);
+            newconn->sockaddr.sas.sa6.sin6_addr = *((struct in6_addr *) addr);
+        } else {
+#endif   
+            newconn->sockaddr.sas.sa4.sin_family = AF_INET;   /* Fill in sockaddr with information about remote host */
+            newconn->sockaddr.sas.sa4.sin_port = htons(newconn->protocol->port);
+            newconn->sockaddr.sas.sa4.sin_addr = *((struct in_addr *) addr);
+#ifdef IPV6
+        }
+#endif
 		newconn->state = STATE_UNESTABLISHED;
 
 		/* Add struct to list of connections. */
@@ -207,24 +208,29 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
 static void scan_establish(scan_struct *conn)
 {
 	/* For local bind() */
-	struct sockaddr_in SCAN_LOCAL;
+	struct bopm_ircaddr SCAN_LOCAL;
+ 	struct bopm_sockaddr bsadr;
 
 	memset(&SCAN_LOCAL, 0, sizeof(struct sockaddr_in));
+	memset(&bsadr, 0, sizeof(struct bopm_sockaddr));
 
 	/* Setup SCAN_LOCAL for local bind() */
 	if (CONF_BINDSCAN) {
-		if (!inet_aton(CONF_BINDSCAN, &(SCAN_LOCAL.sin_addr))) {
-			log("SCAN -> bind(): %s is an invalid address",
-			    CONF_BINDSCAN);
-			exit(EXIT_FAILURE);
-		}
-
-		SCAN_LOCAL.sin_family = AF_INET;
-		SCAN_LOCAL.sin_port = 0;
+        if (bindto_ipv6) {
+            if (!inetpton(AF_INET6, CONF_BINDSCAN, &(SCAN_LOCAL.ins.in6.s6_addr))) {
+                log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
+                 exit(1);
+            }
+        } else {
+            if (!inetpton(AF_INET, CONF_BINDSCAN, &(SCAN_LOCAL.ins.in4.s_addr))) {
+                log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
+                 exit(1);
+            }
+        }
 	}
 
 	/* Request file descriptor for socket. */
-	conn->fd = socket(PF_INET, SOCK_STREAM, 0);
+	conn->fd = socket(conn->aftype, SOCK_STREAM, 0);
 
         /* Increase global FD Use counter. */
         FD_USE++;
@@ -238,8 +244,8 @@ static void scan_establish(scan_struct *conn)
 
 	/* Bind to specific interface designated in conf file. */
 	if (CONF_BINDSCAN) {
-		if (bind(conn->fd, (struct sockaddr *)&SCAN_LOCAL,
-		    sizeof(struct sockaddr_in)) == -1) {
+		copy_s_addr(bsadr.sas.sa6.sin6_addr.s6_addr, SCAN_LOCAL.ins.in6.s6_addr);
+		if (bind(conn->fd, (struct sockaddr *)&bsadr, sizeof(bsadr)) == -1) {
 			switch (errno) {
 			case EACCES:
 				log("SCAN -> bind(): No access to bind to %s",
@@ -523,12 +529,14 @@ static void scan_openproxy(scan_struct *conn)
 	 * all types of proxy.  When it is automatic (i.e. when a user
 	 * connects) we want them killed quickly sow e can move on.
 	 */
+#if 0
 	if (!conn->verbose) {
 		for (ss = CONNECTIONS;ss;ss = ss->next) {
-			if (conn->sockaddr.sin_addr.s_addr == ss->sockaddr.sin_addr.s_addr)
+			if (!strcmp(conn->irc_addr, ss->irc_addr)) /* TimeMr14C */
 				ss->state = STATE_CLOSED;
 		}
 	}
+#endif
 }
 
 /*
@@ -890,10 +898,10 @@ void do_manual_check(struct command *c)
 	irc_send("PRIVMSG %s :Checking %s [%s] for open proxies at "
 	    "request of %s...", CONF_CHANNELS, c->param, ip, c->nick);
 
-	if(CONF_DNSBL_ZONE)
-		dnsbl_check(ip, "*", "*", c->param);
+    	if (CONF_DNSBL_ZONE && he->h_addrtype != AF_INET6)
+            dnsbl_check(ip, "*", "*", c->param);
 
 	/* Scan using verbose. */
-	scan_connect(ip, c->param, "*", "*", 1, 0);
+	scan_connect(ip, c->param, "*", "*", 1, he->h_addrtype, 0);
 }
 

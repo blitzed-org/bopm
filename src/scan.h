@@ -33,17 +33,18 @@ struct scan_struct
 	int  datasize;               /* Length of buffered data                          */
 
 	int fd;                      /* File descriptor of socket                        */
-	struct sockaddr_in sockaddr; /* holds information about remote host for socket() */
+	struct bopm_sockaddr sockaddr; /* holds information about remote host for socket() */
 	time_t create_time;          /* Creation time, for timeout                       */         
 	int state;                   /* Status of scan                                   */
 	unsigned int bytes_read;     /* Number of bytes received                         */
 	protocol_hash *protocol;     /* Pointer to protocol type                         */
 	int verbose;                 /* report progress to channel verbosely?            */
+  	int aftype;
 };
 
 extern void do_scan_init(void);
 extern void scan_connect(char *addr, char *irc_addr, char *irc_nick,
-    char *irc_user, int verbose, char *conn_notice);
+    char *irc_user, int verbose, int aftype, char *conn_notice);
 extern void scan_cycle(void);
 extern void scan_timer(void);    
 extern void do_manual_check(struct command *c);
