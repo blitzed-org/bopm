@@ -213,10 +213,10 @@ static void scan_establish(scan_struct *conn)
 {
 	/* For local bind() */
 	struct bopm_ircaddr SCAN_LOCAL;
- 	struct bopm_sockaddr bsadr;
+ 	struct bopm_sockaddr bsaddr;
 
 	memset(&SCAN_LOCAL, 0, sizeof(struct sockaddr_in));
-	memset(&bsadr, 0, sizeof(struct bopm_sockaddr));
+	memset(&bsaddr, 0, sizeof(struct bopm_sockaddr));
 
 	/* Setup SCAN_LOCAL for local bind() */
 	if (CONF_BINDSCAN) {
@@ -228,8 +228,10 @@ static void scan_establish(scan_struct *conn)
 				    CONF_BINDIRC);
 				exit(EXIT_FAILURE);
 			}
-			copy_s_addr(bsadr.sas.sa6.sin6_addr.s6_addr,
+			copy_s_addr(bsaddr.sas.sa6.sin6_addr.s6_addr,
 			    SCAN_LOCAL.ins.in6.s6_addr);
+			bsaddr.sas.sa6.sin6_family = AF_INET6;
+                        bsaddr.sas.sa6.sin6_port = htons(0);
 		} else {
 #endif
 			if (!inetpton(AF_INET, CONF_BINDSCAN,
@@ -238,8 +240,10 @@ static void scan_establish(scan_struct *conn)
 				    CONF_BINDIRC);
 				exit(EXIT_FAILURE);
 			}
-			bsadr.sas.sa4.sin_addr.s_addr =
+			bsaddr.sas.sa4.sin_addr.s_addr =
 			    SCAN_LOCAL.ins.in4.s_addr;
+			bsaddr.sas.sa4.sin_family = AF_INET;
+                        bsaddr.sas.sa4.sin_port = htons(0);
 		}
 #ifdef IPV6
 	}
@@ -260,7 +264,15 @@ static void scan_establish(scan_struct *conn)
 
 	/* Bind to specific interface designated in conf file. */
 	if (CONF_BINDSCAN) {
-		if (bind(conn->fd, (struct sockaddr *)&bsadr, sizeof(bsadr)) == -1) {
+		int retbind = 0;
+#ifdef IPV6
+		if (bindto_ipv6)
+			retbind = bind(conn->fd, (struct sockaddr *) &(bsaddr.sas.sa6), sizeof(bsaddr));
+		else 
+#else
+			retbind = bind(conn->fd, (struct sockaddr *) &(bsaddr.sas.sa4), sizeof(bsaddr));
+#endif
+		if (retbind == -1) {
 			switch (errno) {
 			case EACCES:
 				log("SCAN -> bind(): No access to bind to %s",
