@@ -46,6 +46,8 @@ along with this program; if not, write to the Free Software
 #include "stats.h"
 #include "options.h"
 
+extern string_list *CONF_SCAN_WARNING;
+
 static RETSIGTYPE do_signal(int signum);
 
 int ALARMED = 0;
@@ -145,6 +147,9 @@ int main(int argc, char **argv)
 		fclose(pidout);
 	}
 
+	if (CONF_SCAN_WARNING)
+		do_scanwarn_init();
+
 	/* Setup alarm & int handlers. */
  
 	ALARMACTION.sa_handler = &(do_signal);  
@@ -165,6 +170,8 @@ int main(int argc, char **argv)
 
 		if (ALARMED) {
 			irc_timer();
+			if (CONF_SCAN_WARNING)
+				scanwarn_timer();
 			scan_timer();
 			ALARMED = 0;
 		}

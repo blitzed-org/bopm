@@ -29,5 +29,11 @@
  * (to avoid flood attempts)
  */
 #define MAXREAD 4096
+
+/* How many nodes to take off the warnq and send as notices, each time.
+ * Currently the warnloop is run every second, so this equates to NOTICEs per
+ * second.  If you do too many them bopm will get SendQ exceeded.
+ */
+#define NOTICES_PER_LOOP 5
      
 #endif /* OPTIONS_H */

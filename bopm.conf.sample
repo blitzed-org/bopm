@@ -333,3 +333,37 @@ FDLIMIT 512
 #                      process ID.
 
 PIDFILE /path/to/bopm.pid
+
+
+# SCAN_WARNING <text> : A warning to notice to each client as it connects, that
+#                       a port scan will be done on them.  We strongly
+#                       recommend AGAINST using this feature of bopm, but it is
+#                       provided due to demand.  Reasons for not using this
+#                       feature:
+#                               1) This should be done by the ircd.
+#                                  Bahamut and many other ircds have code
+#                                  to do this already, and adding it is not
+#                                  at all hard for someone with minimal C
+#                                  knowledge.
+#                               2) Making bopm do this will slow bopm down
+#                                  and detract from bopm's actual purpose
+#                                  (open proxy scanning).
+#                               3) This will reveal the nick of the bopm to
+#                                  each user.
+#                               4) Due to rate-limiting of these notices,
+#                                  clients that do connect via open proxies
+#                                  may not receive the notice before they
+#                                  are disconnected.  This is not an issue
+#                                  if the ircd itself sends the warning.
+#
+#                       If you still insist on using this, you can send
+#                       multiple notices by including the SCAN_WARNING
+#                       directive more than once (e.g. to split a long
+#                       message over multiple lines).
+#
+
+#SCAN_WARNING I am now scanning you to determine wheter you are connecting
+#SCAN_WARNING through an open proxy.  You will see several connections to
+#SCAN_WARNING various ports coming from IP address 192.168.0.1.  This is
+#SCAN_WARNING not a hacking attempt!  If you have any questions please
+#SCAN_WARNING send them to help@example.com.

@@ -28,6 +28,7 @@ extern char *CONF_AWAY;
 extern char *CONF_TARGET_STRING;
 extern char *CONF_PIDFILE;
 extern string_list *CONF_EXCLUDE;
+extern string_list *CONF_SCAN_WARNING;
 
 extern unsigned int CONF_PORT;
 extern unsigned int CONF_SCANPORT;

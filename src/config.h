@@ -7,6 +7,7 @@ typedef struct config_hash config_hash;
 #define TYPE_INT 	2
 #define TYPE_LIST 	3
 #define TYPE_AF		4	/* similar to string, but with aftype */
+#define TYPE_WILDLIST 	5	/* Specifically for wildcards */
 
 struct config_hash
 {

@@ -90,6 +90,7 @@ static char *check_channel(const char *channel);
 
 extern char *CONFFILE;
 extern time_t LAST_REAP_TIME;
+extern string_list *CONF_SCAN_WARNING;
 
 /*
  * Certain variables we don't want to allocate memory for over and over
@@ -707,8 +708,6 @@ static void do_perform(void)
 		irc_send(CONF_NICKSERV_IDENT);
 	}
 
-	log("CONF_CHANNELS %s", CONF_CHANNELS);
-	
 	/* Join all listed channels. */
 	if (CONF_KEYS)
 		irc_send("JOIN %s %s", CONF_CHANNELS, CONF_KEYS);
@@ -750,7 +749,7 @@ static void do_connect(char *addr, char *irc_nick, char *irc_user,
 	 * Check that neither the user's IP nor host matches anything in our
 	 * exclude list.
 	 */
-	for (list = (string_list *) CONF_EXCLUDE; list; list = list->next) {
+	for (list = ((string_list *) CONF_EXCLUDE)->next; list; list = list->next) {
 		if (match(list->text, addr) || match(list->text, irc_addr)) {
 			if (OPT_DEBUG) {
 				log("SCAN -> excluded user %s!%s@%s",
@@ -759,6 +758,12 @@ static void do_connect(char *addr, char *irc_nick, char *irc_user,
 			return;
 		}
 	}
+
+	/*
+	 * Enqueue a warning for this person.
+	 */
+	if (CONF_SCAN_WARNING)
+		add_warning(irc_nick);
    
 	if (CONF_DNSBL_ZONE &&
 	    dnsbl_check(addr, irc_nick, irc_user, irc_addr))
