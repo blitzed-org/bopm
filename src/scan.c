@@ -722,7 +722,7 @@ void scan_positive(struct scan_struct *ss)
    LIST_FOREACH(node, SCANNERS->head)
    {
       scanner = (OPM_T *) ((struct scanner_struct *) node->data)->scanner;
-      opm_endscan(scanner, ss->remote);
+      opm_end(scanner, ss->remote);
    }
 
    /* Set it as a positive (to avoid a scan_negative call later on */
