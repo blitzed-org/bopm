@@ -100,8 +100,8 @@ char                IRC_RAW[MSGLENMAX];      /* Buffer to read data into        
 char                IRC_SENDBUFF[MSGLENMAX]; /* Send buffer                           */
 int                 IRC_RAW_LEN = 0;         /* Position of IRC_RAW                   */
 
-int remote_is_ipv6 = 1;
-int bindto_ipv6 = 1;
+int remote_is_ipv6 = 0;
+int bindto_ipv6 = 0;
 
 int                 IRC_FD = -1;      /* File descriptor for IRC client        */
 
