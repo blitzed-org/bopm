@@ -54,9 +54,9 @@ char RECVBUFF[513];
 
 protocol_hash SCAN_PROTOCOLS[] = {
 
-       {"HTTP", 8080,       &(scan_w_squid),  &(scan_r_squid)  },
-       {"HTTP", 3128,       &(scan_w_squid),  &(scan_r_squid)  },
-       {"HTTP",   80,       &(scan_w_squid),  &(scan_r_squid)  },
+       {"HTTP"      , 8080, &(scan_w_squid),  &(scan_r_squid)  },
+       {"HTTP"      , 3128, &(scan_w_squid),  &(scan_r_squid)  },
+       {"HTTP"      ,   80, &(scan_w_squid),  &(scan_r_squid)  },
        {"Socks4"    , 1080, &(scan_w_socks4), &(scan_r_socks4) },
        {"Socks5"    , 1080, &(scan_w_socks5), &(scan_r_socks5) },
        {"Wingate"   ,   23, &(scan_w_wingate),&(scan_r_wingate)}
@@ -79,7 +79,7 @@ void scan_memfail()
  * with the connecting IP, where we will begin
  * to establish the proxy testing */
 
-void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user)
+void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user, int verbose)
 {
 
       int i;                
@@ -121,7 +121,7 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user)
             newconn->irc_addr = strdup(irc_addr);
             newconn->irc_nick = strdup(irc_nick);
             newconn->irc_user = strdup(irc_user);
-	    newconn->verbose = 0;
+	    newconn->verbose = verbose;
                  
             newconn->protocol = &(SCAN_PROTOCOLS[i]); /* Give struct a link to information about the protocol
                                                          it will be handling. */
@@ -263,12 +263,15 @@ void scan_check()
 				    ss->irc_addr);
 
                            ss->state = STATE_CLOSED;
-
-                           for(tss = CONNECTIONS;tss;tss = tss->next)
-                             {
+                           
+                           if(!ss->verbose)                     
+                            {
+                               for(tss = CONNECTIONS;tss;tss = tss->next)
+                                {
                                  if(!strcmp(ss->irc_addr, tss->irc_addr))
                                      tss->state = STATE_CLOSED;
-                             }               
+                                }
+                            }               
                          }
                       else      
                           {
@@ -647,11 +650,8 @@ int scan_r_wingate(struct scan_struct *ss)
 /* manually check a host for proxies */
 void do_manual_check(struct command *c)
 {
-   int i;
-   scan_struct *newconn;
-   struct sockaddr_in  SCAN_LOCAL; /* For local bind() */
    struct hostent *he;
-   char *host;
+   char *ip;
 
    if(!(he = gethostbyname(c->param)))
     {
@@ -679,104 +679,12 @@ void do_manual_check(struct command *c)
        }
     }
 
-   host = inet_ntoa(*((struct in_addr *) he->h_addr));
-   memset(&SCAN_LOCAL, 0, sizeof(struct sockaddr_in));
-
-   /* Setup SCAN_LOCAL for local bind() */
-   if(CONF_BINDSCAN)
-    {
-      if(!inet_aton(CONF_BINDSCAN, &(SCAN_LOCAL.sin_addr)))
-       {
-         irc_send("PRIVMSG %s :bind(): %s is an invalid address, aieee!",
-                  c->target, CONF_BINDSCAN);
-         exit(1);
-       }
-
-      SCAN_LOCAL.sin_family = AF_INET;
-      SCAN_LOCAL.sin_port = 0;
-    }
+   ip = inet_ntoa(*((struct in_addr *) he->h_addr));
 
    irc_send("PRIVMSG %s :Checking %s [%s] for open proxies at request of %s...",
-            c->target, c->param, host, c->nick);
+            c->target, c->param, ip, c->nick);
 
-   /* Loop through the protocols creating a seperate connection struct for
-    * each port/protocol */
-   for(i = 0; i < sizeof(SCAN_PROTOCOLS) / sizeof(protocol_hash); i++)
-    {
-      newconn = malloc(sizeof(scan_struct));
-
-      if(!newconn)
-       {
-         irc_send("PRIVMSG %s :Memory allocation failed, aieee!",
-                  c->target);
-         scan_memfail();
-       }
-
-      newconn->addr = strdup(host);
-      newconn->irc_addr = strdup(c->param);
-      newconn->irc_nick = strdup("*");
-      newconn->irc_user = strdup("*");
-      newconn->verbose = 1;
-
-      /* Give struct a link to information about the protocol it will be
-       * handling. */
-      newconn->protocol = &(SCAN_PROTOCOLS[i]);
-
-      memset(&(newconn->sockaddr), 0, sizeof(struct sockaddr_in));
-
-      /* Fill in sockaddr with information about remote host */
-      newconn->sockaddr.sin_family = AF_INET;
-      newconn->sockaddr.sin_port = htons(newconn->protocol->port);
-      newconn->sockaddr.sin_addr.s_addr = inet_addr(c->param);
-
-      /* Request file descriptor for socket */
-      newconn->fd = socket(PF_INET, SOCK_STREAM, 0);
-
-      if(newconn->fd == -1)
-       {
-         irc_send("PRIVMSG %s :Error allocating file descriptor!",
-                  c->target);
-         free(newconn->addr);
-         free(newconn->irc_addr);
-         free(newconn->irc_user);
-         free(newconn->irc_nick);
-         free(newconn);
-         continue;
-       }
-
-      /* Bind to specific interface designated in conf file */
-      if(CONF_BINDSCAN)
-       {
-         if(bind(newconn->fd, (struct sockaddr *)&SCAN_LOCAL,
-                 sizeof(struct sockaddr_in)) == -1)
-          {
-            switch(errno)
-             {
-               case EACCES:
-                  irc_send("PRIVMSG %s :No access to bind to %s, aieee!",
-                           c->target, CONF_BINDSCAN);
-                  exit(1);
-               default:
-                  irc_send("PRIVMSG %s :Error binding to %s, aieee!",
-                           c->target, CONF_BINDSCAN);
-             }
-          }
-       }
-
-      /* Log create time of connection for timeouts */
-      time(&(newconn->create_time));
-
-      /* Connection is just established             */
-      newconn->state = STATE_ESTABLISHED;
-
-      /* Add struct to list of connections          */
-      scan_add(newconn);
-
-      /* Set socket non blocking                    */
-      fcntl(newconn->fd, F_SETFL, O_NONBLOCK);
-
-      /* Connect !                                  */
-      connect(newconn->fd, (struct sockaddr *) &(newconn->sockaddr),
-              sizeof(newconn->sockaddr));
-    }
+   scan_connect(c->param, ip, "*", "*", 1);    /* Scan using verbose */
+                                           
 }
+

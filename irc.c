@@ -567,7 +567,7 @@ void irc_parse()
                      
                   irc_addr = strtok(NULL , ")");    /* irc_addr is everything between '@' and closing ')' */
                                 
-                  scan_connect(addr, irc_addr, irc_nick, irc_user);
+                  scan_connect(addr, irc_addr, irc_nick, irc_user, 0);
             }
      }
 
