@@ -9,6 +9,10 @@ ifdef DEBUG_GDB
 CFLAGS += -ggdb
 endif
 
+ifdef DEBUG_GPROF
+CFLAGS += -pg
+endif
+
 objects = main.o config.o irc.o log.o misc.o scan.o stats.o opercmd.o
 
 all: bopm
