@@ -22,6 +22,7 @@ along with this program; if not, write to the Free Software
 
 #include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 
 #include "irc.h"
