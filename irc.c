@@ -33,6 +33,7 @@ along with this program; if not, write to the Free Software
 #include <time.h>
 
 #include "irc.h"
+#include "log.h"
 #include "config.h"
 #include "extern.h"
 
@@ -42,12 +43,13 @@ along with this program; if not, write to the Free Software
 
 
 char                IRC_RAW[513];     /* Buffer to read data into */
+char                IRC_SENDBUFF[513];/* Send buffer */
 int                 IRC_RAW_LEN = 0;  /* Position of IRC_RAW */
 
 int                 IRC_FD = -1;      /* File descriptor for IRC client        */
 struct sockaddr_in  IRC_SVR;          /* Sock Address Struct for IRC server    */
 struct hostent     *IRC_HOST;         /* Hostent struct for IRC server         */
-fd_set              IRC_FDSET;        /* fd_set for IRC data                   */
+fd_set              IRC_FDSET;        /* fd_set for IRC data for select()      */
 
 struct timeval      IRC_TIMEOUT;      /* timeval struct for select() timeout   */
 
@@ -168,5 +170,18 @@ void irc_read()
 
 void irc_parse()
 {
+
+    char *first;
+    
     printf("%s\n", IRC_RAW); 
+
+    first = strtok(IRC_RAW, " ");   /* Parse First Token */
+    
+    if(!strcasecmp(first, "PING"))
+       {
+            snprintf(IRC_SENDBUFF, 512, "PONG %s", strtok(NULL, ""));
+            send(IRC_FD, IRC_SENDBUFF, 512, 0);
+	    return;
+       }
+    
 }

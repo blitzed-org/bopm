@@ -21,22 +21,42 @@ along with this program; if not, write to the Free Software
 */
 
 #include <stdio.h>
-#include "config.h"
+#include <stdarg.h>
 
-#include "extern.h"
-#include "irc.h"
 #include "log.h"
 
-int main()
-{
-    log_open("bopm.log"); 
-    config_load("bopm.conf");
 
-    while(1)
-     {
-	irc_cycle();
-     }
+FILE *logfile;
+
+
+void log_open(char *filename)
+{
+    logfile = fopen(filename, "a");
     
-    log_close();
-    return 0;
+    if(!logfile)
+      {
+           perror("Cannot open log file. Aborting.");
+           exit(1);
+      }
+    
+}
+
+void log_close()
+{
+     fclose(logfile);
+}
+
+void log(char *data, ...)
+{
+
+        va_list arglist;
+	
+        if(!logfile)
+            return;
+
+
+
+        va_start(arglist, data);
+        vfprintf(logfile, data, arglist);
+        va_end(arglist);
 }
