@@ -9,10 +9,8 @@ bopm.pid
 *.gcov
 gmon.out
 bopchecker
-configure
 config.log
 setup.h
 config.cache
 config.status
 Makefile
-

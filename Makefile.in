@@ -48,5 +48,5 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	rm -f config.cache config.log config.status configure setup.h Makefile
+	rm -f config.cache config.log config.status setup.h Makefile
 
