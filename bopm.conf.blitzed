@@ -188,6 +188,13 @@ scanner {
    protocol = SOCKS5:1027;
    protocol = SOCKS5:2425;
 
+   protocol = SOCKS4:29992;
+   protocol = SOCKS4:1080;
+   protocol = SOCKS4:38884;
+   protocol = SOCKS4:18844;
+   protocol = SOCKS4:17771;
+   protocol = SOCKS4:31121;
+
    protocol = ROUTER:23;
 
    /* Less fds are given to this scanner */

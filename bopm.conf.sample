@@ -614,6 +614,17 @@ scanner {
 	protocol = SOCKS5:9447;
 	protocol = SOCKS5:9578;
 
+	/*
+	 * These came courtsey of Keith Dunnett from a bunch of public open
+	 * proxy lists.
+	 */
+	protocol = SOCKS4:29992;
+	protocol = SOCKS4:1080;
+	protocol = SOCKS4:38884;
+	protocol = SOCKS4:18844;
+	protocol = SOCKS4:17771;
+	protocol = SOCKS4:31121;
+
 	fd = 400;
 
 	/* If required you can add settings such as target_ip here
