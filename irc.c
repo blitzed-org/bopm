@@ -440,6 +440,17 @@ void irc_parse()
           
       }
 
+    /* Handle rejoining when kicked */
+
+    /* :grifferz!goats@pc-62-30-219-54-pb.blueyonder.co.uk KICK #wg penguinBopm :test */
+    if(!strcasecmp(token[1], "KICK") && !strcasecmp(token[3], CONF_NICK))
+     {
+	  /* someone kicked us from channel token[2] so let's rejoin */
+	  log("IRC -> Kicked from %s by %s! (%s)", token[2], token[0], token[4]);
+	  irc_send("JOIN %s", token[2]);
+	  return;
+     }
+
     /* Search for +c notices */
 
     if(token[0][0] == ':')
