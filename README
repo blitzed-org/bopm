@@ -1,1 +1,24 @@
+Introduction
+-----------
 
+BOPM (Blitzed Open Proxy Monitor) is an open proxy monitoring
+bot designed for Dalnet based ircds. The bot is designed to
+sit on an indivudual server (all servers on the network have
+to run their own bot) with a local o line and monitor connections.
+When a client connects to the server, BOPM will scan the connection
+for insecure proxies. Insecure proxies are determined by attempting
+to connect the proxy back to another host (usually the IRC server
+in question).
+
+
+BOPM is written groundup in C language, concept derived from wgmon
+wgmon. It improves on wgmon with HTTP support, faster scanning (it can
+scan clients simultaneously), better layout (scalability), and 
+dnsbl support.
+
+
+Operator Channel Commands
+-------------------------
+
+botnick <check> <host>  -- Manually scan host for insecure proxies and output all errors.
+botnick stats           -- Output scan stats, uptime and client connection count.
