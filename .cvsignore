@@ -1,16 +1,10 @@
 *.sw[op]
 *.bb*
-bopm
-bopm.conf
-bopm.log
-bopm.pid
 *.da
 *.dat
 *.gcov
 gmon.out
-bopchecker
 config.log
-setup.h
 config.cache
 config.status
 Makefile
