@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 CC = @CC@
 LNSL = @LNSL@
 LSOCKET = @LSOCKET@
+MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
@@ -79,7 +80,7 @@ DATA =  $(data_DATA)
 
 DIST_COMMON =  README ChangeLog INSTALL Makefile.am Makefile.in TODO \
 aclocal.m4 config.guess config.sub configure configure.in install-sh \
-missing mkinstalldirs src/setup.h.in src/stamp-h.in
+missing mkinstalldirs
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -88,48 +89,20 @@ TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-$(ACLOCAL_M4):  configure.in 
+$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ configure.in 
 	cd $(srcdir) && $(ACLOCAL)
 
 config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
-$(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
+$(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
-
-src/setup.h: src/stamp-h
-	@if test ! -f $@; then \
-		rm -f src/stamp-h; \
-		$(MAKE) src/stamp-h; \
-	else :; fi
-src/stamp-h: $(srcdir)/src/setup.h.in $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS=src/setup.h \
-	     $(SHELL) ./config.status
-	@echo timestamp > src/stamp-h 2> /dev/null
-$(srcdir)/src/setup.h.in: $(srcdir)/src/stamp-h.in
-	@if test ! -f $@; then \
-		rm -f $(srcdir)/src/stamp-h.in; \
-		$(MAKE) $(srcdir)/src/stamp-h.in; \
-	else :; fi
-$(srcdir)/src/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOHEADER)
-	@echo timestamp > $(srcdir)/src/stamp-h.in 2> /dev/null
-
-mostlyclean-hdr:
-
-clean-hdr:
-
-distclean-hdr:
-	-rm -f src/setup.h
-
-maintainer-clean-hdr:
 
 install-dataDATA: $(data_DATA)
 	@$(NORMAL_INSTALL)
@@ -339,29 +312,28 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-hdr mostlyclean-tags mostlyclean-generic
+mostlyclean-am:  mostlyclean-tags mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-hdr clean-tags clean-generic mostlyclean-am
+clean-am:  clean-tags clean-generic mostlyclean-am
 
 clean: clean-recursive
 
-distclean-am:  distclean-hdr distclean-tags distclean-generic clean-am
+distclean-am:  distclean-tags distclean-generic clean-am
 
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-hdr maintainer-clean-tags \
-		maintainer-clean-generic distclean-am
+maintainer-clean-am:  maintainer-clean-tags maintainer-clean-generic \
+		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-uninstall-dataDATA install-dataDATA install-data-recursive \
+.PHONY: uninstall-dataDATA install-dataDATA install-data-recursive \
 uninstall-data-recursive install-exec-recursive \
 uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
 all-recursive check-recursive installcheck-recursive info-recursive \

@@ -60,6 +60,7 @@ POST_UNINSTALL = :
 CC = @CC@
 LNSL = @LNSL@
 LSOCKET = @LSOCKET@
+MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
@@ -116,7 +117,7 @@ OBJECTS = $(bopm_OBJECTS) $(bopchecker_OBJECTS)
 all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu src/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
@@ -134,7 +135,7 @@ stamp-h: $(srcdir)/setup.h.in $(top_builddir)/config.status
 	  && CONFIG_FILES= CONFIG_HEADERS=src/setup.h \
 	     $(SHELL) ./config.status
 	@echo timestamp > stamp-h 2> /dev/null
-$(srcdir)/setup.h.in: $(srcdir)/stamp-h.in
+$(srcdir)/setup.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/stamp-h.in
 	@if test ! -f $@; then \
 		rm -f $(srcdir)/stamp-h.in; \
 		$(MAKE) $(srcdir)/stamp-h.in; \
