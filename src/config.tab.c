@@ -1135,7 +1135,7 @@ case 42:
    node_t *node;
    struct ChannelConf *item;
 
-   item = MyMalloc(sizeof(struct UserConf));
+   item = MyMalloc(sizeof(struct ChannelConf));
 
    item->name = DupString("");
    item->key = DupString("");

@@ -809,7 +809,7 @@ static void m_ping(char **parv, unsigned int parc, char *msg, struct UserInfo *s
       return;
 
    if(OPT_DEBUG >= 2)
-      log("IRC -> PING? PONG!\n");
+      log("IRC -> PING? PONG!");
 
    irc_send("PONG %s", parv[2]);
 }
