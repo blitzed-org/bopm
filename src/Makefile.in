@@ -82,8 +82,9 @@ bin_PROGRAMS = bopm bopchecker
 AM_CPPFLAGS = -DBOPM_ETCDIR="\"$(sysconfdir)\"" -DBOPM_LOGDIR="\"$(localstatedir)\""
 
 bopm_SOURCES = compat.c compat.h config.c config.h dnsbl.c dnsbl.h extern.h \
-    irc.c irc.h log.c log.h main.c match.c match.h misc.c misc.h opercmd.c \
-    opercmd.h options.h scan.c scan.h setup.h stats.c stats.h
+    inet.c inet.h irc.c irc.h log.c log.h main.c match.c match.h misc.c \
+    misc.h opercmd.c opercmd.h options.h scan.c scan.h setup.h stats.c \
+    stats.h
 
 bopchecker_SOURCES = bopchecker.c bopchecker.h compat.c compat.h config.c \
     config.h match.c match.h misc.c misc.h scan.c scan.h setup.h
@@ -104,8 +105,9 @@ bopchecker_OBJECTS = $(am_bopchecker_OBJECTS)
 bopchecker_DEPENDENCIES =
 bopchecker_LDFLAGS =
 am_bopm_OBJECTS = compat.$(OBJEXT) config.$(OBJEXT) dnsbl.$(OBJEXT) \
-	irc.$(OBJEXT) log.$(OBJEXT) main.$(OBJEXT) match.$(OBJEXT) \
-	misc.$(OBJEXT) opercmd.$(OBJEXT) scan.$(OBJEXT) stats.$(OBJEXT)
+	inet.$(OBJEXT) irc.$(OBJEXT) log.$(OBJEXT) main.$(OBJEXT) \
+	match.$(OBJEXT) misc.$(OBJEXT) opercmd.$(OBJEXT) scan.$(OBJEXT) \
+	stats.$(OBJEXT)
 bopm_OBJECTS = $(am_bopm_OBJECTS)
 bopm_DEPENDENCIES =
 bopm_LDFLAGS =
@@ -119,10 +121,11 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/bopchecker.Po ./$(DEPDIR)/compat.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/config.Po ./$(DEPDIR)/dnsbl.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/irc.Po ./$(DEPDIR)/log.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main.Po ./$(DEPDIR)/match.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/misc.Po ./$(DEPDIR)/opercmd.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/scan.Po ./$(DEPDIR)/stats.Po
+@AMDEP_TRUE@	./$(DEPDIR)/inet.Po ./$(DEPDIR)/irc.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/log.Po ./$(DEPDIR)/main.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/match.Po ./$(DEPDIR)/misc.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/opercmd.Po ./$(DEPDIR)/scan.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/stats.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -202,6 +205,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dnsbl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inet.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/irc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
