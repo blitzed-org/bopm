@@ -87,7 +87,7 @@ protocol_hash SCAN_PROTOCOLS[] = {
        {"HTTP"      ,   80, &(scan_w_squid),    0 ,0 },
        {"Socks4"    , 1080, &(scan_w_socks4),   0 ,0 },
        {"Socks5"    , 1080, &(scan_w_socks5),   0 ,0 },
-/*     {"Cisco"     ,   23, &(scan_w_cisco),    0 ,0 },    */
+       {"Cisco"     ,   23, &(scan_w_cisco),    0 ,0 },    
        {"Wingate"   ,   23, &(scan_w_wingate),  0 ,0 },
 };
 
