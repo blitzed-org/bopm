@@ -1,3 +1,56 @@
+2003-01-02 23:09  strtok
+
+	* src/scan.c: Fixed it so it doesn't pass the address of the
+	pointer of sc->vhost to the scanner config (tsk tsk dg and strtok
+	are both bug demons)
+
+2003-01-01 12:01  dgl
+
+	* src/scan.c: Added missing BIND_IP for libopm vhost setting
+
+2002-12-31 02:04  andy
+
+	* bopm.conf.blitzed, bopm.conf.sample: Update sample confs for the
+	new exempt {} behaviour.
+	
+	Make the case of BOPM consistent. :)
+
+2002-12-31 00:56  strtok
+
+	* src/: scan.c, scan.h: Added nick!user@ip exempt checking
+
+2002-12-31 00:22  andy
+
+	* INSTALL: Er, really remove the --with-unreal stuff like I said in
+	the last commit.
+
+2002-12-31 00:17  andy
+
+	* CREDITS, README: Corrected typo.  Moved credits to CREDITS.
+
+2002-12-31 00:12  andy
+
+	* INSTALL: --with-unreal is no longer needed (the "PROTOCTL HCN"
+	stuff goes in the bopm.conf now).
+	
+	libopm only supports poll() for now.
+
+2002-12-31 00:04  andy
+
+	* src/main.c: Complain and die if we can't write the pidfile.
+
+2002-12-29 13:38  strtok
+
+	* README: Added FAQ to README
+
+2002-12-29 13:30  strtok
+
+	* README, TODO: Updated README and TODO for release
+
+2002-12-29 13:24  strtok
+
+	* ChangeLog: Updated changelog
+
 2002-12-29 13:19  strtok
 
 	* bopm.conf.sample: Added ultimate ircd sample connregex
