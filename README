@@ -71,6 +71,8 @@ Operator Channel Commands
 
 botnick <check> <host> [scanner]  -- Manually scan host for insecure proxies and output all errors.
                                      If scanner is not given, bopm will scan on all scanners.
+                                     NOTE: this will NOT add a kline (or whatever) if it finds a
+                                     proxy.  This is a change from 2.x.
 
 botnick stats                     -- Output scan stats, uptime and client connection count.
 
