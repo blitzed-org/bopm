@@ -602,8 +602,6 @@ void firedns_cycle(void) {
    int i, t, fd;
    time_t timenow;
 
-   int COUNT = 0;
-
    if(connection_head == NULL)
       return;
 
@@ -619,7 +617,7 @@ void firedns_cycle(void) {
    {
       if(p->fd < 0)
 	  continue;
-      COUNT++;
+
       if(p->fd > 0 && (p->start + 5) < timenow)
       {
          /* Timed out - remove from list */
