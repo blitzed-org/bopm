@@ -469,19 +469,21 @@ void irc_parse()
     /* Any messages from users that we need to respond to */
     if(!strcasecmp(token[1], "PRIVMSG") && token[0][0] == ':')
      {
-	  char *source, *user, *target, *msg;
-	  unsigned int nicklen, prefixlen;
+	  char *user, *target, *msg;
 	  char nick[NICKMAX];
 
 	  /* work out who it was from */
-	  source = token[0] + 1;
+	  strncpy(nick, token[0] + 1, NICKMAX);
 	  
-	  user = index(source, '!');
+	  user = index(nick, '!');
 
 	  if(user)
 	   {
-	       nicklen = user - source;
-	       strncpy(nick, source, NICKMAX < nicklen ? NICKMAX : nicklen);
+	       unsigned int prefixlen;
+
+	       /* nick is currently the first 32 chars of a userhost,
+		* so null terminate at ! */
+	       *user = '\0';
 
 	       msg = token[3];
 	       if (msg && msg[0] == ':')
