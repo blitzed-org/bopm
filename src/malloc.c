@@ -60,7 +60,7 @@ void *MyMalloc(size_t bytes)
  *     None
  */
 
-inline void _MyFree(void **var)
+void _MyFree(void **var)
 {
    assert(var != NULL);
 
@@ -70,7 +70,7 @@ inline void _MyFree(void **var)
 }
 
 
-inline char *DupString(const char *y)
+char *DupString(const char *y)
 {
    char *x;
 

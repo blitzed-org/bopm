@@ -807,13 +807,18 @@ void scan_irckline(struct scan_struct *ss, char *format, char *type)
 
    struct kline_format_assoc table[] =
       {
-         {'i',   (void *) ss->ip,               FORMATTYPE_STRING },
-         {'h',   (void *) ss->irc_hostname,     FORMATTYPE_STRING },
-         {'u',   (void *) ss->irc_username,     FORMATTYPE_STRING },
-         {'n',   (void *) ss->irc_nick,         FORMATTYPE_STRING },
-         {'t',   (void *) type,                 FORMATTYPE_STRING }
+         {'i',   (void *) NULL,		FORMATTYPE_STRING },
+         {'h',   (void *) NULL,     	FORMATTYPE_STRING },
+         {'u',   (void *) NULL,     	FORMATTYPE_STRING },
+         {'n',   (void *) NULL,         FORMATTYPE_STRING },
+         {'t',   (void *) NULL,		FORMATTYPE_STRING }
       };
 
+   table[0].data = ss->ip;
+   table[1].data = ss->irc_hostname;
+   table[2].data = ss->irc_username;
+   table[3].data = ss->irc_nick;
+   table[4].data = type;
 
    /* copy format to message character by character, inserting any matching data after % */
    while(format[pos] != '\0' && len < (MSGLENMAX - 2))
