@@ -1,3 +1,60 @@
+2002-02-01 06:16  andy
+
+	* README:
+
+	README:
+		Added note about Unreal 3.2 support.
+	
+2002-02-01 05:57  andy
+
+	* Makefile:
+
+	Makefile:
+		irc.o depends on options.h
+	
+2002-02-01 05:08  andy
+
+	* README:
+
+	README:
+		Credits to locksmith for his help.
+	
+2002-02-01 04:40  andy
+
+	* config.c:
+
+	config.c:
+		Possible stupid error with calculating size of config hash.
+	
+2002-01-31 06:00  strtok
+
+	* irc.c:
+
+	irc.c: Last commit had an odd paste from vim (???)
+	
+2002-01-31 05:38  strtok
+
+	* config.c, irc.c, scan.h:
+
+	config.c: Added FDLIMIT configuration parameter (limit of open file descriptors)
+	irc.c: Fixed NULL CONF_NICKSERV_IDENT pointer (reported by uneks)
+	scan.h: Added STATE_UNESTABLISHED
+	
+2002-01-30 23:55  andy
+
+	* irc.c:
+
+	irc.c:
+		Some ircd's (Xnet and others?) don't send +c notices with the server as
+		the source.
+	
+2002-01-29 17:33  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Updated for next release.
+	
 2002-01-29 17:31  andy
 
 	* config.c:
