@@ -20,7 +20,7 @@ if test "$with_select" = "yes"; then
  echo "use of select() forced, skipping poll() checks..."
  AC_DEFINE(WITH_SELECT, 1, [Define if you wish to force use of select() even when poll() may be present])
 else
- AC_CHECK_HEADER(sys/poll.h, have_poll_sys_h=yes, have_sys_poll_h=no)
+ AC_CHECK_HEADERS(sys/poll.h, have_poll_sys_h=yes, have_sys_poll_h=no)
 fi
 
 if test "$with_unreal" = "yes"; then
