@@ -154,9 +154,9 @@ char *inetntoa(char *in)
  * sizeof(int) < 4.  sizeof(int) > 4 is fine; all the world's not a VAX.
  */
 
-static const char *inet_ntop4(const u_char *src, char *dst, unsigned int size);
+static const char *inet_ntop4(const unsigned char *src, char *dst, unsigned int size);
 #ifdef IPV6
-static const char *inet_ntop6(const u_char *src, char *dst, unsigned int size);
+static const char *inet_ntop6(const unsigned char *src, char *dst, unsigned int size);
 #endif
 
 /* const char *
