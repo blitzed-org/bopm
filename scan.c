@@ -192,8 +192,11 @@ void scan_check()
              for(ss = CONNECTIONS; ss; ss = ss->next)
                {
                   if(FD_ISSET(ss->fd, &r_fdset))
-                      if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed */
-                           ss->state = STATE_CLOSED;
+                      if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed and kline*/
+                         {
+                           irc_kline(ss->irc_addr, CONF_REASON);
+                           ss->state = STATE_CLOSED;               
+                         }
                   if(FD_ISSET(ss->fd, &w_fdset))                                                             
                       if((*ss->protocol->w_handler)(ss)) /* If write returns true, flag STATE_SENT */  
                            ss->state = STATE_SENT;
@@ -318,7 +321,7 @@ void scan_timer()
 int scan_w_squid(struct scan_struct *ss)
 {
    
-    snprintf(SENDBUFF, 128, "CONNECT %s:%d HTTP/1.0\n\n", CONF_SERVER, CONF_PORT);
+    snprintf(SENDBUFF, 128, "CONNECT %s:%d HTTP/1.0\n\n", CONF_SCANIP, CONF_SCANPORT);
     send(ss->fd, SENDBUFF, strlen(SENDBUFF), 0);
 
     return 1;
@@ -335,13 +338,11 @@ int scan_r_squid(struct scan_struct *ss)
   if(len <= 0)
        return 0;
 
- /*
-  if(!strncasecmp(RECVBUFF, "HTTP/1.0", 8))
-   { 
-       irc_kline(ss->irc_addr, CONF_REASON);
-       return 1;
-   }
-*/
+ 
+  if(!strncasecmp(RECVBUFF, "HTTP/1.0 200", 12))   
+        return 1;
+   
+
   return 0;
 }
 
@@ -370,14 +371,14 @@ int scan_w_socks4(struct scan_struct *ss)
      unsigned long laddr;
      int len;
  
-     inet_aton("216.175.103.145", &addr);
+     inet_aton(CONF_SCANIP, &addr);
      laddr = htonl(addr.s_addr);
  
      len = snprintf(SENDBUFF, 512, "%c%c%c%c%c%c%c%cBOPM%c",  
                                         4,
                                         1,
-                                        (((unsigned short) CONF_PORT) >> 8) & 0xFF,
-                                        (((unsigned short) CONF_PORT) & 0xff),
+                                        (((unsigned short) CONF_SCANPORT) >> 8) & 0xFF,
+                                        (((unsigned short) CONF_SCANPORT) & 0xff),
                                         (char) (laddr >> 24) & 0xFF,
                                         (char) (laddr >> 16) & 0xFF,
                                         (char) (laddr >> 8) & 0xFF,
@@ -417,7 +418,12 @@ int scan_r_socks4(struct scan_struct *ss)
 
    len = recv(ss->fd, RECVBUFF, 512, 0);
    RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
-   printf("Received Socks4 (%d): %s\n",strlen(RECVBUFF), RECVBUFF);
-   printf("VERSION: %d COMMAND: %d\n", (int) RECVBUFF[0], (int) RECVBUFF[1]); 
+   
+   if(len < 8)
+       return 0;
+
+   if(RECVBUFF[0] == 0 && RECVBUFF[1] == 90)
+      return 1;
+
    return 0;
 }

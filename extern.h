@@ -10,8 +10,10 @@
     extern char *CONF_NICK;
     extern char *CONF_OPER;
     extern char *CONF_REASON;
+    extern char *CONF_SCANIP;
 
     extern int   CONF_PORT;
+    extern int   CONF_SCANPORT;
 
     extern perform_struct *CONF_PERFORM;
 

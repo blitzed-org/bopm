@@ -36,6 +36,9 @@ char *CONF_USER            = 0;
 char *CONF_NICK            = 0;
 char *CONF_OPER            = 0;
 char *CONF_REASON          = 0;
+char *CONF_SCANIP          = 0;
+
+int  CONF_SCANPORT         = 0;
 int  CONF_PORT             = 0;
 
 perform_struct *CONF_PERFORM = 0;
@@ -49,7 +52,9 @@ config_hash hash[] = {
        {"NICK",     &(param_nick)     },
        {"PERFORM",  &(param_perform)  },
        {"OPER",     &(param_oper)     },
-       {"REASON",   &(param_reason)   }
+       {"REASON",   &(param_reason)   },
+       {"SCANIP",   &(param_scanip)   },
+       {"SCANPORT", &(param_scanport) },
 };
 
 
@@ -134,6 +139,15 @@ int param_port(char *args)
 	return 1;
 }
 
+int param_scanport(char *args)
+{
+        CONF_SCANPORT = atoi(args);
+
+        if(CONF_SCANPORT < 1024 || CONF_SCANPORT > 65535)
+                CONF_PORT = 6667;
+        return 1;
+}
+
 int param_user(char *args)
 {	
 	if(CONF_USER)
@@ -187,6 +201,18 @@ int param_reason(char *args)
           return 1;
 }
 
+int param_scanip(char *args)
+{
+          if(CONF_SCANIP)
+              free(CONF_SCANIP);
+
+          CONF_SCANIP = strdup(args);
+
+          if(!CONF_SCANIP)
+             config_memfail();
+
+          return 1;
+}
 
 int param_perform(char *args)
 {
