@@ -8,9 +8,10 @@
     extern char *CONF_SERVER;
     extern char *CONF_USER;
     extern char *CONF_NICK;
-    
+    extern char *CONF_OPER;
+
     extern int   CONF_PORT;
 
-    extern perform_hash *CONF_PERFORM;
+    extern perform_struct *CONF_PERFORM;
 
 #endif    

@@ -34,9 +34,10 @@ along with this program; if not, write to the Free Software
 char *CONF_SERVER          = 0;
 char *CONF_USER            = 0;
 char *CONF_NICK            = 0;
+char *CONF_OPER            = 0;
 int  CONF_PORT             = 0;
 
-perform_hash *CONF_PERFORM = 0;
+perform_struct *CONF_PERFORM = 0;
 
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
 
@@ -45,7 +46,8 @@ config_hash hash[] = {
        {"PORT",     &(param_port)     },
        {"USER",     &(param_user)     },
        {"NICK",     &(param_nick)     },
-       {"PERFORM",  &(param_perform)  }
+       {"PERFORM",  &(param_perform)  },
+       {"OPER",     &(param_oper)     }
 };
 
 
@@ -156,16 +158,30 @@ int param_nick(char *args)
 	return 1;
 }
 
+int param_oper(char *args)
+{
+
+         if(CONF_OPER)
+             free(CONF_OPER);
+     
+         CONF_OPER = strdup(args);
+
+         if(!CONF_OPER)
+            config_memfail();
+
+         return 1;
+}
+
 int param_perform(char *args)
 {
 
-        perform_hash *newpf;
-        perform_hash *pf;
+        perform_struct *newpf;
+        perform_struct *pf;
 	
         if(strlen(args) == 0)
             return 0;
     
-	newpf = malloc(sizeof(perform_hash));
+	newpf = malloc(sizeof(perform_struct));
 	
 	if(!newpf)
 	     config_memfail();

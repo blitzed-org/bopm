@@ -33,6 +33,7 @@ along with this program; if not, write to the Free Software
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #include "irc.h"
 #include "log.h"
@@ -181,6 +182,31 @@ void irc_init()
 }
 
 
+/* Send data to remote IRC host
+ */
+
+
+void irc_send(char *data,...)
+{
+
+  va_list         arglist;
+  char            data2[513];
+  char            tosend[513];
+ 
+  va_start(arglist, data);
+  vsprintf(data2, data, arglist);
+  va_end(arglist);
+
+  snprintf(tosend, (strlen(data2) + 2), "%s\n",data2);
+
+  if(send(IRC_FD, tosend, strlen(tosend), 0) == -1) /* Return of -1 indicates error sending data; we reconnect. */
+   {
+       irc_init();    /* Rerequest IRC socket */         
+       irc_connect(); /* Reconnect to IRC host */
+   }
+
+}
+
 /* Create socket and connect to IRC server
  * specificied in config file (CONF_SERVER)
  * with port CONF_PORT
@@ -213,8 +239,8 @@ void irc_connect()
 	       }	
 
        /* for debug use only, will be removed later */
-       send(IRC_FD, "NICK Bopm\n",10,0);
-       send(IRC_FD, "USER Bopm Bopm Bopm :Bopm\n",26,0);
+       irc_send("NICK %s",CONF_NICK);
+       irc_send("USER %s %s %s :Blitzed Open Proxy Monitor", CONF_USER, CONF_USER, CONF_USER);
 
 }
 
@@ -271,25 +297,26 @@ void irc_parse()
 
     if(!strcasecmp(cmd, "PING"))
        {
-            snprintf(IRC_SENDBUFF, 512, "PONG %s\n", second);
-            send(IRC_FD, IRC_SENDBUFF, 512, 0);
+            irc_send("PONG %s", second);
 	    return;
        }
 
-    if(!strcasecmp(second, "001"))       
-       do_perform();
-        
+    if(!strcasecmp(second, "001"))
+     { 
+       irc_send("OPER %s", CONF_OPER);
+       irc_send("MODE %s +c", CONF_NICK);      
+       do_perform();       
+     }   
     
 }
 
 
 void do_perform()
 {   
-      struct perform_hash *pf;
+      struct perform_struct *pf;
 
       for(pf = CONF_PERFORM; pf; pf = pf->next)
-       {       
-           snprintf(IRC_SENDBUFF, 512, "%s\n", pf->perform);
-           send(IRC_FD, IRC_SENDBUFF, 512, 0);
-       }
+         irc_send(pf->perform);       
+         
+       
 }
