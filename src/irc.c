@@ -882,13 +882,18 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
 
 static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
+
+
    static regex_t *preg = NULL;
    regmatch_t pmatch[5];
 
    static char errmsg[256];
    int errnum, i;
 
-   char *item[4];
+   char *user[4];
+
+
+
 
    if(parc < 4)
       return;
@@ -939,14 +944,18 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
 
    for(i = 0; i < 4; i++)
    {
-      item[i] = (parv[3] + pmatch[i + 1].rm_so);
+      user[i] = (parv[3] + pmatch[i + 1].rm_so);
       *(parv[3] + pmatch[i + 1].rm_eo) = '\0';
    }
 
    if(OPT_DEBUG > 0)
       log("IRC REGEX -> Parsed %s!%s@%s [%s] from connection notice.", 
-               item[0], item[1], item[2], item[3]);
+               user[0], user[1], user[2], user[3]);
  
-   //FIXME (reminder) In the case of any rehash to the regex, preg MUST be freed first. 
-   //regfree(preg);
+   /*FIXME (reminder) In the case of any rehash to the regex, preg MUST be freed first. 
+   regfree(preg);
+   */
+
+   /* Pass this information off to scan.c */
+   scan_connect(user, msg);
 }

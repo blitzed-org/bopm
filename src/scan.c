@@ -58,3 +58,25 @@ along with this program; if not, write to the Free Software
 #include "extern.h"
 #include "options.h"
 #include "negcache.h"
+
+
+
+
+/* scan_connect
+ *
+ *    scan_connect is called when m_notice (irc.c) matches a connection
+ *    notice and parses the connecting user out of it.
+ *
+ * Parameters:
+ *    user: Parsed items from the connection notice:
+ *          user[0] = connecting users nickname
+ *          user[1] = connecting users username
+ *          user[2] = connecting users hostname
+ *          user[3] = connecting users IP
+ * Return: NONE
+ *
+ */
+
+void scan_connect(char **user, char *msg)
+{
+}
