@@ -291,16 +291,17 @@ void scan_check()
 					"to %s failed.", CONF_CHANNELS,
 					ss->protocol->type,
 					ss->protocol->port, ss->irc_addr);
-                               ss->protocol->stat_num++;                /* Increase number attempted negotiated of this type */
 		             }
                             ss->state = STATE_CLOSED; 
                           }
                      }
 
-                  if(FD_ISSET(ss->fd, &w_fdset))                                                             
+                  if(FD_ISSET(ss->fd, &w_fdset))
+                    {                                   
                       if((*ss->protocol->w_handler)(ss)) /* If write returns true, flag STATE_SENT */  
                            ss->state = STATE_SENT;
-             
+                      ss->protocol->stat_num++;     /* Increase number attempted negotiated of this type */
+                    }
                         
                }
      } 
