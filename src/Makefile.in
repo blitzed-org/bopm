@@ -75,7 +75,7 @@ bopm_SOURCES = compat.c compat.h config.c config.h config.tab.c config.tab.h    
 bopchecker_SOURCES = bopchecker.c bopchecker.h compat.c compat.h config.c     config.h inet.c inet.h match.c match.h misc.c misc.h scan.c scan.h     setup.h
 
 
-bopm_LDADD = @LNSL@ @LSOCKET@
+bopm_LDADD = ../libopm/src/libopm.a @LNSL@ @LSOCKET@
 bopchecker_LDADD = @LNSL@ @LSOCKET@
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = setup.h
@@ -90,7 +90,7 @@ LIBS = @LIBS@
 bopm_OBJECTS =  compat.o config.o config.tab.o dlclist.o dnsbl.o inet.o \
 irc.o log.o main.o match.o misc.o malloc.o lex.yy.o list.o negcache.o \
 opercmd.o scan.o scanwarn.o stats.o
-bopm_DEPENDENCIES = 
+bopm_DEPENDENCIES =  ../libopm/src/libopm.a
 bopm_LDFLAGS = 
 bopchecker_OBJECTS =  bopchecker.o compat.o config.o inet.o match.o \
 misc.o scan.o

@@ -12,5 +12,5 @@ bopchecker_SOURCES = bopchecker.c bopchecker.h compat.c compat.h config.c \
     config.h inet.c inet.h match.c match.h misc.c misc.h scan.c scan.h \
     setup.h
 
-bopm_LDADD = @LNSL@ @LSOCKET@
+bopm_LDADD = ../libopm/src/libopm.a @LNSL@ @LSOCKET@
 bopchecker_LDADD = @LNSL@ @LSOCKET@

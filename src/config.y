@@ -70,9 +70,10 @@ config:     /* empty */
           |config config_items
           ;
 
-config_items: irc_entry |
+config_items: irc_entry     |
               options_entry |
-              user_entry;
+              user_entry    |
+              scanner_entry;
 
 
 /*************************** OPTIONS BLOCK ***********************/
@@ -271,7 +272,41 @@ user_scanner: SCANNER '=' STRING ';'
    list_add(item->scanners, node);
 };
 
+/*************************** SCANNER BLOCK ***************************/
+
+scanner_entry:
+{
+   node_t *node;
+   struct ScannerConf *item;
+
+   item = MyMalloc(sizeof(struct ScannerConf));
+
+   /* Setup ScannerConf defaults */
+   item->name = DupString("undefined");
+   item->vhost = "0.0.0.0";
+   item->fd = 512;
+   item->target_ip = DupString("127.0.0.1");
+   item->target_port = 6667;
+   item->target_string = DupString("Looking up your hostname...");
+   item->protocols = list_create();
+
+   node = node_create(item);
+   list_add(ScannerItemList, node);
+   tmp = (void *) item;
+}
+SCANNER '{' scanner_items  '}' ';' ;
+
+scanner_items: scanner_items scanner_item |
+               scanner_item;
+
+scanner_item: scanner_name     |
+              error;
+
+scanner_name: NAME '=' STRING ';'
+{
+   struct ScannerConf *item = (struct ScannerConf *) tmp;
+   MyFree(item->name);
+   item->name = DupString($3);
+};
 
 %%
-
-

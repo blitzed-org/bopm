@@ -29,13 +29,17 @@
 void config_setup();
 void config_init();
 
+
+
 /* Configuration     */
 
 struct OptionsConf *OptionsItem = NULL;
 struct IRCConf *IRCItem = NULL;
-list_t *UserItemList;
+list_t *UserItemList = NULL;
+list_t *ScannerItemList = NULL;
 
 /* End Configuration */
+
 
 
 /* Rehash or load new configuration from filename, via flex/bison parser */
@@ -68,6 +72,9 @@ void config_init()
 
     /* Init list of User blocks */
     UserItemList = list_create();
+
+    /* Init list of Scanner blocks */
+    ScannerItemList = list_create();
 }
 
 /* Setup structs that hold configuration data and then reset default values */

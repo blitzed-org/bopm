@@ -64,13 +64,20 @@ struct ScannerConf
    int     fd;
 
    char   *target_ip;
-   int    *target_port;
+   int     target_port;
    char   *target_string;
+};
+
+struct ProtocolConf
+{
+   int type;
+   int port;
 };
 
 /* Extern to actual config data declared in config.c */
 extern struct IRCConf *IRCItem;
 extern struct OptionsConf *OptionsItem;
 extern list_t *UserItemList;
+extern list_t *ScannerItemList;
 
 #endif /* CONFIG_H */
