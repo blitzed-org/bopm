@@ -140,8 +140,15 @@ SCANPORT 6667
 #                          this should be a string within the data that your ircd usually
 #                          sends on connect. The default should work on most bahamut 
 #                          based ircds once you edit it for your server name.
+#
+#                          Suggestion is to place the FULL notice string with the server
+#                          source name as your target string (this won't work for hybrid
+#                          servers as they don't send the server source.
+#
+#                          This would prevent the odd clients running IRC servers on port
+#                          8080/8000 from being confused with a proxy.
 
-:penguin.uk.eu.blitzed.org NOTICE AUTH :*** Looking up your hostname...
+TARGET_STRING *** Looking up your hostname...
 
 
 
