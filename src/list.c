@@ -26,103 +26,103 @@
 
 node_t *node_create(void *data)
 {
-    node_t *node = MyMalloc(sizeof(node_t));
-    node->next = NULL;
-    node->prev = NULL;
-    node->data = (void *) data;
+   node_t *node = MyMalloc(sizeof(node_t));
+   node->next = NULL;
+   node->prev = NULL;
+   node->data = (void *) data;
 
-    return node;
+   return node;
 }
 
 list_t *list_create()
 {
-    list_t *list = MyMalloc(sizeof(list_t));
+   list_t *list = MyMalloc(sizeof(list_t));
 
-    list->head = NULL;
-    list->tail = NULL;
+   list->head = NULL;
+   list->tail = NULL;
 
-    list->elements = 0;
+   list->elements = 0;
 
-    return list;
+   return list;
 }
 
 node_t *list_add(list_t *list, node_t *node)
 {
 
-    if(list == NULL || node == NULL)
-        return NULL;
+   if(list == NULL || node == NULL)
+      return NULL;
 
-    if(list->tail == NULL)
-    {
-        list->head = node;
-        list->tail = node;
+   if(list->tail == NULL)
+   {
+      list->head = node;
+      list->tail = node;
 
-        node->next = NULL;
-        node->prev = NULL;
-    }
-    else
-    {
-        node->prev = list->tail;
-        list->tail->next = node;
-        list->tail = node;
-        node->next = NULL;
-    }
+      node->next = NULL;
+      node->prev = NULL;
+   }
+   else
+   {
+      node->prev = list->tail;
+      list->tail->next = node;
+      list->tail = node;
+      node->next = NULL;
+   }
 
-    list->elements++;
-    return node;
+   list->elements++;
+   return node;
 }
 
 node_t *list_remove(list_t *list, node_t *node)
 {
-    node_t *p;
+   node_t *p;
 
-    if(list == NULL || node == NULL)
-        return NULL;
+   if(list == NULL || node == NULL)
+      return NULL;
 
-    if(node == list->head)
-    {
-        list->head = node->next;
+   if(node == list->head)
+   {
+      list->head = node->next;
 
-        if(node->next)
-            node->next->prev = NULL;
-        else
-            list->tail = NULL;
+      if(node->next)
+         node->next->prev = NULL;
+      else
+         list->tail = NULL;
 
-        list->elements--;
+      list->elements--;
 
-        return node;
-    }
-    else if(node == list->tail)
-    {
-        list->tail = list->tail->prev;
-        list->tail->next = NULL;
+      return node;
+   }
+   else if(node == list->tail)
+   {
+      list->tail = list->tail->prev;
+      list->tail->next = NULL;
 
-        list->elements--;
+      list->elements--;
 
-        return node;
-    }
+      return node;
+   }
 
 
-    for(p = list->head; p != NULL; p = p->next)
-    {
-        if(p == node)
-        {
-            p->prev->next = p->next;
-            p->next->prev = p->prev;
-            list->elements--;
-            return p;
-        }
-    }
+   for(p = list->head; p != NULL; p = p->next)
+   {
+      if(p == node)
+      {
+         p->prev->next = p->next;
+         p->next->prev = p->prev;
+         list->elements--;
+         return p;
+      }
+   }
 
-    return NULL;
+   return NULL;
 }
 
 void list_free(list_t *list)
 {
-    MyFree(list);
+   MyFree(list);
 }
 
 void node_free(node_t *node)
 {
-    MyFree(node);
+   MyFree(node);
 }

@@ -3,8 +3,8 @@
 
 struct scanwarn
 {
-    char target[NICKMAX];
-    char *text;
+   char target[NICKMAX];
+   char *text;
 };
 
 #endif

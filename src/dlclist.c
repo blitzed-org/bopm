@@ -36,18 +36,18 @@ along with this program; if not, write to:
  */
 struct dlclist *dlclist_init(void)
 {
-    struct dlclist *l;
+   struct dlclist *l;
 
-    l = MyMalloc(sizeof(*l));
+   l = MyMalloc(sizeof(*l));
 
-    if (!l)
-        return(NULL);
+   if (!l)
+      return(NULL);
 
-    l->next = l;
-    l->prev = l;
-    l->val = NULL;
+   l->next = l;
+   l->prev = l;
+   l->val = NULL;
 
-    return(l);
+   return(l);
 }
 
 /*
@@ -56,9 +56,9 @@ struct dlclist *dlclist_init(void)
  */
 void dlclist_delete_node(struct dlclist *n)
 {
-    n->prev->next = n->next;
-    n->next->prev = n->prev;
-    //MyFree(n);
+   n->prev->next = n->next;
+   n->next->prev = n->prev;
+   //MyFree(n);
 }
 
 /*
@@ -67,10 +67,10 @@ void dlclist_delete_node(struct dlclist *n)
  */
 void dlclist_destroy(struct dlclist *head)
 {
-    while (head->next != head)
-        dlclist_delete_node(head->next);
+   while (head->next != head)
+      dlclist_delete_node(head->next);
 
-    //MyFree(head);
+   //MyFree(head);
 }
 
 /*
@@ -79,20 +79,20 @@ void dlclist_destroy(struct dlclist *head)
  */
 struct dlclist *dlclist_insert_before(struct dlclist *n, void *v)
 {
-    struct dlclist *t;
+   struct dlclist *t;
 
-    t = MyMalloc(sizeof(*t));
+   t = MyMalloc(sizeof(*t));
 
-    if (!t)
-        return(NULL);
+   if (!t)
+      return(NULL);
 
-    t->val = v;
-    t->next = n;
-    t->prev = n->prev;
-    t->next->prev = t;
-    t->prev->next = t;
+   t->val = v;
+   t->next = n;
+   t->prev = n->prev;
+   t->next->prev = t;
+   t->prev->next = t;
 
-    return(t);
+   return(t);
 }
 
 /*
@@ -101,5 +101,5 @@ struct dlclist *dlclist_insert_before(struct dlclist *n, void *v)
  */
 struct dlclist *dlclist_insert_after(struct dlclist *n, void *v)
 {
-    return(dlclist_insert_before(n->next, v));
+   return(dlclist_insert_before(n->next, v));
 }

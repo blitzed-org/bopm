@@ -85,19 +85,19 @@ struct cnode *nc_head = NULL;
  */
 void nc_init(struct cnode **head)
 {
-    if (*head)
-    {
-        /* Cache already exists */
-        return;
-    }
+   if (*head)
+   {
+      /* Cache already exists */
+      return;
+   }
 
-    *head = MyMalloc(sizeof(**head));
+   *head = MyMalloc(sizeof(**head));
 
-    maxb = (sizeof((*head)->ip) * 8);
-    (*head)->ip = 0;
-    (*head)->b = maxb;
-    (*head)->l = (*head)->r = *head;
-    last_nc_expire = time(NULL);
+   maxb = (sizeof((*head)->ip) * 8);
+   (*head)->ip = 0;
+   (*head)->b = maxb;
+   (*head)->l = (*head)->r = *head;
+   last_nc_expire = time(NULL);
 }
 
 /*
@@ -107,21 +107,21 @@ void nc_init(struct cnode **head)
  */
 static struct cnode *nc_search(struct cnode *head, const unsigned long ip)
 {
-    struct cnode *p, *x;
+   struct cnode *p, *x;
 
-    p = head;
-    x = head->l;
+   p = head;
+   x = head->l;
 
-    while (p->b > x->b)
-    {
-        p = x;
-        x = GETBIT(ip, x->b) ? x->r : x->l;
-    }
+   while (p->b > x->b)
+   {
+      p = x;
+      x = GETBIT(ip, x->b) ? x->r : x->l;
+   }
 
-    if (ip == x->ip)
-        return(x);
-    else
-        return(NULL);
+   if (ip == x->ip)
+      return(x);
+   else
+      return(NULL);
 }
 
 /*
@@ -129,49 +129,49 @@ static struct cnode *nc_search(struct cnode *head, const unsigned long ip)
  */
 static struct cnode *nc_insert(struct cnode *head, const unsigned long ip)
 {
-    int i;
-    struct cnode *p, *t, *x;
+   int i;
+   struct cnode *p, *t, *x;
 
-    i = maxb;
-    p = head;
-    t = head->l;
+   i = maxb;
+   p = head;
+   t = head->l;
 
-    while (p->b > t->b)
-    {
-        p = t;
-        t = GETBIT(ip, t->b) ? t->r : t->l;
-    }
+   while (p->b > t->b)
+   {
+      p = t;
+      t = GETBIT(ip, t->b) ? t->r : t->l;
+   }
 
-    if (ip == t->ip)
-    {
-        /* Node already exists. */
-        return(t);
-    }
+   if (ip == t->ip)
+   {
+      /* Node already exists. */
+      return(t);
+   }
 
-    while (GETBIT(t->ip, i) == GETBIT(ip, i))
-        i--;
+   while (GETBIT(t->ip, i) == GETBIT(ip, i))
+      i--;
 
-    p = head;
-    x = head->l;
+   p = head;
+   x = head->l;
 
-    while (p->b > x->b && x->b > i)
-    {
-        p = x;
-        x = GETBIT(ip, x->b) ? x->r : x->l;
-    }
+   while (p->b > x->b && x->b > i)
+   {
+      p = x;
+      x = GETBIT(ip, x->b) ? x->r : x->l;
+   }
 
-    t = MyMalloc(sizeof(*t));
-    t->ip = ip;
-    t->b = i;
-    t->l = GETBIT(ip, t->b) ? x : t;
-    t->r = GETBIT(ip, t->b) ? t : x;
+   t = MyMalloc(sizeof(*t));
+   t->ip = ip;
+   t->b = i;
+   t->l = GETBIT(ip, t->b) ? x : t;
+   t->r = GETBIT(ip, t->b) ? t : x;
 
-    if (GETBIT(ip, p->b))
-        p->r = t;
-    else
-        p->l = t;
+   if (GETBIT(ip, p->b))
+      p->r = t;
+   else
+      p->l = t;
 
-    return(t);
+   return(t);
 }
 
 /*
@@ -180,24 +180,24 @@ static struct cnode *nc_insert(struct cnode *head, const unsigned long ip)
  */
 struct cnode *check_neg_cache(const unsigned long ip)
 {
-    time_t now;
-    struct cnode *n;
+   time_t now;
+   struct cnode *n;
 
-    if (!OptionsItem->negcache == 0)
-        return(NULL);
+   if (!OptionsItem->negcache == 0)
+      return(NULL);
 
-    n = nc_search(nc_head, ip);
+   n = nc_search(nc_head, ip);
 
-    if (n)
-    {
-        /* Check it is recent enough. */
-        now = time(NULL);
+   if (n)
+   {
+      /* Check it is recent enough. */
+      now = time(NULL);
 
-        if (now - n->seen <= OptionsItem->negcache)
-            return(n);
-    }
+      if (now - n->seen <= OptionsItem->negcache)
+         return(n);
+   }
 
-    return(NULL);
+   return(NULL);
 }
 
 /*
@@ -206,24 +206,24 @@ struct cnode *check_neg_cache(const unsigned long ip)
  */
 void negcache_insert(const char *ipstr)
 {
-    struct bopm_sockaddr ip;
-    struct cnode *n;
+   struct bopm_sockaddr ip;
+   struct cnode *n;
 
-    if (!inet_pton(AF_INET, ipstr, &(ip.sa4.sin_addr)))
-    {
-        log("Invalid IPv4 address '%s'", ipstr);
-        return;
-    }
-    else if (OPT_DEBUG >= 1)
-    {
-        log("All scans against '%s' have failed, inserting "
-            "negative cache entry", ipstr);
-    }
+   if (!inet_pton(AF_INET, ipstr, &(ip.sa4.sin_addr)))
+   {
+      log("Invalid IPv4 address '%s'", ipstr);
+      return;
+   }
+   else if (OPT_DEBUG >= 1)
+   {
+      log("All scans against '%s' have failed, inserting "
+          "negative cache entry", ipstr);
+   }
 
-    n = nc_insert(nc_head, ip.sa4.sin_addr.s_addr);
+   n = nc_insert(nc_head, ip.sa4.sin_addr.s_addr);
 
-    if (n)
-        n->seen = time(NULL);
+   if (n)
+      n->seen = time(NULL);
 }
 
 /*
@@ -233,55 +233,55 @@ void negcache_insert(const char *ipstr)
 static void nc_rebuild(struct cnode *old_head, struct cnode *new_head,
                        struct cnode *n, time_t now)
 {
-    struct cnode *new;
+   struct cnode *new;
 
-    if (!n)
-    {
-        /* Start at head. */
-        n = old_head->l;
-    }
+   if (!n)
+   {
+      /* Start at head. */
+      n = old_head->l;
+   }
 
-    if (n == old_head)
-    {
-        /* Trie is empty. */
-        return;
-    }
+   if (n == old_head)
+   {
+      /* Trie is empty. */
+      return;
+   }
 
-    if (n->b > n->l->b)
-    {
-        /*
-         * If the trie extends via the left branch, follow it
-         * recursively.
-         */
-        nc_rebuild(old_head, new_head, n->l, now);
-    }
+   if (n->b > n->l->b)
+   {
+      /*
+       * If the trie extends via the left branch, follow it
+       * recursively.
+       */
+      nc_rebuild(old_head, new_head, n->l, now);
+   }
 
-    if (n->b > n->r->b)
-    {
-        /*
-         * If the trie extends via the right branch, follow it
-         * recursively.
-         */
-        nc_rebuild(old_head, new_head, n->r, now);
-    }
+   if (n->b > n->r->b)
+   {
+      /*
+       * If the trie extends via the right branch, follow it
+       * recursively.
+       */
+      nc_rebuild(old_head, new_head, n->r, now);
+   }
 
-    if ((now - n->seen) < OptionsItem->negcache)
-    {
-        /*
-         * We want to keep this node, so insert it into the new
-         * trie.
-         */
-        new = nc_insert(new_head, n->ip);
-        new->seen = n->seen;
-    }
-    else if (OPT_DEBUG)
-    {
-        log("Deleting negcache node for %lu added at %lu", n->ip,
-            n->seen);
-    }
+   if ((now - n->seen) < OptionsItem->negcache)
+   {
+      /*
+       * We want to keep this node, so insert it into the new
+       * trie.
+       */
+      new = nc_insert(new_head, n->ip);
+      new->seen = n->seen;
+   }
+   else if (OPT_DEBUG)
+   {
+      log("Deleting negcache node for %lu added at %lu", n->ip,
+          n->seen);
+   }
 
-    /* Safe to free() this node now. */
-    MyFree(n);
+   /* Safe to free() this node now. */
+   MyFree(n);
 }
 
 /*
@@ -289,14 +289,14 @@ static void nc_rebuild(struct cnode *old_head, struct cnode *new_head,
  */
 void negcache_rebuild(void)
 {
-    time_t now;
-    struct cnode *new_head;
+   time_t now;
+   struct cnode *new_head;
 
-    now = time(NULL);
-    new_head = NULL;
+   now = time(NULL);
+   new_head = NULL;
 
-    nc_init(&new_head);
-    nc_rebuild(nc_head, new_head, NULL, now);
-    MyFree(nc_head);
-    nc_head = new_head;
+   nc_init(&new_head);
+   nc_rebuild(nc_head, new_head, NULL, now);
+   MyFree(nc_head);
+   nc_head = new_head;
 }

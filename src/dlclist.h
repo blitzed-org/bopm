@@ -3,9 +3,9 @@
 
 struct dlclist
 {
-    struct dlclist *next;
-    struct dlclist *prev;
-    void *val;
+   struct dlclist *next;
+   struct dlclist *prev;
+   void *val;
 };
 
 extern struct dlclist *dlclist_init(void);

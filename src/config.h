@@ -41,7 +41,7 @@ struct IRCConf
 struct ChannelConf
 {
    char *name;
-   char *key;         
+   char *key;
 };
 
 struct OptionsConf

@@ -41,10 +41,10 @@
 
 void *MyMalloc(size_t bytes)
 {
-    void *ret = calloc(1, bytes);
-    assert(ret);
+   void *ret = calloc(1, bytes);
+   assert(ret);
 
-    return ret;
+   return ret;
 }
 
 
@@ -62,21 +62,21 @@ void *MyMalloc(size_t bytes)
 
 inline void _MyFree(void **var)
 {
-    assert(var != NULL);
+   assert(var != NULL);
 
-    if(*var != NULL)
-        free(*var);
-    *var = NULL;
+   if(*var != NULL)
+      free(*var);
+   *var = NULL;
 }
 
 
 inline char *DupString(const char *y)
 {
-    char *x;
+   char *x;
 
-    x = malloc(strlen(y) + 1);
-    assert(x);
-    strcpy(x, y);
+   x = malloc(strlen(y) + 1);
+   assert(x);
+   strcpy(x, y);
 
-    return x;
+   return x;
 }

@@ -41,47 +41,47 @@ FILE *logfile;
 
 void log_open(char *filename)
 {
-    logfile = fopen(filename, "a");
+   logfile = fopen(filename, "a");
 
-    if (!logfile)
-    {
-        perror("Cannot open log file. Aborting.");
-        exit(EXIT_FAILURE);
-    }
+   if (!logfile)
+   {
+      perror("Cannot open log file. Aborting.");
+      exit(EXIT_FAILURE);
+   }
 }
 
 void log_close(void)
 {
-    fclose(logfile);
+   fclose(logfile);
 }
 
 void log(char *data, ...)
 {
-    char data2[513];
-    char buf_present[25];
-    va_list arglist;
-    time_t present;
-    struct tm *tm_present;
+   char data2[513];
+   char buf_present[25];
+   va_list arglist;
+   time_t present;
+   struct tm *tm_present;
 
-    if (!OPT_DEBUG && !logfile)
-        return;
+   if (!OPT_DEBUG && !logfile)
+      return;
 
-    time(&present);
-    tm_present = gmtime(&present);
-    strftime(buf_present, sizeof(buf_present), "%b %d %H:%M:%S %Y", tm_present);
+   time(&present);
+   tm_present = gmtime(&present);
+   strftime(buf_present, sizeof(buf_present), "%b %d %H:%M:%S %Y", tm_present);
 
-    va_start(arglist, data);
-    vsnprintf(data2, 512, data, arglist);
-    va_end(arglist);
+   va_start(arglist, data);
+   vsnprintf(data2, 512, data, arglist);
+   va_end(arglist);
 
-    if (OPT_DEBUG)
-    {
-        fprintf(stderr, "[%s] %s\n", buf_present, data2);
-    }
-    else
-    {
-        fprintf(logfile, "[%s] %s\n", buf_present, data2);
-        fflush(logfile);
-    }
+   if (OPT_DEBUG)
+   {
+      fprintf(stderr, "[%s] %s\n", buf_present, data2);
+   }
+   else
+   {
+      fprintf(logfile, "[%s] %s\n", buf_present, data2);
+      fflush(logfile);
+   }
 }
 

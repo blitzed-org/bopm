@@ -51,24 +51,24 @@ struct dlclist *warnq = NULL;
  */
 void do_scanwarn_init(void)
 {
-    struct dlclist *n;
+   struct dlclist *n;
 
-    if (warnq)
-    {
-        /*
-         * There's an existing queue; delete it all and start
-         * afresh.
-         */
-        for (n = warnq->next; n->next != warnq; n = n->next)
-        {
-            if (n->val)
-                MyFree(n->val);
-        }
+   if (warnq)
+   {
+      /*
+       * There's an existing queue; delete it all and start
+       * afresh.
+       */
+      for (n = warnq->next; n->next != warnq; n = n->next)
+      {
+         if (n->val)
+            MyFree(n->val);
+      }
 
-        dlclist_destroy(warnq);
-    }
+      dlclist_destroy(warnq);
+   }
 
-    warnq = dlclist_init();
+   warnq = dlclist_init();
 }
 
 /*
@@ -76,7 +76,7 @@ void do_scanwarn_init(void)
  */
 void add_warning(const char *nick)
 {
-    //FIXME
+   //FIXME
 }
 
 /*
@@ -85,42 +85,42 @@ void add_warning(const char *nick)
  */
 void scanwarn_timer(void)
 {
-    unsigned int i;
-    struct dlclist *n;
-    struct scanwarn *w;
+   unsigned int i;
+   struct dlclist *n;
+   struct scanwarn *w;
 
-    for (i = 0; i < NOTICES_PER_LOOP; i++)
-    {
-        n = warnq->prev;
+   for (i = 0; i < NOTICES_PER_LOOP; i++)
+   {
+      n = warnq->prev;
 
-        if (n == warnq)
-        {
-            /* Queue is empty. */
-            break;
-        }
+      if (n == warnq)
+      {
+         /* Queue is empty. */
+         break;
+      }
 
-        w = n->val;
+      w = n->val;
 
-        if (!w)
-        {
-            /*
-             * Somehow it managed to not have a valid scanwarn
-             * structure there.
-             */
-            log("WARNING: I've just found a node on the "
-                "warning queue that didn't have a scanwarn "
-                "structure!");
-            break;
-        }
+      if (!w)
+      {
+         /*
+          * Somehow it managed to not have a valid scanwarn
+          * structure there.
+          */
+         log("WARNING: I've just found a node on the "
+             "warning queue that didn't have a scanwarn "
+             "structure!");
+         break;
+      }
 
-        if (OPT_DEBUG >= 3)
-        {
-            log("Sending scan warning to '%s': %s", w->target,
-                w->text);
-        }
+      if (OPT_DEBUG >= 3)
+      {
+         log("Sending scan warning to '%s': %s", w->target,
+             w->text);
+      }
 
-        irc_send("NOTICE %s :%s", w->target, w->text);
-        MyFree(n->val);
-        dlclist_delete_node(n);
-    }
+      irc_send("NOTICE %s :%s", w->target, w->text);
+      MyFree(n->val);
+      dlclist_delete_node(n);
+   }
 }

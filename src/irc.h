@@ -9,17 +9,17 @@
 
 struct bopm_sockaddr
 {
-        struct sockaddr_in sa4;
+   struct sockaddr_in sa4;
 };
 
 
 struct bopm_ircaddr
 {
-        struct in_addr in4;
+   struct in_addr in4;
 };
 
 
-struct UserInfo 
+struct UserInfo
 {
    char *irc_nick;
    char *irc_username;

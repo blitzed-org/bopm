@@ -37,19 +37,19 @@ typedef struct _list list_t;
 struct _list
 {
 
-    struct _node *head;
-    struct _node *tail;
+   struct _node *head;
+   struct _node *tail;
 
-    int elements;
+   int elements;
 };
 
 struct _node
 {
 
-    struct _node *next;
-    struct _node *prev;
+   struct _node *next;
+   struct _node *prev;
 
-    void *data;
+   void *data;
 };
 
 

@@ -148,7 +148,7 @@ void scan_init()
    SCANNERS = list_create();
    MASKS    = list_create();
 
-   /* Setup each individual scanner */   
+   /* Setup each individual scanner */
    LIST_FOREACH(p, ScannerItemList->head)
    {
       sc = (struct ScannerConf *) p->data;
@@ -170,8 +170,8 @@ void scan_init()
 
       /* add target strings */
       LIST_FOREACH(p1, sc->target_string->head)
-         opm_config(scs->scanner, OPM_CONFIG_TARGET_STRING, (char *) p1->data);
-      
+      opm_config(scs->scanner, OPM_CONFIG_TARGET_STRING, (char *) p1->data);
+
 
       /* Setup callbacks */
       opm_callback(scs->scanner, OPM_CALLBACK_OPENPROXY, &scan_open_proxy, scs);
@@ -189,12 +189,12 @@ void scan_init()
          if(OPT_DEBUG >= 2)
             log("SCAN -> Adding protocol %s:%d to scanner [%s]", scan_gettype(pc->type), pc->port,
                 scs->name);
- 
+
          if(opm_addtype(scs->scanner, pc->type, pc->port) == OPM_ERR_BADPROTOCOL)
             log("SCAN -> Error bad protocol %s:%d in scanner [%s]", scan_gettype(pc->type), pc->port,
                 scs->name);
       }
-     
+
       node = node_create(scs);
       list_add(SCANNERS, node);
    }
@@ -225,8 +225,8 @@ void scan_init()
                   node = node_create(ms);
                   list_add(MASKS, node);
                }
-            }            
-         } 
+            }
+         }
       }
    }
 }
@@ -250,18 +250,18 @@ void scan_init()
 
 void scan_connect(char **user, char *msg)
 {
- 
+
    node_t *p;
    struct scan_struct *ss;
    struct scanner_struct *scs;
    struct mask_struct *ms;
-   
+
    /* Have to use MSGLENMAX here because it is unknown what the max size of username/hostname can be.
       Some ircds use really mad values for these */
    static char mask[MSGLENMAX];
 
    /* FIXME: Check negcache here before any scanning */
-   
+
 
    /* create scan_struct */
    ss = scan_create(user, msg);
@@ -354,7 +354,7 @@ void scan_free(struct scan_struct *ss)
    MyFree(ss->irc_hostname);
    MyFree(ss->ip);
    MyFree(ss->proof);
-   
+
    opm_remote_free(ss->remote);
 }
 
@@ -383,10 +383,10 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
    scan_positive(ss);
 
    log("SCAN -> Open proxy %s:%d (%s) [%s]", remote->ip, remote->port,
-             scan_gettype(remote->protocol), scs->name);
+       scan_gettype(remote->protocol), scs->name);
 
    irc_send_channels("OPEN PROXY -> %s:%d (%s) [%s]", remote->ip, remote->port,
-             scan_gettype(remote->protocol), scs->name);
+                     scan_gettype(remote->protocol), scs->name);
 
 }
 
@@ -414,8 +414,8 @@ void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, 
    ss = (struct scan_struct *) remote->data;
 
    if(OPT_DEBUG)
-      log("SCAN -> Negotiation failed %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port, 
-             scan_gettype(remote->protocol), scs->name, remote->bytes_read);
+      log("SCAN -> Negotiation failed %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
+          scan_gettype(remote->protocol), scs->name, remote->bytes_read);
 }
 
 
@@ -442,7 +442,7 @@ void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 
    if(OPT_DEBUG)
       log("SCAN -> Negotiation timed out %s:%d (%s) [%s]", remote->ip, remote->port,
-             scan_gettype(remote->protocol), scs->name);
+          scan_gettype(remote->protocol), scs->name);
 }
 
 
@@ -501,26 +501,26 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
 
    switch(err)
    {
-      case OPM_ERR_MAX_READ:
-         if(OPT_DEBUG >= 2)
-            log("SCAN -> Max read on %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
-                scan_gettype(remote->protocol), scs->name, remote->bytes_read);
-         break;
-      case OPM_ERR_BIND:
-         if(OPT_DEBUG >= 2)
-            log("SCAN -> Bind error on %s:%d (%s) [%s]", remote->ip, remote->port,
-                scan_gettype(remote->protocol), scs->name);
-         break;
-      case OPM_ERR_NOFD:
-         if(OPT_DEBUG >= 2)
-            log("SCAN -> File descriptor allocation error %s:%d (%s) [%s]", remote->ip, remote->port,
-                scan_gettype(remote->protocol), scs->name);
-         break;
-      default:   /* Unknown Error! */
-         if(OPT_DEBUG >=2)
-            log("SCAN -> Unknown error %s:%d (%s) [%s]", remote->ip, remote->port,
-                scan_gettype(remote->protocol), scs->name);
-         break;
+   case OPM_ERR_MAX_READ:
+      if(OPT_DEBUG >= 2)
+         log("SCAN -> Max read on %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
+             scan_gettype(remote->protocol), scs->name, remote->bytes_read);
+      break;
+   case OPM_ERR_BIND:
+      if(OPT_DEBUG >= 2)
+         log("SCAN -> Bind error on %s:%d (%s) [%s]", remote->ip, remote->port,
+             scan_gettype(remote->protocol), scs->name);
+      break;
+   case OPM_ERR_NOFD:
+      if(OPT_DEBUG >= 2)
+         log("SCAN -> File descriptor allocation error %s:%d (%s) [%s]", remote->ip, remote->port,
+             scan_gettype(remote->protocol), scs->name);
+      break;
+   default:   /* Unknown Error! */
+      if(OPT_DEBUG >=2)
+         log("SCAN -> Unknown error %s:%d (%s) [%s]", remote->ip, remote->port,
+             scan_gettype(remote->protocol), scs->name);
+      break;
    }
 }
 
@@ -543,20 +543,20 @@ char *scan_gettype(int protocol)
    int i;
    static char *undef = "undefined";
 
-   static struct protocol_assoc protocols[] = 
-   {
-      { OPM_TYPE_HTTP,     "HTTP"     },
-      { OPM_TYPE_HTTPPOST, "HTTPPOST" },
-      { OPM_TYPE_SOCKS4,   "SOCKS4"   },
-      { OPM_TYPE_SOCKS5,   "SOCKS5"   },
-      { OPM_TYPE_WINGATE,  "WINGATE"  },
-      { OPM_TYPE_ROUTER,   "ROUTER"   }
-   };
+   static struct protocol_assoc protocols[] =
+      {
+         { OPM_TYPE_HTTP,     "HTTP"     },
+         { OPM_TYPE_HTTPPOST, "HTTPPOST" },
+         { OPM_TYPE_SOCKS4,   "SOCKS4"   },
+         { OPM_TYPE_SOCKS5,   "SOCKS5"   },
+         { OPM_TYPE_WINGATE,  "WINGATE"  },
+         { OPM_TYPE_ROUTER,   "ROUTER"   }
+      };
 
    for(i = 0; i < (sizeof(protocols) / sizeof(struct protocol_assoc)); i++)
       if(protocol == protocols[i].type)
          return protocols[i].name;
-      
+
    return undef;
 }
 
@@ -622,13 +622,13 @@ void scan_irckline(struct scan_struct *ss)
 
    int i;
 
-   struct kline_format_assoc table[] = 
-   {
-       {'i',   (void *) ss->ip,               FORMATTYPE_STRING },
-       {'h',   (void *) ss->irc_hostname,     FORMATTYPE_STRING },
-       {'u',   (void *) ss->irc_username,     FORMATTYPE_STRING },
-       {'n',   (void *) ss->irc_nick,         FORMATTYPE_STRING }
-   };
+   struct kline_format_assoc table[] =
+      {
+         {'i',   (void *) ss->ip,               FORMATTYPE_STRING },
+         {'h',   (void *) ss->irc_hostname,     FORMATTYPE_STRING },
+         {'u',   (void *) ss->irc_username,     FORMATTYPE_STRING },
+         {'n',   (void *) ss->irc_nick,         FORMATTYPE_STRING }
+      };
 
    format = IRCItem->kline;
 
@@ -638,52 +638,52 @@ void scan_irckline(struct scan_struct *ss)
       switch(format[pos])
       {
 
-         case '%':
-            /* % is the last char in the string, move on */
-            if(format[pos + 1] == '\0')
-               continue;
+      case '%':
+         /* % is the last char in the string, move on */
+         if(format[pos + 1] == '\0')
+            continue;
 
-            /* %% escapes % and becomes % */
-            if(format[pos + 1] == '%')
-            {
-               message[len++] = '%';
-               pos++; /* skip past the escaped % */
-               break;
-            }
+         /* %% escapes % and becomes % */
+         if(format[pos + 1] == '%')
+         {
+            message[len++] = '%';
+            pos++; /* skip past the escaped % */
+            break;
+         }
 
-            /* Safe to check against table now */
-            for(i = 0; i < (sizeof(table) / sizeof(struct kline_format_assoc)); i++)           
+         /* Safe to check against table now */
+         for(i = 0; i < (sizeof(table) / sizeof(struct kline_format_assoc)); i++)
+         {
+            if(table[i].key == format[pos + 1])
             {
-               if(table[i].key == format[pos + 1])
+               switch(table[i].type)
                {
-                  switch(table[i].type)
+               case FORMATTYPE_STRING:
+
+                  size = strlen( (char *) table[i].data);
+
+                  /* Check if the new string can fit! */
+                  if( (size + len) > (MSGLENMAX - 1) )
+                     break;
+                  else
                   {
-                     case FORMATTYPE_STRING:
+                     strcat(message, (char *) table[i].data);
+                     len += size;
+                  }
 
-                        size = strlen( (char *) table[i].data);
-
-                        /* Check if the new string can fit! */
-                        if( (size + len) > (MSGLENMAX - 1) )
-                           break;
-                        else
-                        {
-                           strcat(message, (char *) table[i].data);
-                           len += size;
-                        } 
-
-                     default:
-                        break;
-                  } 
+               default:
+                  break;
                }
-            } 
-            /* Skip key character */
-            pos++;
-            break;
- 
-         default:
-            message[len++] = format[pos];
-            message[len] = '\0';
-            break;
+            }
+         }
+         /* Skip key character */
+         pos++;
+         break;
+
+      default:
+         message[len++] = format[pos];
+         message[len] = '\0';
+         break;
       }
       /* continue to next character in format */
       pos++;

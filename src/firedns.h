@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #ifndef AF_INET6
 struct in6_addr {
-	unsigned char   s6_addr[16];
+   unsigned char   s6_addr[16];
 };
 #endif
 
@@ -55,8 +55,8 @@ extern int fdns_errno;
 void firedns_init();
 
 struct firedns_result {
-    char text[1024];
-    void *info;
+   char text[1024];
+   void *info;
 };
 
 /* non-blocking functions */
