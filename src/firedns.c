@@ -351,10 +351,9 @@ static int firedns_send_requests(struct s_header *h, struct s_connection *s, int
 
 static struct s_connection *firedns_add_query(void)
 { /* build DNS query, add to list */
-   node_t *node;
    struct s_connection *s;
 
-   /* create new connection object, add to linked list */
+   /* create new connection object */
    s = MyMalloc(sizeof(struct s_connection));
 
    s->id[0] = rand() % 255; /* verified by firedns_getresult() */
@@ -362,8 +361,6 @@ static struct s_connection *firedns_add_query(void)
 
    s->fd = -1;
 
-   node = node_create(s);
-   list_add(CONNECTIONS, node);
 
    return s;
 }
@@ -410,6 +407,7 @@ static int firedns_build_query_payload(const char * const name, unsigned short r
 int firedns_getip4(const char * const name, void *info)
 { /* build, add and send A query; retrieve result with firedns_getresult() */
    struct s_connection *s;
+   node_t *node;
 
    s = firedns_add_query();
 
@@ -421,7 +419,15 @@ int firedns_getip4(const char * const name, void *info)
    strncpy(s->lookup, name, 256);
    s->info = info;
 
-   return firedns_doquery(s);
+   if(firedns_doquery(s) == -1)
+   {
+      free(s);
+      return -1;
+   }
+
+   node = node_create(s);
+   list_add(CONNECTIONS, node);
+   return 0;
 }
 
 int firedns_doquery(struct s_connection *s)
@@ -442,6 +448,7 @@ int firedns_doquery(struct s_connection *s)
 int firedns_getip6(const char * const name, void *info)
 {
    struct s_connection *s;
+   node_t *node;
 
    s = firedns_add_query();
    if (s == NULL)
@@ -452,7 +459,15 @@ int firedns_getip6(const char * const name, void *info)
    strncpy(s->lookup, name, 256);
    s->info = info;
 
-   return firedns_doquery(s);
+   if(firedns_doquery(s) == -1)
+   {
+      free(s);
+      return -1;
+   }
+
+   node = node_create(s);
+   list_add(CONNECTIONS, node);
+   return 0;
 }
 
 char *firedns_getresult_i(const int fd)
