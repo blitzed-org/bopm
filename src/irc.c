@@ -284,6 +284,8 @@ static void irc_init(void)
             		}   
 			copy_s_addr(bsadr.sas.sa6.sin6_addr.s6_addr,
 			    IRC_LOCAL.ins.in6.s6_addr);
+			bsadr.sas.sa6.sin6_family = AF_INET6;
+			bsadr.sas.sa6.sin6_port = htons(0);
         	} else {
 #endif
             		if (!inetpton(AF_INET, CONF_BINDIRC, &(IRC_LOCAL.ins.in4.s_addr))) {
@@ -291,6 +293,8 @@ static void irc_init(void)
                  		exit(EXIT_FAILURE);
             		}
 			bsadr.sas.sa4.sin_addr.s_addr = IRC_LOCAL.ins.in4.s_addr;
+                        bsadr.sas.sa4.sin_family = AF_INET;
+                        bsadr.sas.sa4.sin_port = htons(0);
 #ifdef IPV6
         	}
 #endif
