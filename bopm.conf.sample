@@ -191,8 +191,13 @@ IRC {
  	 /* Hybrid / Bahamut / Unreal (in HCN mode) */
 	connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
 
-         /* Ultimate ircd */
-#       connregex = "\\*\\*\\* Global-Connect/Exit -- from [^:]+: Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
+         /*
+	  * Ultimate ircd  - note the control-B characters around Connect/Exit,
+	  * that is because that text appears in bold in the actual connect
+	  * notice.  Be very careful when editing this, do it as you would put
+	  * bold characters into IRC MOTDs.
+          */
+#        connregex = "\\*\\*\\* Connect/Exit -- from [^:]+: Client connecting on port [0-9]+: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
 
 
 	/*
