@@ -501,7 +501,7 @@ static void irc_parse(void)
       did not exist 
    */
 
-   static char            *parv[15];
+   static char            *parv[17];
    static unsigned int     parc;
    static char             msg[MSGLENMAX];    /* Temporarily stores IRC msg to pass to handlers */
 
@@ -529,7 +529,7 @@ static void irc_parse(void)
 
    pos = IRC_RAW;
 
-   while(pos = strchr(pos, ' '))
+   while(pos = strchr(pos, ' ') && parc < 17)
    {
 
       /* Avoid excessive spaces and end of IRC_RAW */

@@ -79,6 +79,11 @@
 static list_t *SCANNERS = NULL;   /* List of OPM_T */
 static list_t *MASKS    = NULL;   /* Associative list of masks->scanners */
 
+
+/* Negative Cache */
+struct cnode *nc_head;
+
+
 /* Function declarations */
 
 struct scan_struct *scan_create(char **, char *);
@@ -113,6 +118,38 @@ void scan_cycle()
    {
       scs = (struct scanner_struct *) p->data;
       opm_cycle(scs->scanner);
+   }
+}
+
+
+
+
+/* scan_timer
+ *   
+ *    Perform actions that are to be performed every ~1 second.
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
+ */
+void scan_timer()
+{
+   static int nc_counter;
+
+   if (OptionsItem->negcache > 0)
+   {
+      if (nc_counter++ >= NEG_CACHE_REBUILD)
+      {
+        /*
+         * Time to rebuild the negative
+         * cache.
+         */
+         if(OPT_DEBUG)
+            log("SCAN -> Rebuilding negative cache");
+
+         negcache_rebuild();
+         nc_counter = 0;
+      }
    }
 }
 
@@ -229,6 +266,14 @@ void scan_init()
          }
       }
    }
+
+   /* Initialise negative cache */
+   if (OptionsItem->negcache > 0)
+   {
+      if(OPT_DEBUG >= 2)
+         log("SCAN -> Initializing negative cache");
+      nc_init(&nc_head);
+   }
 }
 
 
@@ -251,6 +296,8 @@ void scan_init()
 void scan_connect(char **user, char *msg)
 {
 
+   struct bopm_sockaddr ip;
+
    node_t *p;
    struct scan_struct *ss;
    struct scanner_struct *scs;
@@ -260,8 +307,25 @@ void scan_connect(char **user, char *msg)
       Some ircds use really mad values for these */
    static char mask[MSGLENMAX];
 
-   /* FIXME: Check negcache here before any scanning */
-
+   /* Check negcache before any scanning */
+   if(OptionsItem->negcache > 0)
+   {
+      if (!inet_pton(AF_INET, user[3], &(ip.sa4.sin_addr))) 
+      {
+         log("SCAN -> Invalid IPv4 address '%s'!", user[3]);
+         return;
+      }
+      else
+      {
+         if(check_neg_cache(ip.sa4.sin_addr.s_addr) != NULL)
+         {
+            if(OPT_DEBUG)
+               log("SCAN -> %s!%s@%s (%s) is negatively cached. Skipping all tests.", 
+                    user[0], user[1], user[2], user[3]);
+            return;
+         }      
+      }
+   }
 
    /* create scan_struct */
    ss = scan_create(user, msg);
@@ -612,7 +676,9 @@ void scan_positive(struct scan_struct *ss)
 
 void scan_negative(struct scan_struct *ss)
 {
-   //FIXME put IP in negcache!
+   //insert IP in negcache
+   if(OptionsItem->negcache > 0)
+      negcache_insert(ss->ip);
 }
 
 
@@ -721,6 +787,9 @@ void scan_checkfinished(struct scan_struct *ss)
 {
    if(ss->scans <= 0)
    {
+      if(OPT_DEBUG)
+         log("SCAN -> All tests on %s!%s@%s complete.", ss->irc_nick, ss->irc_username, ss->irc_hostname);
+
       //Scan was a negative
       if(!ss->positive)
          scan_negative(ss);

@@ -160,10 +160,6 @@ int main(int argc, char **argv)
       fclose(pidout);
    }
 
-   /* Initialise negative cache */
-   if (OptionsItem->negcache > 0)
-      nc_init(&nc_head);
-
    firedns_init();
 
    //FIXME
@@ -192,24 +188,12 @@ int main(int argc, char **argv)
       if (ALARMED)
       {
          irc_timer();
+         scan_timer();
          //FIXME
          //if (CONF_SCAN_WARNING)
          //	scanwarn_timer();
 
          ALARMED = 0;
-
-         if (OptionsItem->negcache > 0)
-         {
-            if (nc_counter++ >= NEG_CACHE_REBUILD)
-            {
-               /*
-                * Time to rebuild the negative
-                * cache.
-                */
-               negcache_rebuild();
-               nc_counter = 0;
-            }
-         }
       }
    }
 

@@ -211,13 +211,8 @@ void negcache_insert(const char *ipstr)
 
    if (!inet_pton(AF_INET, ipstr, &(ip.sa4.sin_addr)))
    {
-      log("Invalid IPv4 address '%s'", ipstr);
+      log("NEGCACHE -> Invalid IPv4 address '%s'", ipstr);
       return;
-   }
-   else if (OPT_DEBUG >= 1)
-   {
-      log("All scans against '%s' have failed, inserting "
-          "negative cache entry", ipstr);
    }
 
    n = nc_insert(nc_head, ip.sa4.sin_addr.s_addr);
@@ -274,9 +269,9 @@ static void nc_rebuild(struct cnode *old_head, struct cnode *new_head,
       new = nc_insert(new_head, n->ip);
       new->seen = n->seen;
    }
-   else if (OPT_DEBUG)
+   else if (OPT_DEBUG >= 2)
    {
-      log("Deleting negcache node for %lu added at %lu", n->ip,
+      log("NEGCACHE -> Deleting negcache node for %lu added at %lu", n->ip,
           n->seen);
    }
 
