@@ -269,7 +269,7 @@ void scan_check()
 				    ss->irc_nick, ss->irc_user,
 				    ss->irc_addr);
                            ss->protocol->stat_numopen++; /* Increase number OPEN (insecure) of this type */
-
+                           ss->protocol->stat_num++;     /* Increase number attempted negotiated of this type */
                            ss->state = STATE_CLOSED;
                            
                            if(!ss->verbose)                     
@@ -291,7 +291,7 @@ void scan_check()
 					"to %s failed.", CONF_CHANNELS,
 					ss->protocol->type,
 					ss->protocol->port, ss->irc_addr);
-                               ss->protocol->stat_num++;                   /* Increase number failed negotiated of this type */
+                               ss->protocol->stat_num++;                /* Increase number attempted negotiated of this type */
 		             }
                             ss->state = STATE_CLOSED; 
                           }
@@ -686,7 +686,7 @@ void do_manual_check(struct command *c)
    if(CONF_DNSBL_ZONE)
       dnsbl_check(ip, "*", "*", c->param);
 
-   scan_connect(c->param, ip, "*", "*", 1);    /* Scan using verbose */
+   scan_connect(ip, c->param, "*", "*", 1);    /* Scan using verbose */
                                            
 }
 
