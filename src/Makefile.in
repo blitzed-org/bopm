@@ -99,8 +99,8 @@ AM_YFLAGS = -d
 bopm_SOURCES = compat.c compat.h config-parser.y config-lexer.l config.c config.h \
     dnsbl.c dnsbl.h extern.h inet.c inet.h irc.c irc.h log.c log.h main.c match.c \
     match.h misc.c misc.h malloc.c malloc.h list.c list.h negcache.c negcache.h \
-    opercmd.c opercmd.h options.h scan.c scan.h scanwarn.c scanwarn.h setup.h \
-    stats.c stats.h firedns.c firedns.h
+    opercmd.c opercmd.h options.h scan.c scan.h setup.h stats.c stats.h firedns.c \
+	 firedns.h
 
 
 bopm_LDADD = libopm/src/.libs/libopm.a @ETR_SOCKET_LIBS@ @LIBOBJS@
@@ -116,7 +116,7 @@ am_bopm_OBJECTS = compat.$(OBJEXT) config-parser.$(OBJEXT) \
 	inet.$(OBJEXT) irc.$(OBJEXT) log.$(OBJEXT) main.$(OBJEXT) \
 	match.$(OBJEXT) misc.$(OBJEXT) malloc.$(OBJEXT) list.$(OBJEXT) \
 	negcache.$(OBJEXT) opercmd.$(OBJEXT) scan.$(OBJEXT) \
-	scanwarn.$(OBJEXT) stats.$(OBJEXT) firedns.$(OBJEXT)
+	stats.$(OBJEXT) firedns.$(OBJEXT)
 bopm_OBJECTS = $(am_bopm_OBJECTS)
 bopm_DEPENDENCIES = libopm/src/.libs/libopm.a @LIBOBJS@
 bopm_LDFLAGS =
@@ -137,8 +137,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/main.Po ./$(DEPDIR)/malloc.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/match.Po ./$(DEPDIR)/misc.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/negcache.Po ./$(DEPDIR)/opercmd.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/scan.Po ./$(DEPDIR)/scanwarn.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/stats.Po
+@AMDEP_TRUE@	./$(DEPDIR)/scan.Po ./$(DEPDIR)/stats.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
@@ -251,7 +250,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/negcache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opercmd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/scan.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/scanwarn.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stats.Po@am__quote@
 
 distclean-depend:
