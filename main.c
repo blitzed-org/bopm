@@ -37,6 +37,7 @@ along with this program; if not, write to the Free Software
 #include "irc.h"
 #include "log.h"
 #include "scan.h"
+#include "stats.h"
 
 void do_alarm(int);
 
@@ -52,6 +53,8 @@ int main(int argc, char **argv)
    FILE *pidout;
    int pid, c;
    char spid[16];
+
+   do_stats_init();
 
    while(1)
     {

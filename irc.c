@@ -39,6 +39,7 @@ along with this program; if not, write to the Free Software
 #include "log.h"
 #include "config.h"
 #include "scan.h"
+#include "stats.h"
 #include "extern.h"
 
 
@@ -463,6 +464,55 @@ void irc_parse()
 	  log("IRC -> Kicked from %s by %s! (%s)", token[2], token[0], token[4]);
 	  irc_send("JOIN %s", token[2]);
 	  return;
+     }
+
+    /* Any messages from users that we need to respond to */
+    if(!strcasecmp(token[1], "PRIVMSG") && token[0][0] == ':')
+     {
+	  char *source, *user, *target, *msg;
+	  unsigned int nicklen, prefixlen;
+	  char nick[NICKMAX];
+
+	  /* work out who it was from */
+	  source = token[0] + 1;
+	  
+	  user = index(source, '!');
+
+	  if(user)
+	   {
+	       nicklen = user - source;
+	       strncpy(nick, source, NICKMAX < nicklen ? NICKMAX : nicklen);
+
+	       msg = token[3];
+	       if (msg && msg[0] == ':')
+	           msg++;
+
+	       prefixlen = strlen(msg);
+
+	       if(strncasecmp(msg, CONF_SERVER, prefixlen > 3 ? prefixlen : 3) &&
+	          strcasecmp(msg, "!all"))
+	        {
+	           /* not in the form we accept, ignore this message */
+		   return;
+		}
+
+	       if(token[2][0] == '#')
+		   target = CONF_CHANNELS;
+	       else
+		   target = nick;
+
+	       if (!token[4])
+		{
+	           irc_send("PRIVMSG %s :Some form of command would be nice.", target);
+		   return;
+		}
+	       
+	       if(strncasecmp(token[4], "STAT", 4) == 0)
+	        {
+		   do_stats(target);
+		   return;
+		}
+	   }
      }
 
     /* Search for +c notices */
