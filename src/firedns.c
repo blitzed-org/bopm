@@ -203,8 +203,8 @@ void firedns_init()
 #endif
      )
    {
-      fprintf(stderr, "No nameservers found!\n");
-      exit(-1);
+      log("FIREDNS -> No nameservers found in /etc/resolv.conf");
+      exit(EXIT_FAILURE);
    }
 }
 
