@@ -424,11 +424,13 @@ void scan_connect(char **user, char *msg)
                      break;
                   case OPM_ERR_BADADDR:
                      log_printf("OPM -> Bad address %s [%s].",
-                           ss->manual_target->name, ss->ip);
+                           (ss->manual_target->name ? ss->manual_target_name :
+                           "(unknown)"), ss->ip);
                      break;
                   default:
                      log_printf("OPM -> Unknown error %s [%s].",
-                           ss->manual_target->name, ss->ip);
+                           (ss->manual_target->name ? ss->manual_target_name :
+                           "(unknown)"), ss->ip);
                      break;
                }
             }
