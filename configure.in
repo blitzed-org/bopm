@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(bopm, [3.0.3])
+AC_INIT(bopm, [3.1.0])
 AC_CONFIG_SRCDIR(src/opercmd.h)
 AM_CONFIG_HEADER(src/setup.h)
 AM_INIT_AUTOMAKE()
@@ -17,7 +17,6 @@ AC_ARG_WITH(extra-fascism,
     AC_HELP_STRING([--with-extra-fascism],
     [Add extra gcc3-specific warning flags]),
     [CFLAGS="$CFLAGS -g -ggdb -O0 -W -Wfloat-equal -Wbad-function-cast -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs"])
-
 
 dnl ipv6?
 AC_ARG_ENABLE(ipv6,
@@ -120,6 +119,14 @@ typedef unsigned long uint32;
 ])
 
 AC_CONFIG_SUBDIRS(src/libopm)
+
+dnl This comes last because configure won't actually work with -Werror in
+dnl the CFLAGS
+AC_ARG_WITH(werror,
+    AC_HELP_STRING([--with-werror],
+    [use -Werror to abort compilation on any warning]),
+    [CFLAGS="$CFLAGS -Werror"])
+
 AC_OUTPUT(Makefile src/Makefile)
 
 
