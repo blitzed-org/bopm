@@ -53,7 +53,7 @@ Configuration
     Edit bopm.conf as needed.  Most options are self explanatory and
     contain a short description.
 
-    Please take note of the TARGET_STRING, this is new in version 2 and may be
+    Please take note of the target_string, this is new in version 2 onward and may be
     different for your ircd.  Because we now check that we really have
     connected back onto IRC, BOPM needs to be told what your ircd says during
     the first part of a connection.  If you're not sure, the best thing to do
