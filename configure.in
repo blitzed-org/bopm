@@ -95,6 +95,10 @@ AC_CHECK_FUNCS(gethostbyname gethostbyname2)
 dnl AIX fun
 AC_C_BIGENDIAN
 
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+
+
 dnl teehee - taken from MRTG / Tobias Oetiker
 dnl echo $ECHO_N "checking for POSIX-compliant goat $ECHO_C"
 dnl for bleh in 1 2 3; do
@@ -103,8 +107,21 @@ dnl  sleep 1
 dnl done
 dnl AC_MSG_RESULT([ http://www.blitzed.org/goat_winter_2001.phtml])
 
+AH_BOTTOM([
+#if SIZEOF_INT==4
+typedef signed int int32;
+typedef unsigned int uint32;
+#elif SIZEOF_LONG==4
+typedef signed long int32;
+typedef unsigned long uint32;
+#else
+#  error "No 32-bit integer type!"
+#endif
+])
+
 AC_CONFIG_SUBDIRS(src/libopm)
 AC_OUTPUT(Makefile src/Makefile)
+
 
 echo "##############################################################################"
 echo "Everything is now configured, but you can find some more (infrequently"

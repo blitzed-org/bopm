@@ -99,6 +99,12 @@
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
 
+/* The size of a `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of a `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
@@ -131,3 +137,15 @@
 
 /* Define to `unsigned' if <sys/types.h> does not define. */
 #undef size_t
+
+
+#if SIZEOF_INT==4
+typedef signed int int32;
+typedef unsigned int uint32;
+#elif SIZEOF_LONG==4
+typedef signed long int32;
+typedef unsigned long uint32;
+#else
+#  error "No 32-bit integer type!"
+#endif
+

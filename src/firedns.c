@@ -87,7 +87,7 @@ struct s_rr_middle
 {
    unsigned short type;
    unsigned short class;
-   unsigned int ttl; /* XXX - firedns depends on this being 4 bytes */
+   uint32 ttl; /* XXX - firedns depends on this being 4 bytes */
    unsigned short rdlength;
 };
 
