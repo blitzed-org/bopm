@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2002  Erik Fears
+Copyright (C) 2002 by the past and present ircd coders, and others.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,7 +22,6 @@ along with this program; if not, write to the Free Software
 
 /*
  * This code is borrowed from ircd-hybrid version 7
-
  * -TimeMr14C
  */
 
@@ -494,13 +493,21 @@ char tmp[HOSTIPLEN];
     /* NOTREACHED */
 }
 
+/*
+ * bopm_gethostbyname
+ *
+ * This is a function to be able to use gethostbyname2
+ * as provided by some operating systems. This has the
+ * ability to resolve hostnames in ipv6.
+ * -TimeMr14C
+ */
+
 struct hostent *bopm_gethostbyname(const char *name)
 {
 struct hostent *he;
 
 #if defined(HAVE_GETHOSTBYNAME2)
     if (strchr(name, ':')) {
-	log("Got ip6 addr");
         return gethostbyname2(name, AF_INET6);
     } else {
 	he = gethostbyname2(name, AF_INET);
