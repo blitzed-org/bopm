@@ -518,7 +518,7 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
 
 
 
-/* scan_negotiation_failed CALLBACK
+/* scan_negotiatoin_failed CALLBACK
  *
  *    Called by libopm when negotiation of a specific protocol failed.
  *
