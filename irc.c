@@ -497,7 +497,7 @@ void irc_parse()
 
 	       prefixlen = strlen(msg);
 
-	       if(strncasecmp(msg, CONF_SERVER, prefixlen > 3 ? prefixlen : 3) &&
+	       if(strncasecmp(msg, CONF_NICK, prefixlen > 3 ? prefixlen : 3) &&
 	          strcasecmp(msg, "!all"))
 	        {
 	           /* not in the form we accept, ignore this message */
