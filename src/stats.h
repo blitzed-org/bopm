@@ -17,4 +17,6 @@ extern void stats_dnsblrecv();
 extern void stats_dnsblsend();
 extern void stats_output(char *);
 
+extern void fdstats_output(char *);
+
 #endif /* STATS_H */

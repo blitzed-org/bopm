@@ -67,6 +67,8 @@ void config_load(const char *filename)
    command_init();    /* Initialize the command queue */
    stats_init();      /* Initialize stats (UPTIME) */
    firedns_init();    /* Initialize adns */
+
+   fclose(yyin);
 }
 
 /* Malloc and initialize configuration data to NULL */

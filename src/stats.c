@@ -28,6 +28,10 @@ along with this program; if not, write to the Free Software
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#include <sys/resource.h> /* getrlimit */
+#include <errno.h>
+#include <fcntl.h>
+
 #include <stdio.h>
 #include <time.h>
 
@@ -182,5 +186,43 @@ void stats_output(char *target)
             target, STATS_CONNECTIONS, STATS_CONNECTIONS ?
             (float)STATS_CONNECTIONS / ((float)uptime / 60.0) : 0.0);
 
+}
 
+
+
+/* fdstats_output
+ *
+ *    Output file descriptor stats to target via privmsg
+ *
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
+ */
+
+void fdstats_output(char *target)
+{
+   unsigned total_fd_use;
+   struct rlimit rlim;
+   int i;
+
+   /* Get file descriptor ceiling */
+   if(getrlimit(RLIMIT_NOFILE, &rlim) == -1)
+   {
+      log("FDSTAT -> getrlimit() error retrieving RLIMIT_NOFILE (%s)", strerror(errno));
+      irc_send("PRIVMSG %s :FDSTAT -> getrlimit() error retrieving RLIMIT_NOFILE (%s)",
+                target,  strerror(errno));
+      return;
+   }
+
+   /* Check which file descriptors are active */
+   total_fd_use = 0;
+   for(i = 0; i < rlim.rlim_cur; i++)
+   {
+      fcntl(i,F_GETFD,0);
+      if(errno != EBADF)
+         total_fd_use++;
+   }
+
+   irc_send("PRIVMSG %s :Total open FD: %d", target, total_fd_use);
 }
