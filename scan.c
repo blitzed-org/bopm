@@ -49,6 +49,7 @@ char SENDBUFF[513];
 char RECVBUFF[513];
 
 
+extern protocol_hash SCAN_PROTOCOLS[];
 
 /*    Protocol Name, Port, Write Handler, Read Handler */ 
 
