@@ -197,6 +197,7 @@ void scan_check()
 
     struct timeval scan_timeout;
     struct scan_struct *ss;
+    struct scan_struct *tss;
 
     int highfd = 0;
 
@@ -243,7 +244,7 @@ void scan_check()
         default:
              for(ss = CONNECTIONS; ss; ss = ss->next)
                {
-                  if(FD_ISSET(ss->fd, &r_fdset))
+                  if(FD_ISSET(ss->fd, &r_fdset) && (ss->state == STATE_SENT))
                       if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed and kline*/
                          {
                            irc_kline(ss->irc_addr);
@@ -255,8 +256,13 @@ void scan_check()
                                          CONF_CHANNELS, ss->protocol->type, ss->irc_nick, ss->irc_user, 
                                          ss->irc_addr, ss->protocol->port);
 
+                           ss->state = STATE_CLOSED;
 
-                           ss->state = STATE_CLOSED;               
+                           for(tss = CONNECTIONS;tss;tss = tss->next)
+                             {
+                                 if(!strcmp(ss->irc_addr, tss->irc_addr))
+                                     tss->state = STATE_CLOSED;
+                             }               
                          }
                   if(FD_ISSET(ss->fd, &w_fdset))                                                             
                       if((*ss->protocol->w_handler)(ss)) /* If write returns true, flag STATE_SENT */  
