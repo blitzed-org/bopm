@@ -27,15 +27,15 @@ IRC {
 
 	channel {
 		/*
-		 * This is where all of Blitzed's bopms are.  The name "#wg" is
+		 * This is where all of Blitzed's BOPMs are.  The name "#wg" is
 		 * left over from the days of dalnet's wgmon.  Please don't put
-		 * your bopm into any other channels as it spews out some sensitive
+		 * your BOPM into any other channels as it spews out some sensitive
 		 * info from time to time.
 		 */
 		name = "#wg";
 
 		/*
-		 * Make sure your bopm is set to ID to its nick, and that it has
+		 * Make sure your BOPM is set to ID to its nick, and that it has
 		 * access enough in #wg to use the chanserv invite command.
 		 */
 		invite = "chanserv :invite #wg";
@@ -158,7 +158,6 @@ user {
 
 /*
 exempt {
-	mask = "*!*@localhost";
 	mask = "*!*@127.0.0.1";
 };
 */

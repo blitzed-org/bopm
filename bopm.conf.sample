@@ -7,7 +7,7 @@ BOPM sample configuration
 options {
         /*
          * Full path and filename for storing the process ID of the running
-         * bopm.
+         * BOPM.
          */
 	pidfile = "/some/path/bopm.pid";
 
@@ -29,16 +29,16 @@ options {
 
 	/*
          * Amount of file descriptors to allocate to asynchronous DNS.  64
-         * should be plenty for almost anyone - previous versions of bopm only
+         * should be plenty for almost anyone - previous versions of BOPM only
          * did one at a time!
          */
 	dns_fdlimit = 64;
 
         /*
          * Put the full path and filename of a logfile here if you wish to log
-         * every scan done.  Normally bopm only logs successfully detected
+         * every scan done.  Normally BOPM only logs successfully detected
          * proxies in the bopm.log, but you may get abuse reports to your ISP
-         * about portscanning.  Being able to show that it was bopm that did
+         * about portscanning.  Being able to show that it was BOPM that did
          * the scan in question can be useful.  Leave commented for no
          * logging.
          */
@@ -49,7 +49,7 @@ options {
 IRC {
 	/*
          * IP to bind to for the IRC connection.  You only need to use this if
-         * you wish bopm to use a particular interface (virtual host, IP
+         * you wish BOPM to use a particular interface (virtual host, IP
          * alias, ...) when connecting to the IRC server.  There is another
          * "vhost" setting in the scan {} block below for the actual
          * portscans.  Note that this directive expects an IP address, not a
@@ -59,12 +59,12 @@ IRC {
 #	vhost = "0.0.0.0";
 
         /*
-         * Nickname for bopm to use.
+         * Nickname for BOPM to use.
          */
 	nick = "MyBopm";
 
         /*
-         * Text to appear in the "realname" field of bopm's /whois output.
+         * Text to appear in the "realname" field of BOPM's /whois output.
          */
 	realname = "Blitzed Open Proxy Monitor";
 
@@ -74,7 +74,7 @@ IRC {
 	username = "bopm";
 
         /*
-         * Hostname (or IP) of the IRC server which bopm will monitor
+         * Hostname (or IP) of the IRC server which BOPM will monitor
          * connections on.
          */
 	server = "myserver.blitzed.org";
@@ -88,7 +88,7 @@ IRC {
 
 
         /*
-         * Port of the above server to connect to.  This is what bopm uses to
+         * Port of the above server to connect to.  This is what BOPM uses to
          * get onto IRC itself, it is nothing to do with what ports/protocols
          * are scanned, nor do you need to list every port your ircd listens
          * on.
@@ -100,42 +100,42 @@ IRC {
          * it).  This is the raw IRC command text, and the below example
          * corresponds to "/msg nickserv identify password" in a client.  If
          * you don't understand, just edit "password" in the line below to be
-         * your bopm's nick password.  Leave commented out if you don't need
+         * your BOPM's nick password.  Leave commented out if you don't need
          * to identify to NickServ.
          */
 #       nickserv = "privmsg nickserv :identify password";
 
         /*
-         * The username and password needed for bopm to oper up.
+         * The username and password needed for BOPM to oper up.
          */
 	oper = "bopm operpass";
  
         /*
-         * Mode string that bopm needs to set on itself as soon as it opers
+         * Mode string that BOPM needs to set on itself as soon as it opers
          * up.  This needs to include the mode for seeing connection notices,
-         * otherwise bopm won't scan anyone (that's usually umode +c).  It's
+         * otherwise BOPM won't scan anyone (that's usually umode +c).  It's
          * often also a good idea to remove any helper modes so that users
-         * don't try to talk to the bopm.
+         * don't try to talk to the BOPM.
          *
          * REMEMBER THAT IRCU AND LATER VERSIONS OF UNREAL DO NOT USE A SIMPLE
          * +c !!
 	mode = "+c-h";
 
-        /* Example for Bahamut; +F gives bopm relaxed flood limits */
+        /* Example for Bahamut; +F gives BOPM relaxed flood limits */
 #       mode = "+Fc-h";
 
         /*
-         * If this is set then bopm will use it as an /away message as soon as
+         * If this is set then BOPM will use it as an /away message as soon as
          * it connects.
          */
 	away = "I'm a bot.  Your messages will be ignored.";
 
         /*
-         * Info about channels you wish bopm to join in order to accept
-         * commands.  bopm will also print messages in these channels every
-         * time it detects a proxy.  Only IRC operators can command bopm to do
-         * anything, but some of the things bopm reports to these channels
-         * could be soncidered sensitive, so it's best not to put bopm into
+         * Info about channels you wish BOPM to join in order to accept
+         * commands.  BOPM will also print messages in these channels every
+         * time it detects a proxy.  Only IRC operators can command BOPM to do
+         * anything, but some of the things BOPM reports to these channels
+         * could be soncidered sensitive, so it's best not to put BOPM into
          * public channels.
          */
 	channel {
@@ -146,14 +146,14 @@ IRC {
 	   name = "#bopm";
 
            /*
-            * If bopm will need to use a key to enter this channel, this is
+            * If BOPM will need to use a key to enter this channel, this is
             * where you specify it.
             */
 #          key = "somekey";
 
            /*
             * If you use ChanServ then maybe you want to set the channel
-            * invite-only and have each bopm do "/msg ChanServ invite" to get
+            * invite-only and have each BOPM do "/msg ChanServ invite" to get
             * itself in.  Leave commented if you don't, or if this makes no
             * sense to you.
             */
@@ -173,11 +173,11 @@ IRC {
 	 *  
          * Items in order MUST be: nick user host IP
          *
-         * bopm will not work with ircds which do not send an IP in the
+         * BOPM will not work with ircds which do not send an IP in the
          * connection notice.
          *
          * This is fairly complicated stuff, and the consequences of getting
-         * it wrong are the bopm does not scan anyone.  Unless you know
+         * it wrong are the BOPM does not scan anyone.  Unless you know
          * absolutely what you are doing, please just uncomment the example
          * below that best matches the type of ircd you use.
          *
@@ -254,7 +254,7 @@ IRC {
  * OPM Block defines blacklists and information required to report new proxies
  * to a dns blacklist.  DNS-based blacklists store IP addresses in a DNS zone
  * file.  In the case of opm.blitzed.org, we store the IP addresses of known
- * insecure proxy servers.  By checking against this blacklist, bopms are able
+ * insecure proxy servers.  By checking against this blacklist, BOPMs are able
  * to ban known proxies without having to scan them all.
  *
  * If you still don't underdstand what a DNSBL is, have a look at
@@ -406,7 +406,7 @@ scanner {
          * Note that if your ircd has "ping cookies" then clients from HTTP
          * POST proxies cannot actually ever get onto your network anyway.  If
          * you leave the checks in then you'll still find some (because some
-         * people IRC from boxes that run them), but if you use bopm purely as
+         * people IRC from boxes that run them), but if you use BOPM purely as
          * a protective measure and you have ping cookies, you need not scan
          * for HTTP POST.
          */
@@ -414,7 +414,7 @@ scanner {
 
 	/*
          * IP this scanner will bind to.  Use this if you need your scans to
-         * come FROM a particular interface on the machine you run bopm from.
+         * come FROM a particular interface on the machine you run BOPM from.
          * If you don't understand what this means, please leave this
          * commented out, as this is a major source of support queries!
          */
@@ -454,7 +454,7 @@ scanner {
          *
          * Please use an IP that is publically reachable from anywhere on the
          * Internet, because you have no way of knowing where the insecure
-         * proxies will be located.  Just because you and your bopm can
+         * proxies will be located.  Just because you and your BOPM can
          * connect to your ircd on some private IP like 192.168.0.1, does not
          * mean that the insecure proxies out there on the Internet will be
          * able to.  And if they never connect, you will never detect them.
@@ -557,18 +557,16 @@ user {
 
 /*
  * Exempt hosts matching certain strings from any form of scanning or dnsbl.
- * Note that bopm will not resolve IP addresses to hosts nor hosts to IP
- * addresses, so you will probably want to put both forms in here if you need
- * to use this at all.
+ * BOPM will check each string against both the hostname and the IP address of
+ * the user.
  *
- * There are very few valid reasons to actually use "exempt".  bopm should
+ * There are very few valid reasons to actually use "exempt".  BOPM should
  * never get false positives, and we would like to know very much if it does.
- * One possible scenario is that the machine bopm runs from is specifically
+ * One possible scenario is that the machine BOPM runs from is specifically
  * authorized to use certain hosts as proxies, and users from those hosts use
- * your network.  In this case, without exempt, bopm will scan these hosts,
+ * your network.  In this case, without exempt, BOPM will scan these hosts,
  * find itself able to use them as proxies, and ban them.
  */
 exempt {
-	mask = "*!*@localhost";
 	mask = "*!*@127.0.0.1";
 };
