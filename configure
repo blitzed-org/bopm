@@ -9564,13 +9564,6 @@ presetting ac_cv_c_bigendian=no (or yes) will help" >&2;}
 esac
 
 
-echo $ECHO_N "checking for POSIX-compliant goat $ECHO_C"
-for bleh in 1 2 3; do
- echo $ECHO_N "."
- sleep 1
-done
-echo "$as_me:$LINENO: result:  http://www.blitzed.org/goat_winter_2001.phtml" >&5
-echo "${ECHO_T} http://www.blitzed.org/goat_winter_2001.phtml" >&6
 
 
 

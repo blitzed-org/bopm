@@ -96,12 +96,12 @@ dnl AIX fun
 AC_C_BIGENDIAN
 
 dnl teehee - taken from MRTG / Tobias Oetiker
-echo $ECHO_N "checking for POSIX-compliant goat $ECHO_C"
-for bleh in 1 2 3; do
- echo $ECHO_N "."        
- sleep 1
-done
-AC_MSG_RESULT([ http://www.blitzed.org/goat_winter_2001.phtml])
+dnl echo $ECHO_N "checking for POSIX-compliant goat $ECHO_C"
+dnl for bleh in 1 2 3; do
+dnl  echo $ECHO_N "."        
+dnl  sleep 1
+dnl done
+dnl AC_MSG_RESULT([ http://www.blitzed.org/goat_winter_2001.phtml])
 
 AC_CONFIG_SUBDIRS(src/libopm)
 AC_OUTPUT(Makefile src/Makefile)
