@@ -51,9 +51,9 @@ char RECVBUFF[513];
 
 protocol_hash SCAN_PROTOCOLS[] = {
 
-       {"OpenSquid", 8080, &(scan_w_squid),  &(scan_r_squid)  },
-       {"OpenSquid", 3128, &(scan_w_squid),  &(scan_r_squid)  },
-       {"OpenSquid",   80, &(scan_w_squid),  &(scan_r_squid)  },
+       {"OpenHTTP", 8080,  &(scan_w_squid),  &(scan_r_squid)  },
+       {"OpenHTTP", 3128,  &(scan_w_squid),  &(scan_r_squid)  },
+       {"OpenHTTP",   80,  &(scan_w_squid),  &(scan_r_squid)  },
        {"Socks4"   , 1080, &(scan_w_socks4), &(scan_r_socks4) },
        {"Socks5"   , 1080, &(scan_w_socks5), &(scan_r_socks5) },
        {"Wingate"  ,   23, &(scan_w_wingate),&(scan_r_wingate)}

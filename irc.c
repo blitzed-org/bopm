@@ -491,7 +491,9 @@ void irc_parse()
 void do_perform()
 {    
       log("IRC -> Connected to %s:%d", CONF_SERVER, CONF_PORT);
-      irc_send("JOIN %s", CONF_CHANNELS);
+      irc_send(CONF_NICKSERV_IDENT);       /* Identify to nickserv */
+      irc_send("JOIN %s", CONF_CHANNELS);  /* Join all listed channels */
+
 }
 
 /*
