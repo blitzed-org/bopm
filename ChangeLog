@@ -1,3 +1,11 @@
+2002-05-06 06:00
+
+       * main.c: 
+
+       main.c:
+                Fixing -c param bug (which has broken -c option since -v option was added (rel 1.23)).
+                TheShadow reported this in #blitzed
+
 2002-05-05 02:54  andy
 
 	* main.c:
