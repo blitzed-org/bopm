@@ -1,392 +1,52 @@
-##################################################################################
-#                       Blitzed Open Proxy Monitor                               #
-#                                                                                #
-#                           Configuration File                                   #
-#                                                                                #
-##################################################################################
+/*
 
+BOPM sample configuration
 
+*/
 
-# NICK <nickname> : Defines what nickname BOPM will be using.
-#
+options {
+	pidfile = "bopm.pid";
+        negcache = 3600;
+};
 
-NICK BopmDebug
 
+IRC {
+        /* Ip to bind to */
+        #vhost = "0.0.0.0";
 
+	nick = "MyBopm";
 
-# USER <username> : Defines what username BOPM will be using in place of
-#                   ident.
-# 
-                  
-USER bopm
+        realname = "Blitzed Open Proxy Monitor";
+        username = "bopm";
 
+        server = "myserver.blitzed.org";
+        port = 6667;
 
-# REALNAME <realname> : What realname (the bit in /whois after
-#                       nick/ident/host) should bopm use?
-#
+        oper = "bopm operpass";
+        mode = "+cs";
+       
 
-REALNAME Blitzed Open Proxy Monitor
+        away = "I'm a bot, don't message me.";
 
+        channel {
+           name = "#bopm";
+           #key = "somekey";
+        };
+};
 
-# NICKSERV_IDENT <line> : Line to send to nickserv to identify
-#                         Leave commented to not use.
+user {
+	mask = "*!*@*";
+	scanner = "default";
+};
 
-#NICKSERV_IDENT PRIVMSG NICKSERV :IDENTIFY password1234
-NICKSERV_IDENT NICKSERV :IDENTIFY password1234
+user {
+	mask = "*!*@*proxy*";
+	mask = "*!*@*www*";
+	scanner = "extended";
+};
 
-
-
-# CHANSERV_INVITE <line> : Line to send to chanserv to request invite to a
-#                          channel. %s must exist in the line and is the
-#                          channel.  Leave commented to not use.
-
-#CHANSERV_INVITE PRIVMSG CHANSERV :INVITE %s
-CHANSERV_INVITE CHANSERV :INVITE %s
-
-
-
-# BINDIRC <ip> : IP to bind to for IRC connection.  You only need to use
-#                this if you need to control which interface BOPM will
-#                bind to when it connects to IRC.  Most people can leave
-#                this commented.  LEAVE THIS COMMENTED OUT IF YOU DON'T
-#                UNDERSTAND WHAT IT DOES OR WHY YOU MIGHT NEED IT!
-#
-
-#BINDIRC 127.0.0.1
-
-
-# BINDIRC6 <ipv6> : IPv6 interface to bind to for IRC connection.  If you
-#                   want to bind to an IPv6 interface then use this
-#                   directive instead of BINDIRC above.  If this makes no
-#                   sense then you will be safe leaving this commented out.
-#
-
-# BINDIRC6 ::1
-
-
-# BINDSCAN <ip> : IP to bind to for scan connections.  You only need to use
-#                 this if you need to control which interface BOPM will
-#                 bind to when scanning clients.  Most people can leave
-#                 this commented.  LEAVE THIS COMMENTED OUT IF YOU DON'T
-#                 UNDERSTAND WHAT IT DOES OR WHY YOU MIGHT NEED IT!
-#
-
-#BINDSCAN 127.0.0.1
-
-
-# BINDSCAN6 <ipv6> : IPv6 interface to bind to for scanning clients.  If
-#                    you want to bind to an IPv6 interface then use this
-#                    directive instead of BINDSCAN above.  If this makes no
-#                    sense then you will be safe leaving this commented out.
-#
-
-#BINDSCAN6 ::1
-
-# SERVER <hostname/IP> : IRC host BOPM will be monitoring connections on.
-#                        This is what bopm will connect to, so please make
-#                        sure it works.
-#
-
-SERVER myserver.blitzed.org
-
-
-# SERVER6 <hostname/IPv6> : Use this directive instead of SERVER above if
-#                           you need BOPM to connect to an IPv6 address.
-#                           You would only need to use this if your IRC
-#                           server does not listen on any IPv4 addresses,
-#                           or there were some reason why you did not wish
-#                           to connect to them.  Most people will leave
-#                           this commented and use SERVER, above.
-
-#SERVER6 ipv6-server.blitzed.org
-
-
-# PASSWORD <password> : If you need a password to connect to your server,
-#                       define it here.  Leave commented if not.
-
-#PASSWORD verysecret
-
-
-
-
-# PORT <port> : Port of IRC host BOPM will be monitoring connections on
-#               This is the port that BOPM will connect to in order to get on
-#               IRC itself, it is nothing to do with what ports it checks on
-#               clients, nor do you need to list every port your ircd
-#               accepts clients on.  You need only 1 PORT definition.
-#
-
-PORT 6667
-
-
-
-
-# CHANNELS <list> : Comma seperated list of channels bot will join/privmsg
-#                   information.
-#                   There cannot be spaces between channels, only commas.
-
-CHANNELS #bopm,#wg
-
-
-# KEYS <list> : Comma separated list of keys for channels above.  Again
-#               there should not be spaces between these keys, only
-#               commas.  Also if a channel above does not need a key, you
-#               need to put some text anyway, it will be ignored (this is
-#               the same syntax that IRC clients use to join multiple
-#               channels).
-#               Keep this commented if you don't need any keys.
-
-#KEYS secret
-
-
-
-# OPER <user> <pass> : Username and Password of O line BOPM will be using
-#
-
-OPER bopm operpass
-
-
-# OPER_MODES <modes> : Mode string to set on itself as soon as it opers up.
-#                      This should include whatever mode enables connect
-#                      notices (usually +c), and often a good idea to disable
-#                      helper modes so that users don't try to talk to the
-#                      bopm.
-#
-#                      REMEMBER THAT IRCU AND LATER VERSIONS OF UNREAL DO
-#                      NOT USE A SIMPLE +c !!
-
-OPER_MODES +c-h
-
-
-
-
-# SCANIP <ip> : IP to command possible open proxy to connect to. This is
-#               usually the same IP as the IRC host we're monitoring.  Don't
-#               leave this 127.0.0.1
-
-SCANIP 127.0.0.1
-
-
-
-
-# SCANPORT <port> : Port to command possible open proxy to connect to.
-#                   This is usually an IRC related port (such as 6667).  THIS
-#                   HAS NOTHING TO DO WITH WHAT PORTS ARE SCANNED!  When BOPM
-#                   connects to the client, this is the port ON YOUR SERVER
-#                   that BOPM tries to make it connect to.  This should
-#                   normally be a port that your ircd is listening on.  You
-#                   therefore only need one SCANPORT directive.
-
-SCANPORT 6667
-
-
-
-
-# TIMEOUT <seconds> : Number of seconds before a particular scan on a client
-#                     will timeout. The higher this is set, the more chance of
-#                     slower proxies being caught. However a higher value also means
-#                     more demand for file descriptors at any one time. 
-#                     A default value of 30 is recommended.                  
-
-TIMEOUT 30
-
-
-
-
-# TARGET_STRING <string> : Target string we test for in the data read by the scanner,
-#                          this should be a string within the data that your ircd usually
-#                          sends on connect. The default should work on most bahamut 
-#                          based ircds once you edit it for your server name.
-#
-#                          Suggestion is to place the FULL notice string with the server
-#                          source name as your target string (this won't work for hybrid
-#                          servers as they don't send the server source.
-#
-#                          This would prevent the odd clients running IRC servers on port
-#                          8080/8000 from being confused with a proxy.
-
-TARGET_STRING *** Looking up your hostname...
-
-
-
-# KLINE_COMMAND <command> : Line used in issuing KLINES. Two %s are required
-#                           within the line which will specify the klined
-#                           host and the IP address which you may find
-#                           useful in a URL.
-#
-#                           Do not add anymore ':' characters after the initial
-#                           : character in the kline (even for a website) as
-#                           the IRCD will reject it.  
-#
-#                           You should probably make sure this is a
-#                           TEMPORARY KLINE, otherwise people who fix their
-#                           proxies will not be able to get back onto your
-#                           net.  The example below is correct for DALNet's
-#                           Bahamut and by default places a 30 minute
-#                           KLINE.
-#
-#     !!!! IMPORTANT !!!!   If you change the description on the line below
-#                           WE WILL NOT SUPPORT YOU. It is very important that
-#                           users banned are able to visit the DNSBL and remove 
-#                           themselves; if not, they will be permanantly banned 
-#                           from your network (as they will not have the
-#                           knowledge to remove themselves from the DNSBL).
-#
-#                           If you don't like the rather Blitzed-like pages
-#                           then you can use this command instead:
-# 
-# KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitzed.org/opm/index2.phtml?ip=%s for more information
-#
-#                           Here's a GLINE example for ircU:
-# KLINE_COMMAND GLINE +*@%s 1800 :Open proxy found on your host. Please visit www.blitzed.org/proxy?ip=%s for more information.
-#
-#                           There's also an index3.phtml which is even more
-#                           plain, useful if you are trying to process our
-#                           pages in order to make your own web interface
-#                           (but if you've got some XML knowledge and want
-#                           to do this properly, come and talk to us, we
-#                           can help you).
-
-KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%s for more information.
-
-
-
-
-# DNSBL_ZONE <name> : Name of the DNS zone that every user will be checked
-#                     against.  For example, Blitzed uses opm.blitzed.org (and
-#                     you can too, if you like).  If you don't understand what
-#                     a DNSBL is, you can try looking at
-#                     http://www.blitzed.org/opm.  This zone should NOT have a
-#                     dot at the end.  If you leave this variable commented, no
-#                     check will be done.
-
-DNSBL_ZONE opm.blitzed.org
-
-
-
-
-# DNSBL_TO <email> : Email address that reports of open proxies should be
-#                    sent to.  If this is not set, proxies will not be reported
-#                    by email.  You can report to multiple addresses by
-#                    separating them with commas.
-
-#DNSBL_TO postmaster@[127.0.0.1]
-
-
-
-
-# DNSBL_FROM <email> : Email address that your bopm will use to communicate
-#                      with DNSBL_TO, above.  The Blitzed DNSBL requires
-#                      that this email address be received by a real person,
-#                      i.e. you.  If this is not set, proxies will not be
-#                      reported by email.
-
-#DNSBL_FROM email@example.com
-
-
-
-
-# SENDMAIL <path> : Absolute path to your sendmail binary.  If this is not
-#                   set, proxies will not be reported by email.
-
-#SENDMAIL /usr/sbin/sendmail
-
-
-
-
-# HELP_EMAIL <email> : When someone messages bopm with "INFO" it will tell
-#                      them to email a certain address for help.  If you are a
-#                      Blitzed admin you should be setting this to
-#                      "help@lists.blitzed.org"
-
-HELP_EMAIL help@lists.blitzed.org
-
-
-
-
-# AWAY <away message> : If this is set then bopm will use it as an away
-#                       message as soon as it connects.
-
-AWAY I'm a bot.  Your messages will be ignored.
-
-# FDLIMIT <limit> : Limit number of open file descriptors for SCAN ONLY (this does
-#                   not include file descriptors used for the IRC socket or log files.
-#                   Once limit has been reached, any further scans are queued until
-#                   there are file descriptors free
-#                   
-#                   Keep this limit equal or less than MAXPOLL as defined in options.h
-
-FDLIMIT 512
-
-
-# EXCLUDE <hostmask> : Exclude hosts matching this pattern from DNSBL
-#                      checks and proxy scans.  The hostmask uses familiar
-#                      IRC wildcards * and ? and matches against both IP
-#                      and hostname.  Use EXCLUDE multiple times to build a
-#                      list.  You should not be using EXCLUDE unless you
-#                      have very good reason; if BOPM is finding false
-#                      positives then we regard that a serious problem and
-#                      would like to be told.
-
-#EXCLUDE 192.168.0.*
-#EXCLUDE some-isp-??.example.com
-
-# PIDFILE <filepath> : Full path specifying where bopm should record its
-#                      process ID.
-
-PIDFILE /path/to/bopm.pid
-
-
-# SCAN_WARNING <text> : A warning to notice to each client as it connects, that
-#                       a port scan will be done on them.  We strongly
-#                       recommend AGAINST using this feature of bopm, but it is
-#                       provided due to demand.  Reasons for not using this
-#                       feature:
-#                               1) This should be done by the ircd.
-#                                  Bahamut and many other ircds have code
-#                                  to do this already, and adding it is not
-#                                  at all hard for someone with minimal C
-#                                  knowledge.
-#                               2) Making bopm do this will slow bopm down
-#                                  and detract from bopm's actual purpose
-#                                  (open proxy scanning).
-#                               3) This will reveal the nick of the bopm to
-#                                  each user.
-#                               4) Due to rate-limiting of these notices,
-#                                  clients that do connect via open proxies
-#                                  may not receive the notice before they
-#                                  are disconnected.  This is not an issue
-#                                  if the ircd itself sends the warning.
-#
-#                       If you still insist on using this, you can send
-#                       multiple notices by including the SCAN_WARNING
-#                       directive more than once (e.g. to split a long
-#                       message over multiple lines).
-#
-
-#SCAN_WARNING I am now scanning you to determine wheter you are connecting
-#SCAN_WARNING through an open proxy.  You will see several connections to
-#SCAN_WARNING various ports coming from IP address 192.168.0.1.  This is
-#SCAN_WARNING not a hacking attempt!  If you have any questions please
-#SCAN_WARNING send them to help@example.com.
-
-
-# NEG_CACHE <seconds> : How many seconds to cache IP addresses of hosts which
-#                       are confirmed to be secure from open proxies.  IT IS
-#                       STRONGLY RECOMMENDED YOU DO NOT USE THE DIRECTIVE, but
-#                       it is provided due to demand.  Reasons for not using
-#                       this feature:
-#                               1) It makes BOPM slower - every time a scan
-#                                  fails, the scan list must be walked to
-#                                  see if all scans for this host have
-#                                  failed.
-#                               2) Anyone capable of running a proxy can
-#                                  get abusers onto your network - all they
-#                                  need do is shut the proxy down, connect
-#                                  themselves, restart the proxy, and tell
-#                                  their friends to come flood.
-#
-#                       Keep this directive commented out to disable
-#                       negative caching.
-
-#NEG_CACHE 3600
+/*
+exempt {
+	mask = "*!*@localhost";
+	mask = "*!*@127.0.0.1";
+}; */
