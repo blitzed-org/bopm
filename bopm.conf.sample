@@ -199,6 +199,11 @@ IRC {
 	 */
 #	connregex = "\\*\\*\\* Connect/Exit -- from [^:]+: Client connecting on port [0-9]+: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
 
+	/*
+	 * SorIRCd 1.3.4+ / StarIRCd 5.26+.
+	 */
+	connregex = "\\*\\*\\* Notice -- Client connecting on port [0-9]+: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
+
 
 	/*
 	 * "kline" controls the command used when an open proxy is confirmed.
