@@ -47,18 +47,17 @@ Configuration
     the first part of a connection.  If you're not sure, the best thing to do
     is telnet to your ircd from your shell, e.g.:
 
-      [andy@fullers bopm]$ telnet porkscratchings.blitzed.org 6667
+      [andy@fullers bopm]$ telnet porkscratchings.someserver.org 6667
       Trying 207.8.219.202...
-      Connected to porkscratchings.blitzed.org.
+      Connected to porkscratchings.someserver.org.
       Escape character is '^]'.
-      :porkscratchings.pa.us.blitzed.org NOTICE AUTH :*** Looking up your hostname...
-      :porkscratchings.pa.us.blitzed.org NOTICE AUTH :*** Checking Ident
-      :porkscratchings.pa.us.blitzed.org NOTICE AUTH :*** Got Ident response
-      :porkscratchings.pa.us.blitzed.org NOTICE AUTH :*** Found your hostname
+      :porkscratchings.pa.us.someserver.org NOTICE AUTH :*** Looking up your hostname...
+      :porkscratchings.pa.us.someserver.org NOTICE AUTH :*** Checking Ident
+      :porkscratchings.pa.us.someserver.org NOTICE AUTH :*** Got Ident response
+      :porkscratchings.pa.us.someserver.org NOTICE AUTH :*** Found your hostname
 
-    The above should explain why we on Blitzed use "*** Looking up your
-    hostname...", just try to pick something in the first line of IRC output
-    (for efficiency reasons).
+    Just try to pick something in the first line of IRC output (for efficiency
+    reasons).
 
     If you don't run an ircd at all (some people are using bopchecker for spam
     checking, etc.) then you're going to have to use a bit of ingenuity.  You

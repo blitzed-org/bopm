@@ -77,7 +77,7 @@ IRC {
          * Hostname (or IP) of the IRC server which BOPM will monitor
          * connections on.
          */
-	server = "myserver.blitzed.org";
+	server = "myserver.somenetwork.org";
 
 
         /*
@@ -245,6 +245,10 @@ IRC {
          * !!! UNREAL USERS PLEASE NOTE !!!
          * Unreal users will need PROTOCTL HCN to force hybrid connect
          * notices.
+         *
+	 * Yes Unreal users!  That means you!  That means you need the line
+	 * below!  See that thing at the start of the line?  That's what we
+	 * call a comment!  Remove it to UNcomment the line.
          */
 #       perform = "PROTOCTL HCN";
 
@@ -319,8 +323,7 @@ OPM {
 #       dnsbl_from = "mybopm@myserver.org";
 
         /*
-         * Email address to send reports TO.  This default is the one
-         * currently in use by Blitzed.
+         * Email address to send reports TO.
          */
 #       dnsbl_to = "bopm@reports.blitzed.org";
 

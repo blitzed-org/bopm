@@ -18,3 +18,4 @@ stamp-h1
 config-lexer.c
 config-parser.c
 config-parser.h
+.libs
