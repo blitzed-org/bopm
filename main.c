@@ -36,6 +36,7 @@ along with this program; if not, write to the Free Software
 #include "extern.h"
 #include "irc.h"
 #include "log.h"
+#include "opercmd.h"
 #include "scan.h"
 #include "stats.h"
 

@@ -31,6 +31,7 @@
           time_t create_time;          /* Creation time, for timeout                       */         
           int state;                   /* Status of scan                                   */
           protocol_hash *protocol;     /* Pointer to protocol type                         */
+	  int verbose;                 /* report progress to channel verbosely?            */
      };
 
 
@@ -53,4 +54,5 @@
      int scan_w_wingate(scan_struct *ss);
      int scan_r_wingate(scan_struct *ss);
 
+     void do_manual_check(struct command *c);
 #endif 

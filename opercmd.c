@@ -22,11 +22,13 @@ along with this program; if not, write to the Free Software
 
 #include <string.h>
 #include <stdlib.h>
+#include <netinet/in.h>
 
 #include "irc.h"
 #include "log.h"
 #include "misc.h"
 #include "opercmd.h"
+#include "scan.h"
 #include "extern.h"
 
 void do_oper_cmd(const char *nick, const char *cmd, const char *param,
@@ -107,10 +109,10 @@ void check_userhost(const char *userhost)
          if(oper)
 	  {
             /* do the command */
-	    irc_send("PRIVMSG %s :Right now I would be executing your "
-		     "command of type %u with param '%s'",
-		     cmd_stack[c].target, cmd_stack[c].type,
-		     cmd_stack[c].param);
+	    if(cmd_stack[c].type == CMD_CHECK)
+	     {
+	       do_manual_check(&cmd_stack[c]);
+	     }
 	  }
 	 else
 	  {
@@ -144,7 +146,8 @@ void reap_commands(time_t present)
 
    for(c = 0; c < MAXCMD; c++)
     {
-      if(present - cmd_stack[c].added >= 120)
+      if(cmd_stack[c].type != CMD_NONE &&
+         (present - cmd_stack[c].added >= 120))
        {
          irc_send("PRIVMSG %s :Reaping dead command from %s of type %u "
 		  "with param '%s', added %s ago.", cmd_stack[c].nick,
