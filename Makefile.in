@@ -20,7 +20,7 @@ endif
 objects = compat.o config.o dnsbl.o irc.o log.o main.o match.o misc.o \
     opercmd.o scan.o stats.o
 
-checker_obj = bopchecker.o config.o match.o misc.o scan.o
+checker_obj = bopchecker.o compat.o config.o match.o misc.o scan.o
 
 all: bopm bopchecker
 	rm -f *.da
