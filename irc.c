@@ -91,7 +91,7 @@ void irc_cycle()
       switch(select((IRC_FD + 1), &IRC_READ_FDSET, 0, &IRC_EX_FDSET, &IRC_TIMEOUT))
        {
             case -1:         
-                  irc_reconnect();
+                  return;
                   break;
             case 0:
 		  break;
