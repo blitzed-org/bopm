@@ -33,5 +33,5 @@ if [ -f bopm.pid ] ; then
   rm -f bopm.pid
 fi
 
-./bopm
+bin/bopm
 exit 0;
