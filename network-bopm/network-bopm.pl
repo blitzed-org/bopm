@@ -21,7 +21,6 @@
 
  
 use strict;
-use Event;
 use Socket;
 use IO::Select;
 use IO::Socket::INET;
@@ -72,7 +71,6 @@ my %IRC_FUNCTIONS = (
 my %BOPM_FUNCTIONS = (
                      'NICK'    => \&bopm_nick,
                      'USER'    => \&bopm_user,
-                     'PASS'    => \&bopm_pass,
                      );
 
 #Global Variables
@@ -82,6 +80,7 @@ my $IRC_DATA;            #Data read from IRC
 my $BOPM_SOCKET;         #Bopm connection
 my $BOPM_DATA;           #Data read from BOPM
 my $BOPM_WAITING = 0;    #bool, waiting for data?
+my $BOPM_AUTH    = 0;    #Has bopm authenticated yet?
 
 my $SELECT = new IO::Select; 
 
@@ -438,6 +437,7 @@ sub bopm_listen
    }
 
    $BOPM_WAITING = 1;
+   $BOPM_AUTH    = 0;
 }
 
 sub bopm_close
@@ -497,12 +497,27 @@ sub bopm_parse
 
    push @parv, $message;
 
+   #check if this is an auth
+   if($parv[0] eq 'PASS')
+   {
+      print $parv[1]  . "\n";
+      if($parv[1] eq $BOPM{PASS})
+      {
+         $BOPM_AUTH = 1;
+      }
+      else
+      {
+         bopm_listen();
+      }
+   }
+
    if(exists($BOPM_FUNCTIONS{$parv[0]}))
    {
       $BOPM_FUNCTIONS{$parv[0]}(\@parv);
    }
    else
    {
+      return if(!$BOPM_AUTH);
       irc_send(sprintf(':%s %s', $BOPM{NICK}, $line));
    } 
 }
@@ -515,7 +530,8 @@ sub bopm_send #($data)
 {
    my $data = $_[0];
 
-   return if($BOPM_WAITING);
+   #don't send any data to listening sockets or bopms that havn't PASSed yet
+   return if($BOPM_WAITING || !$BOPM_AUTH);
 
    do_log(sprintf('BOPM SEND -> %s', $data));
 
