@@ -3461,9 +3461,9 @@ presetting ac_cv_c_bigendian=no (or yes) will help" >&2;}
    { (exit 1); exit 1; }; } ;;
 esac
 
-echo $ac_n "checking for POSIX-compliant goat$ac_c"
+echo $ECHO_N "checking for POSIX-compliant goat$ac_c"
 for bleh in 1 2 3; do
- echo $ac_n "."
+ echo $ECHO_N "."
  sleep 1
 done
 echo "$as_me:$LINENO: result:  http://www.blitzed.org/goat_winter_2001.phtml" >&5
@@ -4460,6 +4460,5 @@ fi
 
 echo
 echo "You'll find more (infrequently changed) options in options.h"
-echo "Type make to compile BOPM"
-echo "(requires GNU Make, so try gmake on BSD systems)"
+echo "Type make to compile BOPM (requires GNU Make, so try gmake on BSD systems)"
 echo

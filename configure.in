@@ -55,9 +55,9 @@ dnl AIX fun
 AC_C_BIGENDIAN
 
 dnl teehee - taken from MRTG / Tobias Oetiker
-echo $ac_n "checking for POSIX-compliant goat$ac_c"
+echo $ECHO_N "checking for POSIX-compliant goat$ac_c"
 for bleh in 1 2 3; do
- echo $ac_n "."        
+ echo $ECHO_N "."        
  sleep 1
 done
 AC_MSG_RESULT([ http://www.blitzed.org/goat_winter_2001.phtml])
@@ -66,6 +66,5 @@ AC_OUTPUT(Makefile)
 
 echo
 echo "You'll find more (infrequently changed) options in options.h"
-echo "Type make to compile BOPM"
-echo "(requires GNU Make, so try gmake on BSD systems)"
+echo "Type make to compile BOPM (requires GNU Make, so try gmake on BSD systems)"
 echo
