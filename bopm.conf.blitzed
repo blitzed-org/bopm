@@ -121,6 +121,12 @@ scanner {
          * IRCnet have seen many socks5 on these ports, more than on the
          * standard ports even.
          */
+        protocol = SOCKS4:4914;
+        protocol = SOCKS4:6826;
+        protocol = SOCKS4:7198;
+        protocol = SOCKS4:7366;
+        protocol = SOCKS4:9036;
+
         protocol = SOCKS5:4438;
         protocol = SOCKS5:5104;
         protocol = SOCKS5:5113;
