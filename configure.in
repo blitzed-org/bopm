@@ -49,7 +49,7 @@ if test "$with_select" = "yes" || test "$have_sys_poll_h" = "no"; then
  fi
 fi
 
-AC_CHECK_FUNCS(socket strdup strstr)
+AC_CHECK_FUNCS(inet_aton socket strdup strstr)
 
 dnl AIX fun
 AC_C_BIGENDIAN
