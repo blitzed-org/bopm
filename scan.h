@@ -36,6 +36,7 @@
           struct sockaddr_in sockaddr; /* holds information about remote host for socket() */
           time_t create_time;          /* Creation time, for timeout                       */         
           int state;                   /* Status of scan                                   */
+          unsigned int bytes_read;          /* Number of bytes received                         */
           protocol_hash *protocol;     /* Pointer to protocol type                         */
 	  int verbose;                 /* report progress to channel verbosely?            */
      };

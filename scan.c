@@ -129,6 +129,7 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
             newconn->irc_nick = strdup(irc_nick);
             newconn->irc_user = strdup(irc_user);
 	    newconn->verbose = verbose;
+            newconn->bytes_read = 0; 
                  
 	    if(conn_notice)
 	       newconn->conn_notice = strdup(conn_notice);
@@ -393,10 +394,10 @@ void scan_negfail(scan_struct *conn)
       */
       if(conn->verbose)
        {
-          irc_send("PRIVMSG %s :%s (%d): Negotiation "
-                   "to %s failed.", CONF_CHANNELS,
-                   conn->protocol->type,
-                   conn->protocol->port, conn->irc_addr);
+             irc_send("PRIVMSG %s :%s (%d): Connection "
+                      "to %s closed, negotiation failed (%d bytes read)", CONF_CHANNELS,
+                      conn->protocol->type,
+                      conn->protocol->port, conn->irc_addr, conn->bytes_read);
        }
        conn->state = STATE_CLOSED;
 }
@@ -419,6 +420,7 @@ void scan_readready(scan_struct *conn)
                           return;
 
                    default:
+                          conn->bytes_read++;
                           if(c == 0 || c == '\r')
                                continue;
                           
@@ -623,8 +625,14 @@ void scan_timer()
             {
                 if(ss->verbose && (ss->state != STATE_CLOSED))
                  {
-                         irc_send("PRIVMSG %s :%s (%d): Connection "
-                                        "to %s timed out.", CONF_CHANNELS,
+                      if(ss->bytes_read)
+                         irc_send("PRIVMSG %s :%s (%d): Negotiation "
+                                        "to %s timed out (%d bytes read).", CONF_CHANNELS,
+                                        ss->protocol->type,
+                                        ss->protocol->port, ss->irc_addr, ss->bytes_read);
+                      else
+                         irc_send("PRIVMSG %s :%s (%d): Negotiation "
+                                        "to %s timed out (No response).", CONF_CHANNELS,
                                         ss->protocol->type,
                                         ss->protocol->port, ss->irc_addr);
                  }
