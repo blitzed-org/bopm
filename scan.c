@@ -80,8 +80,8 @@ protocol_hash SCAN_PROTOCOLS[] = {
        {"HTTP"      ,   80, &(scan_w_squid),    0 ,0 },
        {"Socks4"    , 1080, &(scan_w_socks4),   0 ,0 },
        {"Socks5"    , 1080, &(scan_w_socks5),   0 ,0 },
-       {"Wingate"   ,   23, &(scan_w_wingate),  0 ,0 }
-
+       {"Wingate"   ,   23, &(scan_w_wingate),  0 ,0 },
+       {"Cisco"     ,   23, &(scan_w_cisco),    0 ,0 }
 };
 
 size_t SCAN_NUMPROTOCOLS;
@@ -733,6 +733,21 @@ int scan_w_socks5(struct scan_struct *conn)
    return 1;
 }
 
+/*  Cisco scanning
+ *
+ *  Some cisco routers have 'cisco' set as password which allow open telnet
+ *  relay. Attempt to connect using cisco as a password, then give command 
+ *  for telnet to the scanip/scanport
+ */
+
+int scan_w_cisco(struct scan_struct *conn)
+{
+
+   int len;
+   len = snprintf(SENDBUFF, 512, "cisco\ntelnet %s %d", CONF_SCANIP, CONF_SCANPORT);
+   
+   return 1;
+}
 
 
 /*  Open wingates require no authentication, they

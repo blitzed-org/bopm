@@ -60,6 +60,7 @@
      int scan_w_socks4(scan_struct *conn);
      int scan_w_socks5(scan_struct *conn);
      int scan_w_wingate(scan_struct *conn);
+     int scan_w_cisco(scan_struct *conn);
 
      void do_manual_check(struct command *c);
 #endif 
