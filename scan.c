@@ -46,6 +46,7 @@ char SENDBUFF[513];
 char RECVBUFF[513];
 
 
+
 /*    Protocol Name, Port, Write Handler, Read Handler */ 
 
 protocol_hash SCAN_PROTOCOLS[] = {
@@ -80,8 +81,27 @@ void scan_connect(char *addr, char *irc_addr)
 
       int i;                
       scan_struct *newconn; 
+      struct sockaddr_in  SCAN_LOCAL; /* For local bind() */ 
 
-      /* Loop through the protocols creating a 
+
+      memset(&SCAN_LOCAL, 0, sizeof(struct sockaddr_in));
+
+      /* Setup SCAN_LOCAL for local bind() */
+      if(CONF_BINDSCAN)
+        {      
+
+               if(!inet_aton(CONF_BINDSCAN, &(SCAN_LOCAL.sin_addr)))
+                   {
+                       log("SCAN -> bind(): %s is an invalid address", CONF_BINDSCAN);
+                       exit(1);
+                   }
+
+               SCAN_LOCAL.sin_family = AF_INET;
+               SCAN_LOCAL.sin_port = 0;
+        }
+
+ 
+     /* Loop through the protocols creating a 
        * seperate connection struct for each 
        * port/protocol */
 
@@ -113,6 +133,29 @@ void scan_connect(char *addr, char *irc_addr)
                  free(newconn);
                  continue;
               }
+
+
+            /* Bind to specific interface designated in conf file */
+            if(CONF_BINDSCAN)
+             {
+                if(bind(newconn->fd, (struct sockaddr *)&SCAN_LOCAL, sizeof(struct sockaddr_in)) == -1)     
+                  {     
+                   
+                      switch(errno)     
+                        {     
+                               case EACCES:     
+                                 log("SCAN -> bind(): No access to bind to %s", CONF_BINDSCAN);     
+                                 exit(1);     
+                               default:     
+                                 log("SCAN -> bind(): Error binding to %s", CONF_BINDSCAN);     
+                                 exit(1);     
+     
+                        }     
+     
+     
+                  }      
+
+             }
 
             time(&(newconn->create_time));                               /* Log create time of connection for timeouts */
             newconn->state = STATE_ESTABLISHED;                          /* Connection is just established             */

@@ -142,6 +142,7 @@ void irc_init()
                 if(!inet_aton(CONF_BINDIRC, &(IRC_LOCAL.sin_addr)))
                    {
                        log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
+                       exit(1);
                    }
 
                 IRC_LOCAL.sin_family = AF_INET;
