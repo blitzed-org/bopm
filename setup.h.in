@@ -25,6 +25,9 @@
    byte first (like Motorola and SPARC, unlike Intel and VAX).  */
 #undef WORDS_BIGENDIAN
 
+/* Force use of select() even when poll() may be present */
+#undef WITH_SELECT
+
 /* Define if you have the select function.  */
 #undef HAVE_SELECT
 

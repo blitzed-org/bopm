@@ -3,6 +3,9 @@ AC_INIT(opercmd.h)
 
 AC_CONFIG_HEADER(setup.h)
 
+AC_ARG_WITH(select, \
+[  --with-select           use select() instead of poll()], with_select=yes, with_select=no)
+
 dnl Checks for programs.
 AC_PROG_CC
 
@@ -10,7 +13,15 @@ dnl Checks for libraries.
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(sys/poll.h fcntl.h sys/time.h unistd.h)
+
+if test "$with_select" = "yes"; then
+ echo "use of select() forced, skipping poll() checks..."
+ AC_DEFINE(WITH_SELECT)
+else
+ AC_CHECK_HEADER(sys/poll.h, have_poll_sys_h=yes, have_sys_poll_h=no)
+fi
+
+AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -21,9 +32,23 @@ AC_STRUCT_TM
 dnl Checks for library functions.
 AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
-AC_CHECK_FUNCS(select socket strdup strstr)
+
+dnl if they want select() or they don't have poll() then we need to check
+dnl that we actually have select()
+if test "$with_select" = "yes" || test "$have_sys_poll_h" = "no"; then
+ AC_CHECK_FUNCS(select, have_select=yes, have_select=no)
+ if test "$have_select" = "no"; then
+   AC_MSG_ERROR([No select() implementation found])
+ fi
+fi
+
+AC_CHECK_FUNCS(socket strdup strstr)
 
 dnl AIX fun
 AC_C_BIGENDIAN
+
+dnl teehee
+AC_MSG_CHECKING([for POSIX-compliant goat])
+AC_MSG_RESULT([http://www.blitzed.org/goat_winter_2001.phtml])
 
 AC_OUTPUT(Makefile)
