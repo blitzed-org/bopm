@@ -92,8 +92,6 @@ Credits
 
    Rob Levin <levin@openprojects.net>
          - PASSWORD config option
-         - TYPE_LIST initial implementation
-         - EXCLUDE config option
 
    Ben AKA locksmith <mmcgarve@insight.rr.com> (irc.lockchat.net)
          - Debugging assistance
@@ -104,5 +102,3 @@ Credits
    Jakub Jankowski <shasta@blitzed.org>
          - Some code tidying patches
 
-   The Hybrid Team
-         - String matching (math.[ch])
