@@ -313,8 +313,15 @@ sub irc_parse #($line)
 
    do_log(sprintf('IRC READ -> %s', $line));
 
-   @parv = split(/\s+/, substr($line, 0, index($line, ':', 1)));
-   $message = substr($line, index($line, ':', 1) + 1, length($line)); 
+   if(index($line, ':', 1) != -1)
+   {
+      @parv = split(/\s+/, substr($line, 0, index($line, ':', 1)));
+      $message = substr($line, index($line, ':', 1) + 1, length($line)); 
+   }
+   else
+   {
+      @parv = split(/\s+/, $line);
+   }
 
    push @parv, $message;
 
@@ -386,6 +393,8 @@ sub m_privmsg #\@parv, \%source
 {
    my $parv = $_[0];
    my $source = $_[1];
+
+   bopm_send(sprintf(':%s PRIVMSG %s :%s', $$parv[0], $$parv[2], $$parv[3]));
 }
 
 # m_nick
@@ -490,19 +499,24 @@ sub bopm_parse
    my $message;
    my %source;
 
-   chomp $line;
+   $line =~ s/[\r\n]+//g;
 
    do_log(sprintf('BOPM READ -> %s', $line));
 
-   @parv = split(/\s+/, substr($line, 0, index($line, ':')));
-   $message = substr($line, index($line, ':') + 1, length($line));
 
-   push @parv, $message;
-
+   if(index($line, ':') != -1)
+   {
+      @parv = split(/\s+/, substr($line, 0, index($line, ':')));
+      $message = substr($line, index($line, ':') + 1, length($line));
+      push @parv, $message;
+   }
+   else
+   {
+      @parv = split(/\s+/, $line);
+   }
    #check if this is an auth
    if($parv[0] eq 'PASS')
    {
-      print $parv[1]  . "\n";
       if($parv[1] eq $BOPM{PASS})
       {
          $BOPM_AUTH = 1;
