@@ -408,6 +408,7 @@ int firedns_getip4(const char * const name, void *info)
 { /* build, add and send A query; retrieve result with firedns_getresult() */
    struct s_connection *s;
    node_t *node;
+   int fd;
 
    s = firedns_add_query();
 
@@ -419,7 +420,7 @@ int firedns_getip4(const char * const name, void *info)
    strncpy(s->lookup, name, 256);
    s->info = info;
 
-   if(firedns_doquery(s) == -1)
+   if((fd = firedns_doquery(s)) == -1)
    {
       MyFree(s);
       return -1;
@@ -427,7 +428,7 @@ int firedns_getip4(const char * const name, void *info)
 
    node = node_create(s);
    list_add(CONNECTIONS, node);
-   return 0;
+   return fd;
 }
 
 int firedns_doquery(struct s_connection *s)
@@ -449,6 +450,7 @@ int firedns_getip6(const char * const name, void *info)
 {
    struct s_connection *s;
    node_t *node;
+   int fd;
 
    s = firedns_add_query();
    if (s == NULL)
@@ -459,15 +461,15 @@ int firedns_getip6(const char * const name, void *info)
    strncpy(s->lookup, name, 256);
    s->info = info;
 
-   if(firedns_doquery(s) == -1)
+   if((fd = firedns_doquery(s)) == -1)
    {
-      free(s);
+      MyFree(s);
       return -1;
    }
 
    node = node_create(s);
    list_add(CONNECTIONS, node);
-   return 0;
+   return fd;
 }
 
 char *firedns_getresult_i(const int fd)
