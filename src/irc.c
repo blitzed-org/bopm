@@ -919,7 +919,7 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
 
    /* CTCP */
    if(parv[3][0] == '\001');
-   m_ctcp(parv, parc, msg, source_p);
+      m_ctcp(parv, parc, msg, source_p);
 
    /* Only interested in privmsg to channels */
    if(parv[2][0] != '#' && parv[2][0] != '&')

@@ -132,9 +132,7 @@ void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type
 void dnsbl_result(struct firedns_result *res)
 {
    struct scan_struct *ss;
-
    ss = (struct scan_struct *) res->info;
-   ss->scans--; /* We will have finished with this when we return */
 
    if(OPT_DEBUG)
       log("DNSBL -> Lookup result for %s!%s@%s (%s) %d.%d.%d.%d (error: %d)",
@@ -155,7 +153,9 @@ void dnsbl_result(struct firedns_result *res)
                    ss->manual_target->name, ss->ip,
                    (strlen(ss->ip) < strlen(res->lookup)) ? (res->lookup + strlen(ss->ip) + 1) : res->lookup);
 
-      scan_checkfinished(ss);
+
+      ss->scans--;            /* we are done with ss here */
+      scan_checkfinished(ss); /* this could free ss, don't use ss after this point */
       return;
    }
    /* Either an error, or a positive lookup */
@@ -174,7 +174,8 @@ void dnsbl_result(struct firedns_result *res)
    }
 
    /* Check if ss has any remaining scans */
-   scan_checkfinished(ss);
+   ss->scans--; /* We are done with ss here */
+   scan_checkfinished(ss); /* this could free ss, don't use ss after this point */
 }
 
 void dnsbl_cycle(void)
