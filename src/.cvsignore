@@ -15,5 +15,6 @@ setup.h
 stamp-h
 stamp-h.in
 stamp-h1
-/home/andy/src/blitzed/bopm/src
-config-lexer.c config-parser.c config-parser.h
+config-lexer.c
+config-parser.c
+config-parser.h
