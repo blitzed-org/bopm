@@ -180,10 +180,19 @@ IRC {
          * it wrong are the bopm does not scan anyone.  Unless you know
          * absolutely what you are doing, please just uncomment the example
          * below that best matches the type of ircd you use.
+         *
+         * !!! NOTE !!! If a connregex for your ircd does not appear here and the
+         * hybrid connregex does not appear to work, check the BOPM FAQ at 
+         * http://blitzed.org/bopm/faq.phtml before contacting our lists for help.
+         *
          */
 
-	/* Hybrid / Bahamut / Unreal (in HCN mode) */
+ 	 /* Hybrid / Bahamut / Unreal (in HCN mode) */
 	connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
+
+         /* Ultimate ircd */
+#       connregex = "\\*\\*\\* Global-Connect/Exit -- from [^:]+: Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
+
 
 	/*
          * "kline" controls the command used when an open proxy is confirmed.
