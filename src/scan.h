@@ -40,4 +40,14 @@ extern char *scan_gettype(int);
 extern void scan_cycle();
 void scan_connect(char **user, char *msg);
 
+
+struct kline_format_assoc
+{
+   char key;
+   void *data;
+   int type;
+};
+
+#define FORMATTYPE_STRING 1
+
 #endif /* SCAN_H */

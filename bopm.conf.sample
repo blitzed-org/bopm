@@ -35,6 +35,9 @@ IRC {
        
         /* Hybrid */
         connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
+
+        /* Kline format */
+        kline = "KLINE %u@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information."
 };
 
 

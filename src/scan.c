@@ -182,7 +182,14 @@ void scan_init()
       LIST_FOREACH(p1, sc->protocols->head)
       {
          pc = (struct ProtocolConf *) p1->data;
-         opm_addtype(scs->scanner, pc->type, pc->port);
+
+         if(OPT_DEBUG >= 2)
+            log("SCAN -> Adding protocol %s:%d to scanner [%s]", scan_gettype(pc->type), pc->port,
+                scs->name);
+ 
+         if(opm_addtype(scs->scanner, pc->type, pc->port) == OPM_ERR_BADPROTOCOL)
+            log("SCAN -> Error bad protocol %s:%d in scanner [%s]", scan_gettype(pc->type), pc->port,
+                scs->name);
       }
      
       node = node_create(scs);
@@ -400,8 +407,8 @@ void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, 
    ss = (struct scan_struct *) remote->data;
 
    if(OPT_DEBUG)
-      log("SCAN -> Negotiation failed %s:%d (%s) [%s]", remote->ip, remote->port, 
-             scan_gettype(remote->protocol), scs->name);
+      log("SCAN -> Negotiation failed %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port, 
+             scan_gettype(remote->protocol), scs->name, remote->bytes_read);
 }
 
 
@@ -478,15 +485,34 @@ void scan_end(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 
 void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data)
 {
+
+   struct scan_struct *ss;
+   struct scanner_struct *scs;
+
+   scs = (struct scanner_struct *) data;
+   ss = (struct scan_struct *) remote->data;
+
    switch(err)
    {
       case OPM_ERR_MAX_READ:
+         if(OPT_DEBUG >= 2)
+            log("SCAN -> Max read on %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
+                scan_gettype(remote->protocol), scs->name, remote->bytes_read);
          break;
       case OPM_ERR_BIND:
+         if(OPT_DEBUG >= 2)
+            log("SCAN -> Bind error on %s:%d (%s) [%s]", remote->ip, remote->port,
+                scan_gettype(remote->protocol), scs->name);
          break;
       case OPM_ERR_NOFD:
+         if(OPT_DEBUG >= 2)
+            log("SCAN -> File descriptor allocation error %s:%d (%s) [%s]", remote->ip, remote->port,
+                scan_gettype(remote->protocol), scs->name);
          break;
       default:   /* Unknown Error! */
+         if(OPT_DEBUG >=2)
+            log("SCAN -> Unknown error %s:%d (%s) [%s]", remote->ip, remote->port,
+                scan_gettype(remote->protocol), scs->name);
          break;
    }
 }
@@ -546,6 +572,8 @@ void scan_positive(struct scan_struct *ss)
    scan_irckline(ss);
 }
 
+
+
 /* scan_negative
  *
  *    Remote host (defined by ss) has passed all tests.
@@ -578,4 +606,82 @@ void scan_negative(struct scan_struct *ss)
 void scan_irckline(struct scan_struct *ss)
 {
 
+   char *format;       /* INPUT  */
+   char message[MSGLENMAX];  /* OUTPUT */
+
+   unsigned short pos = 0;   /* position in format */
+   unsigned short len = 0;   /* position in message */
+   unsigned short size = 0;  /* temporary size buffer */
+
+   int i;
+
+   struct kline_format_assoc table[] = 
+   {
+       {'i',   (void *) ss->ip,               FORMATTYPE_STRING },
+       {'h',   (void *) ss->irc_hostname,     FORMATTYPE_STRING },
+       {'u',   (void *) ss->irc_username,     FORMATTYPE_STRING },
+       {'n',   (void *) ss->irc_nick,         FORMATTYPE_STRING }
+   };
+
+   format = IRCItem->kline;
+
+   /* copy format to message character by character, inserting any matching data after % */
+   while(format[pos] != '\0' && len < (MSGLENMAX - 2))
+   {
+      switch(format[pos])
+      {
+
+         case '%':
+            /* % is the last char in the string, move on */
+            if(format[pos + 1] == '\0')
+               continue;
+
+            /* %% escapes % and becomes % */
+            if(format[pos + 1] == '%')
+            {
+               message[len++] = '%';
+               pos++; /* skip past the escaped % */
+               break;
+            }
+
+            /* Safe to check against table now */
+            for(i = 0; i < (sizeof(table) / sizeof(struct kline_format_assoc)); i++)           
+            {
+               if(table[i].key == format[pos + 1])
+               {
+                  switch(table[i].type)
+                  {
+                     case FORMATTYPE_STRING:
+
+                        size = strlen( (char *) table[i].data);
+
+                        /* Check if the new string can fit! */
+                        if( (size + len) > (MSGLENMAX - 1) )
+                           break;
+                        else
+                        {
+                           strcat(message, (char *) table[i].data);
+                           len += size;
+                        } 
+
+                     default:
+                        break;
+                  } 
+               }
+            } 
+            /* Skip key character */
+            pos++;
+            break;
+ 
+         default:
+            message[len++] = format[pos];
+            message[len] = '\0';
+            break;
+      }
+      /* continue to next character in format */
+      pos++;
+   }
+
+   if(OPT_DEBUG >= 2)
+      log("SCAN -> KLINE FORMAT = [%s]", message); 
 }
