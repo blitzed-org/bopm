@@ -13,6 +13,7 @@ BOPM is written ground-up in C language, concept derived from wgmon.  It
 improves on wgmon with HTTP support, faster scanning (it can scan clients
 simultaneously), better layout (scalability), and dnsbl support.
 
+
 Compatibility
 -------------
 
@@ -38,6 +39,21 @@ TR-IRCD and Xnet ircds.
 Any questions regarding compatibility should be sent to the developers. If
 feasible we might be able to add compatibility to multiple ircd types to the
 project in the future.
+
+
+Command Line Options
+--------------------
+
+-c <name>	Config name.  By default BOPM reads bopm.conf, "-c foo"
+		will cause BOPM to read foo.conf.  The primary use for
+		this is to run multiple BOPMs from one directory.
+
+-d		Debug mode.  BOPM will not fork, and will write logs to stderr.
+		Multiple -d increase debug level.
+
+-v <directory>	"var directory".  By default BOPM looks for its config file
+		in and writes its log to the current directory.  This
+		option allows you to specify an alternative directory.
 
 
 Operator Channel Commands
@@ -66,6 +82,7 @@ subscribe to this list from:
 
 If you need help in closer to realtime, you can find us in #blitzed on
 irc.blitzed.org.
+
 
 Compatibility Notes
 -------------------
@@ -100,6 +117,7 @@ o IRCu
 
   Also, to see connect notices, your bopm should set itself umode "+s +16384".
   There is a config file item for setting umodes.
+
 
 Credits
 -------
@@ -147,3 +165,6 @@ Credits
 
    Alex Wu <wu@wunix.org>
          - IRCu testing
+
+   Harald Skoglund <harald@hekta.stud.iet.hist.no>
+         - Option to configure directory for logfile, config, etc.

@@ -14,6 +14,9 @@
 /* PID file */
 #define PIDEXT "pid"
 
+/* The directory to read conf, and write pid and log to */
+#define VARDIR "."
+
 /* Defines time in which bot will timeout * if no data is received
  * (default 15 min) */
 #define NODATA_TIMEOUT 900

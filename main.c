@@ -55,6 +55,7 @@ int ALARMED = 0;
 int OPT_DEBUG = 0;
 char *CONFNAME = DEFAULTNAME;
 
+char *CONFDIR = VARDIR;
 char *CONFFILE, *LOGFILE, *PIDFILE;
 
 struct sigaction ALARMACTION;
@@ -72,7 +73,7 @@ int main(int argc, char **argv)
 
    while(1)
     {
-       c = getopt(argc, argv, "dc:");
+       c = getopt(argc, argv, "dcv:");
 
        if(c == -1)
            break;
@@ -85,6 +86,9 @@ int main(int argc, char **argv)
            case 'd':
                OPT_DEBUG++;
                break;
+           case 'v':
+               CONFDIR = strdup(optarg);
+               break;
            case '?':
            default:
                /* unknown arg, guess we'll just do nothing for now */
@@ -92,17 +96,17 @@ int main(int argc, char **argv)
         }
     }	
 
-   lenc = strlen(CONFNAME) + strlen(CONFEXT) + 2;
-   lenl = strlen(CONFNAME) + strlen(LOGEXT) + 2;
-   lenp = strlen(CONFNAME) + strlen(PIDEXT) + 2;
+   lenc = strlen(CONFDIR) + strlen(CONFNAME) + strlen(CONFEXT) + 3;
+   lenl = strlen(CONFDIR) + strlen(CONFNAME) + strlen(LOGEXT) + 3;
+   lenp = strlen(CONFDIR) + strlen(CONFNAME) + strlen(PIDEXT) + 3;
 
    CONFFILE = (char *) malloc(lenc * sizeof(char));
    LOGFILE = (char *) malloc(lenl * sizeof(char));
    PIDFILE = (char *) malloc(lenp * sizeof(char));
 
-   snprintf(CONFFILE, lenc, "%s.%s", CONFNAME, CONFEXT);
-   snprintf(LOGFILE, lenl, "%s.%s", CONFNAME, LOGEXT);
-   snprintf(PIDFILE, lenp, "%s.%s", CONFNAME, PIDEXT);
+   snprintf(CONFFILE, lenc, "%s/%s.%s", CONFDIR, CONFNAME, CONFEXT);
+   snprintf(LOGFILE, lenl, "%s/%s.%s", CONFDIR, CONFNAME, LOGEXT);
+   snprintf(PIDFILE, lenp, "%s/%s.%s", CONFDIR, CONFNAME, PIDEXT);
 
    /* Fork off */
 
