@@ -16,15 +16,12 @@ options {
          * confirmed (by previous scans) to be secure.  New users from these
          * IP addresses will not be scanned again until this amount of time
          * has passed. IT IS STRONGLY RECOMMENDED THAT YOU DO NOT USE THIS
-         * DIRECTIVE, but it is provided due to demand.  Reasons for not using
-         * this feature:
-         *     1) It makes BOPM slower - every time a scan fails, the scan
-         *        list must be walked to see if all scans for this host have
-         *        failed.
-         *     2) Anyone capable of running a proxy can get abusers onto your
-         *        network - all they need do is shut the proxy down, connect
-         *        themselves, restart the proxy, and tell their friends to
-         *        come flood.
+         * DIRECTIVE, but it is provided due to demand.
+         *
+         * The main reason for not using this feature is that anyone capable
+         * of running a proxy can get abusers onto your network - all they
+         * need do is shut the proxy down, connect themselves, restart the
+         * proxy, and tell their friends to come flood.
          *     
          * Keep this directive commented out to disable negative caching.
          */
