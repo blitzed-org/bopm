@@ -141,7 +141,8 @@ int dnsbl_check(const char *addr, const char *irc_nick,
 	if(type & DNSBL_TYPE_CISCO)
 	    strcat(text_type, "Cisco, ");
 
-	*(strrchr(text_type, ',')) = '\0';
+	if(text_type[0] != '\0')
+	    *(strrchr(text_type, ',')) = '\0';
 	
 	log("DNSBL -> %s appears in BL zone %s type %s", addr, CONF_DNSBL_ZONE,
 		text_type);
