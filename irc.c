@@ -169,7 +169,26 @@ void irc_connect()
       
                                                   /* Connect to IRC server as client */
        if(connect(IRC_FD, (struct sockaddr *) &IRC_SVR , sizeof(IRC_SVR)) == -1)
-            return; /* Generate ERROR here */
+              switch(errno)
+		{
+                                 
+                   case EISCONN:       
+			   return;  /* Already connected */
+                   case ECONNREFUSED:
+			   log("IRC -> connect(): Connection refused by (%s)", CONF_SERVER);
+                           exit(1);
+                   case ETIMEDOUT:
+			   log("IRC -> connect(): Timed out connecting to (%s)", CONF_SERVER);
+                           exit(1);
+                   case ENETUNREACH:
+			   log("IRC -> connect(): Network unreachable");
+			   exit(1);
+	           case EALREADY:
+			   return;  /* Previous attempt not complete */
+	           default:
+			   log("IRC -> connect(): Unknown error connecting to (%s)", CONF_SERVER);
+
+	       }	
 
        /* for debug use only, will be removed later */
        send(IRC_FD, "NICK Bopm\n",10,0);
