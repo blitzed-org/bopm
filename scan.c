@@ -49,6 +49,7 @@ struct scan_struct *CONNECTIONS = 0;  /* Linked list head for connections */
 char SENDBUFF[513];
 char RECVBUFF[513];
 
+unsigned int FD_USE = 0;                 /* Keep track of numbers of open FD's, for use with FDLIMIT */
 
 
 /*    Protocol Name, Port, Write Handler, Read Handler */ 
@@ -92,26 +93,9 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
 
       int i;                
       scan_struct *newconn; 
-      struct sockaddr_in  SCAN_LOCAL; /* For local bind() */ 
 
       if(OPT_DEBUG)
 	      log("SCAN -> checking user %s!%s@%s", irc_nick, irc_user, irc_addr);
-
-      memset(&SCAN_LOCAL, 0, sizeof(struct sockaddr_in));
-
-      /* Setup SCAN_LOCAL for local bind() */
-      if(CONF_BINDSCAN)
-        {      
-
-               if(!inet_aton(CONF_BINDSCAN, &(SCAN_LOCAL.sin_addr)))
-                   {
-                       log("SCAN -> bind(): %s is an invalid address", CONF_BINDSCAN);
-                       exit(1);
-                   }
-
-               SCAN_LOCAL.sin_family = AF_INET;
-               SCAN_LOCAL.sin_port = 0;
-        }
 
  
      /* Loop through the protocols creating a 
@@ -144,53 +128,83 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
             newconn->sockaddr.sin_family = AF_INET;                    /* Fill in sockaddr with information about remote host */
             newconn->sockaddr.sin_port = htons(newconn->protocol->port); 
             newconn->sockaddr.sin_addr.s_addr = inet_addr(addr);
-      
-            newconn->fd = socket(PF_INET, SOCK_STREAM, 0);             /* Request file descriptor for socket */
 
-            if(newconn->fd == -1)                                      /* If error, free memory for this struct and continue */
-              {
-                 log("SCAN -> Error allocating file descriptor.");
-                 free(newconn->addr);
-                 free(newconn->irc_addr);
-                 free(newconn->irc_user);
-                 free(newconn->irc_nick);
-		 if(newconn->conn_notice)
-		    free(newconn->conn_notice);
-                 free(newconn);
-                 continue;
-              }
+            newconn->state = STATE_UNESTABLISHED;                        /* Queue connection                           */
 
+            scan_add(newconn);                                           /* Add struct to list of connections          */
 
-            /* Bind to specific interface designated in conf file */
-            if(CONF_BINDSCAN)
-             {
-                if(bind(newconn->fd, (struct sockaddr *)&SCAN_LOCAL, sizeof(struct sockaddr_in)) == -1)     
-                  {     
-                   
-                      switch(errno)     
-                        {     
-                               case EACCES:     
-                                 log("SCAN -> bind(): No access to bind to %s", CONF_BINDSCAN);     
-                                 exit(1);     
-                               default:     
-                                 log("SCAN -> bind(): Error binding to %s", CONF_BINDSCAN);     
-                                 exit(1);     
-     
-                        }     
-     
-     
-                  }      
+            if(FD_USE < CONF_FDLIMIT)                                    /* If we have available FD's, overide queue   */
+               scan_establish(newconn);        
+            else if(OPT_DEBUG >= 3)
+               log("SCAN -> File Descriptor limit (%d) reached, queuing scan for %s", CONF_FDLIMIT ,newconn->addr);
 
-             }
-
-            time(&(newconn->create_time));                               /* Log create time of connection for timeouts */
-            newconn->state = STATE_ESTABLISHED;                          /* Connection is just established             */
-            scan_add(newconn);                                           /* Add struct to list of connections          */                                                             
-            fcntl(newconn->fd, F_SETFL, O_NONBLOCK);                     /* Set socket non blocking                    */
-            connect(newconn->fd, (struct sockaddr *) &(newconn->sockaddr), sizeof(newconn->sockaddr));  /* Connect !   */
         }    
 
 }
+
+/*  Get FD for new socket, bind to interface and connect() (non blocking)
+ *  then set conn to ESTABLISHED for write check.
+ */
+
+void scan_establish(scan_struct *conn)
+{
+    struct sockaddr_in  SCAN_LOCAL; /* For local bind() */
+
+    memset(&SCAN_LOCAL, 0, sizeof(struct sockaddr_in));
+
+    /* Setup SCAN_LOCAL for local bind() */
+    if(CONF_BINDSCAN)
+     {
+
+           if(!inet_aton(CONF_BINDSCAN, &(SCAN_LOCAL.sin_addr)))
+            {
+                 log("SCAN -> bind(): %s is an invalid address", CONF_BINDSCAN);
+                 exit(1);
+            }
+
+           SCAN_LOCAL.sin_family = AF_INET;
+           SCAN_LOCAL.sin_port = 0;
+      }
+
+      conn->fd = socket(PF_INET, SOCK_STREAM, 0);                /* Request file descriptor for socket */
+
+      if(conn->fd == -1)                                         /* If error, free memory for this struct */
+       {
+           log("SCAN -> Error allocating file descriptor.");
+           scan_del(conn);
+           return;
+       }
+
+
+       /* Bind to specific interface designated in conf file */
+      if(CONF_BINDSCAN)
+       {
+           if(bind(conn->fd, (struct sockaddr *)&SCAN_LOCAL, sizeof(struct sockaddr_in)) == -1)
+            {
+
+                switch(errno)
+                 {
+                     case EACCES:
+                        log("SCAN -> bind(): No access to bind to %s", CONF_BINDSCAN);
+                        exit(1);
+                     default:
+                        log("SCAN -> bind(): Error binding to %s", CONF_BINDSCAN);
+                        exit(1);
+
+                 }
+
+            }
+
+       }
+
+
+     time(&(conn->create_time));                             /* Log create time of connection for timeouts */
+     conn->state = STATE_ESTABLISHED;                        /* Flag conn established (for write)          */
+     fcntl(conn->fd, F_SETFL, O_NONBLOCK);                   /* Set socket non blocking                    */
+     connect(conn->fd, (struct sockaddr *) &(conn->sockaddr), sizeof(conn->sockaddr));  /* Connect !   */
+     FD_USE++;                                               /* Increase global FD Use counter             */      
+}
+
 
 /*  Pass one cycle to the proxy scanner so it can do neccessary functions 
  *  like testing for sockets to be written to and read from.
@@ -365,6 +379,7 @@ void scan_del(scan_struct *delconn)
      scan_struct *lastss;
 
      close(delconn->fd);
+     FD_USE--;            /* 1 file descriptor freed up for use */
 
      lastss = 0;
 
@@ -416,12 +431,30 @@ void scan_timer()
     scan_struct *nextss;
  
     time_t present;
-   
     time(&present);
 
-    for(ss = CONNECTIONS;ss;)
+    /* Check for timed out connections and also check if queued (UNESTABLISHED) connections
+     * can be established now */
+
+    for(ss = CONNECTIONS; ss;)
       {
-          if(((present - ss->create_time) >= 30) || (ss->state == STATE_CLOSED)) /* State closed or timed out, remove */ 
+
+          if((ss->state == STATE_UNESTABLISHED))
+            { 
+               if(FD_USE < CONF_FDLIMIT)
+                {
+                  scan_establish(ss);
+                  if(OPT_DEBUG >= 3)
+                    log("SCAN -> File descriptor free, continuing queued scan on %s", ss->addr);
+                }
+               else
+                {
+                  ss = ss->next;
+                  continue;              /* Continue to avoid timeout checks on an unestablished connection */
+                }
+            }
+
+          if(( ((present - ss->create_time) >= 30)) || (ss->state == STATE_CLOSED)) /* State closed or timed out, remove */ 
             {
                 if(ss->verbose && (ss->state != STATE_CLOSED))
                  {
@@ -439,6 +472,7 @@ void scan_timer()
    
           ss = ss->next;
       }
+
 }
 
 

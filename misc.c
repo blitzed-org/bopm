@@ -128,6 +128,9 @@ char *clean(char *str)
 
     lastnon = 0;
     firstnon = 0;
+    
+    if(strlen(str) <= 1) /* Dont need to deal with 1 character */
+       return str;
 
     for(i = 0; i < strlen(str);i++)
      {

@@ -30,6 +30,7 @@ along with this program; if not, write to the Free Software
 #include "config.h"
 #include "log.h"
 #include "misc.h"
+#include "extern.h"
 
 /* Global Configuration Variables */
 
@@ -71,7 +72,7 @@ config_hash hash[] = {
        {"SCANPORT",            TYPE_INT   , 1,0,    &CONF_SCANPORT           },
        {"BINDIRC",             TYPE_STRING, 0,0,    &CONF_BINDIRC            },
        {"BINDSCAN",            TYPE_STRING, 0,0,    &CONF_BINDSCAN           },
-       {"FDLIMIT",             TYPE_INT   , 0,0,    &CONF_FDLIMIT            },
+       {"FDLIMIT",             TYPE_INT   , 1,0,    &CONF_FDLIMIT            },
        {"CHANNELS",            TYPE_STRING, 1,0,    &CONF_CHANNELS           },
        {"NICKSERV_IDENT",      TYPE_STRING, 0,0,    &CONF_NICKSERV_IDENT     },
        {"CHANSERV_INVITE",     TYPE_STRING, 0,0,    &CONF_CHANSERV_INVITE    },
@@ -170,6 +171,19 @@ void config_checkreq()
             log("CONFIG -> Parameter [%s] required but not defined in config.", hash[i].key);
             errfnd++;
          }
+        else if(OPT_DEBUG && hash[i].reqmet)
+         {
+            switch(hash[i].type)
+             {
+                 case TYPE_STRING:
+                      log("CONFIG -> Set [%s]: %s", hash[i].key, *(char**) hash[i].var);
+                      break;
+                 case TYPE_INT:
+                      log("CONFIG -> Set [%s]: %d", hash[i].key, *(int *) hash[i].var);
+                      break;
+             }
+         }
+
 
       if(errfnd)
        {

@@ -26,8 +26,10 @@
     extern char *CONF_HELP_EMAIL;
     extern char *CONF_AWAY;
 
+
     extern int   CONF_PORT;
     extern int   CONF_SCANPORT;
+    extern int   CONF_FDLIMIT;
 
     extern int   OPT_DEBUG;
  

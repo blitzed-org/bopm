@@ -196,3 +196,10 @@ HELP_EMAIL help@lists.blitzed.org
 #                       message as soon as it connects.
 
 AWAY I'm a bot.  Your messages will be ignored.
+
+# FDLIMIT <limit> : Limit number of open file descriptors for SCAN ONLY (this does
+#                   not include file descriptors used for the IRC socket or log files.
+#                   Once limit has been reached, any further scans are queued until
+#                   there are file descriptors free
+
+FDLIMIT 512
