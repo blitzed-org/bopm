@@ -242,9 +242,9 @@ void irc_send(char *data,...)
  * 
  */
 
-void irc_kline(char *ip, char *reason)
+void irc_kline(char *addr, char *reason)
 {
-     irc_send("KLINE *@%s :%s",ip,reason);
+     irc_send(CONF_KLINE_COMMAND, addr);
 }
 
 /* Create socket and connect to IRC server

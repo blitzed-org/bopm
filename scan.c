@@ -238,7 +238,7 @@ void scan_check()
                   if(FD_ISSET(ss->fd, &r_fdset))
                       if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed and kline*/
                          {
-                           irc_kline(ss->irc_addr, CONF_REASON);
+                           irc_kline(ss->irc_addr);
                            ss->state = STATE_CLOSED;               
                          }
                   if(FD_ISSET(ss->fd, &w_fdset))                                                             

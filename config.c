@@ -35,11 +35,13 @@ char *CONF_SERVER          = 0;
 char *CONF_USER            = 0;
 char *CONF_NICK            = 0;
 char *CONF_OPER            = 0;
-char *CONF_REASON          = 0;
 char *CONF_SCANIP          = 0;
 char *CONF_BINDIRC         = 0;
 char *CONF_BINDSCAN        = 0;
 char *CONF_CHANNELS        = 0;
+char *CONF_NICKSERV_IDENT  = 0;
+char *CONF_NICKSERV_INVITE = 0;
+char *CONF_KLINE_COMMAND   = 0;
 
 int  CONF_SCANPORT         = 0;
 int  CONF_PORT             = 0;
@@ -48,17 +50,19 @@ int  CONF_PORT             = 0;
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
 
 config_hash hash[] = {
-       {"SERVER",         TYPE_STRING,     &CONF_SERVER      },
-       {"PORT",           TYPE_INT   ,     &CONF_PORT        },
-       {"USER",           TYPE_STRING,     &CONF_USER        },
-       {"NICK",           TYPE_STRING,     &CONF_NICK        },
-       {"OPER",           TYPE_STRING,     &CONF_OPER        },
-       {"REASON",         TYPE_STRING,     &CONF_REASON      },
-       {"SCANIP",         TYPE_STRING,     &CONF_SCANIP      },
-       {"SCANPORT",       TYPE_INT   ,     &CONF_SCANPORT    },
-       {"BINDIRC",        TYPE_STRING,     &CONF_BINDIRC     },
-       {"BINDSCAN",       TYPE_STRING,     &CONF_BINDSCAN    },
-       {"CHANNELS",       TYPE_STRING,     &CONF_CHANNELS    },
+       {"SERVER",              TYPE_STRING,     &CONF_SERVER             },
+       {"PORT",                TYPE_INT   ,     &CONF_PORT               },
+       {"USER",                TYPE_STRING,     &CONF_USER               },
+       {"NICK",                TYPE_STRING,     &CONF_NICK               },
+       {"OPER",                TYPE_STRING,     &CONF_OPER               },
+       {"SCANIP",              TYPE_STRING,     &CONF_SCANIP             },
+       {"SCANPORT",            TYPE_INT   ,     &CONF_SCANPORT           },
+       {"BINDIRC",             TYPE_STRING,     &CONF_BINDIRC            },
+       {"BINDSCAN",            TYPE_STRING,     &CONF_BINDSCAN           },
+       {"CHANNELS",            TYPE_STRING,     &CONF_CHANNELS           },
+       {"NICKSERV_IDENT",      TYPE_STRING,     &CONF_NICKSERV_IDENT     },
+       {"NICKSERV_INVITE",     TYPE_STRING,     &CONF_NICKSERV_INVITE    },
+       {"KLINE_COMMAND",       TYPE_STRING,     &CONF_KLINE_COMMAND      },
 };
 
 
@@ -105,11 +109,11 @@ void config_load(char *filename)
                                  *(int *) hash[i].var = atoi(args);
                                  break;
                         }
-                                     
+ 
                 }
-   
+
       }
-    
+
 }
 
 /*  Called when memory allocation somewhere returns
