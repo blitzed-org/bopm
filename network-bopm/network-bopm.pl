@@ -144,7 +144,6 @@ sub irc_init #()
 sub irc_cycle #()
 {
    my $handle;
-   my $newhandle;
    my $dcc;
    my @ready;
    my @errored;
@@ -186,6 +185,7 @@ sub irc_cycle #()
       if(($handle == $BOPM_SOCKET) && $BOPM_WAITING)
       {
          do_log('BOPM -> Got connection');
+
          $SELECT->remove($BOPM_SOCKET);
          $BOPM_SOCKET =  $BOPM_SOCKET->accept();
          $SELECT->add($BOPM_SOCKET);
@@ -427,7 +427,9 @@ sub bopm_listen
 
    $BOPM_SOCKET = new IO::Socket::INET( Proto     => "tcp",
                                         Listen    => 1,
-                                        LocalPort => $BOPM{PORT});  
+                                        Reuse     => 1,
+                                        LocalPort => $BOPM{PORT}
+                                      );  
    $SELECT->add($BOPM_SOCKET);
 
    if(!$BOPM_SOCKET)
