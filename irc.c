@@ -58,6 +58,7 @@ struct sockaddr_in  IRC_LOCAL;        /* Sock Address Struct for Bind          *
 struct hostent     *IRC_HOST;         /* Hostent struct for IRC server         */
 fd_set              IRC_READ_FDSET;   /* fd_set for IRC (read) data for select()*/
 fd_set              IRC_EX_FDSET;     /* fd_set for exceptions                 */
+fd_set              IRC_WRITE_FDSET;  /* fd_set for IRC (write) data           */
 
 struct timeval      IRC_TIMEOUT;      /* timeval struct for select() timeout   */
 time_t              IRC_NICKSERV_LAST = 0; /* Last notice from nickserv        */
@@ -84,11 +85,13 @@ void irc_cycle()
            
       FD_ZERO(&IRC_READ_FDSET);
       FD_ZERO(&IRC_EX_FDSET);
+      FD_ZERO(&IRC_WRITE_FDSET);
 
       FD_SET(IRC_FD, &IRC_READ_FDSET);
       FD_SET(IRC_FD, &IRC_EX_FDSET);
-                                            
-      switch(select((IRC_FD + 1), &IRC_READ_FDSET, 0, &IRC_EX_FDSET, &IRC_TIMEOUT))
+      FD_SET(IRC_FD, &IRC_WRITE_FDSET);                                
+            
+      switch(select((IRC_FD + 1), &IRC_READ_FDSET, &IRC_WRITE_FDSET, &IRC_EX_FDSET, &IRC_TIMEOUT))
        {
             case -1:         
                   return;
@@ -99,6 +102,8 @@ void irc_cycle()
 		   if(FD_ISSET(IRC_FD, &IRC_READ_FDSET))     /* Check if IRC data is available */
 		        irc_read();
                    if(FD_ISSET(IRC_FD, &IRC_EX_FDSET)) /* Check if exception has occured  */
+                        irc_reconnect();
+                   if(!FD_ISSET(IRC_FD, &IRC_WRITE_FDSET)) /* If unable to write to remote IRCD, reconnect */
                         irc_reconnect();
         }
       
@@ -243,10 +248,9 @@ void irc_send(char *data,...)
   snprintf(tosend, 512 , "%s\n",data2);
 
   if(send(IRC_FD, tosend, strlen(tosend), 0) == -1) /* Return of -1 indicates error sending data; we reconnect. */
-   {
-       irc_init();    /* Rerequest IRC socket */         
-       irc_connect(); /* Reconnect to IRC host */
-   }
+      irc_reconnect();
+       
+   
 
 }
 
