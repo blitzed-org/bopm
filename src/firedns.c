@@ -606,7 +606,7 @@ void firedns_cycle(void) {
       return;
 
    tv.tv_sec = 0;
-   tv.tv_usec = 5000;
+   tv.tv_usec = 0;
 
    FD_ZERO(&s);
    time(&timenow);

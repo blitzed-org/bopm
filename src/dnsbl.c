@@ -56,7 +56,8 @@ void dnsbl_add(struct scan_struct *ss)
    node_t *p;
    int res;
 
-   if (!inet_aton(ss->ip, &in)) {
+   if (!inet_aton(ss->ip, &in)) 
+   {
       log("DNSBL -> Invalid address '%s', ignoring.", ss->ip);
       return;
    }
@@ -119,8 +120,8 @@ void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type
               ss->irc_username, ss->irc_hostname, lookup, text_type);
     }
     else /* Manual scan */
-       irc_send("PRIVMSG %s :DNSBL -> %s appears in BL zone %s (%s)", ss->manual_target->name, ss->ip, 
-                 lookup, text_type); 
+       irc_send("PRIVMSG %s :DNSBL -> %s appears in BL zone %s (%s)", 
+                   ss->manual_target->name, ss->ip, lookup, text_type); 
 }
 
 void dnsbl_result(struct firedns_result *res)
