@@ -224,10 +224,10 @@ void irc_send(char *data,...)
   char            tosend[513];
  
   va_start(arglist, data);
-  vsprintf(data2, data, arglist);
+  vsnprintf(data2, 512, data, arglist);
   va_end(arglist);
 
-  snprintf(tosend, (strlen(data2) + 2), "%s\n",data2);
+  snprintf(tosend, 512 , "%s\n",data2);
 
   if(send(IRC_FD, tosend, strlen(tosend), 0) == -1) /* Return of -1 indicates error sending data; we reconnect. */
    {
