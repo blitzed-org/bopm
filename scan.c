@@ -191,10 +191,13 @@ void scan_check()
              for(ss = CONNECTIONS; ss; ss = ss->next)
                {
                   if(FD_ISSET(ss->fd, &r_fdset))
-                      (*ss->protocol->r_handler)(ss);
-                  if(FD_ISSET(ss->fd, &w_fdset))                                                             
-                      if( !(*ss->protocol->w_handler)(ss) )   /*If read handler returns an error we know this socket is closed*/
+                      if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed */
                            ss->state = STATE_CLOSED;
+                  if(FD_ISSET(ss->fd, &w_fdset))                                                             
+                      (*ss->protocol->w_handler)(ss);  
+                        
+             
+                        
                }
      } 
 }
@@ -242,7 +245,6 @@ void scan_del(scan_struct *delconn)
      scan_struct *ss;
      scan_struct *lastss;
 
-
      close(delconn->fd);
 
      lastss = 0;
@@ -284,19 +286,23 @@ void scan_timer()
 
     scan_struct *ss;
     scan_struct *nextss;
+ 
     time_t present;
    
     time(&present);
 
-    for(ss = CONNECTIONS;ss;ss = ss->next)
+    for(ss = CONNECTIONS;ss;)
       {
-          if(((present - ss->create_time) >= 30) || (ss->state = STATE_CLOSED)) /* State closed or timed out, remove */ 
+          if(((present - ss->create_time) >= 30) || (ss->state == STATE_CLOSED)) /* State closed or timed out, remove */ 
             {
-                printf("Deleting struct for %s:%d", ss->irc_addr, ss->protocol->port);
+                printf("Removing %s:%d %d %d\n", ss->irc_addr, ss->protocol->port, (present - ss->create_time), ss->state);
                 nextss = ss->next;
                 scan_del(ss);
                 ss = nextss;
+                continue;
             }
+   
+          ss = ss->next;
       }
 }
 
@@ -328,6 +334,8 @@ int scan_r_squid(struct scan_struct *ss)
 	
   if(len <= 0)
        return 0;
+
+  printf("In data port %d: %s\n\n", ss->protocol->port, RECVBUFF);
  
   if(!strncasecmp(RECVBUFF, "HTTP/1.0", 8))
    { 

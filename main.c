@@ -73,7 +73,7 @@ int main()
 
 void do_alarm(int notused)
 {
-   ALARMED = 0;
+   ALARMED = 1;
    alarm(1);
 }
 
