@@ -1,20 +1,16 @@
 Introduction
------------
+------------
 
-BOPM (Blitzed Open Proxy Monitor) is an open proxy monitoring
-bot designed for Dalnet based ircds. The bot is designed to
-monitor an individual server (all servers on the network have
-to run their own bot) with a local o line and monitor connections.
-When a client connects to the server, BOPM will scan the connection
-for insecure proxies. Insecure proxies are determined by attempting
-to connect the proxy back to another host (usually the IRC server
-in question).
+BOPM (Blitzed Open Proxy Monitor) is an open proxy monitoring bot designed for
+Dalnet based ircds.  The bot is designed to monitor an individual server (all
+servers on the network have to run their own bot) with a local o: line and
+monitor connections.  When a client connects to the server, BOPM will scan the
+connection for insecure proxies.  Insecure proxies are determined by attempting
+to connect the proxy back to another host (usually the IRC server in question).
 
-
-BOPM is written groundup in C language, concept derived from wgmon
-wgmon. It improves on wgmon with HTTP support, faster scanning (it can
-scan clients simultaneously), better layout (scalability), and 
-dnsbl support.
+BOPM is written ground-up in C language, concept derived from wgmon.  It
+improves on wgmon with HTTP support, faster scanning (it can scan clients
+simultaneously), better layout (scalability), and dnsbl support.
 
 
 Operator Channel Commands
@@ -30,9 +26,11 @@ Credits
    Erik Fears <strtok@blitzed.org>
          Main Developer.
 
-   Andy Smith <andy@blitzed.org>
-         Developed operator interface, interface to DNSbl, makefile trickery, debugging.
+   Andy Smith <grifferz@blitzed.org>
+         Developed operator interface, interface to DNSbl, makefile
+         trickery, poking people with sticks until they did things,
+         debugging.
  
    David Leadbeater <dg@blitzed.org> 
-         Developed perl script to test BOPM's support for scanning many clients
-         at once.
+         Developed perl script (see proxy-tools in Blitzed CVS repository)
+         to test BOPM's support for scanning many clients at once.
