@@ -117,8 +117,21 @@ scanner {
 	/* Amount of time (in seconds) before a test is considered timed out */
 	timeout = 30;
 
-	/* Target IP to tell the proxy to connect to */
-	target_ip     = "127.0.0.1";
+        /* 
+
+            Target IP to tell the proxy to connect to
+         
+           *** THIS MUST BE CHANGED ***
+
+           You cannot instruct the proxy to connect to itself! The easiest
+           thing to do would be to set this to the IP of your ircd and then
+           keep the default target_strings.
+
+           Remember to change this setting for every scanner you configure.
+
+         */
+
+        target_ip     = "127.0.0.1";
 
 	/* Target port to tell the proxy to connect to */
 	target_port   = 6667;
@@ -136,29 +149,16 @@ scanner {
 };
 
 scanner {
-
-	/* unique name of this scanner */
-	name = "extended";
-
-	protocol = HTTP:8001;
-	protocol = HTTP:8002;
-	protocol = HTTPPOST:8080;
-	protocol = HTTPPOST:3128;
-
-	/* IP this scanner will bind to */
-	#vhost = "127.0.0.1";
-
-	/* Maximum file descriptors this scanner can use */
-	fd = 128;
-
-	/* Target IP to tell the proxy to connect to */
-	target_ip     = "127.0.0.1";
-
-	/* Target port to tell the proxy to connect to */
-	target_port   = 6667;
-
-	/* String target IP:PORT will send back to verify */
-	target_string = "Looking up your hostname...";
+        name = "extended";
+        protocol = HTTP:8001;
+        protocol = HTTP:8002;
+        protocol = HTTPPOST:8080;
+        protocol = HTTPPOST:3128;
+        #vhost = "127.0.0.1";
+        fd = 128;
+        target_ip     = "127.0.0.1";   /* !!! CHANGE ME !!! */
+        target_port   = 6667;
+        target_string = "Looking up your hostname...";
 };
 
 user {
