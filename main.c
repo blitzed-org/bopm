@@ -47,7 +47,7 @@ along with this program; if not, write to the Free Software
 #include "options.h"
 #include "version.h"
 
-RETSIGTYPE do_signal(int signum);
+static RETSIGTYPE do_signal(int signum);
 
 int ALARMED = 0;
 
@@ -62,134 +62,123 @@ struct sigaction INTACTION;
 
 int main(int argc, char **argv)
 {
+	char spid[16];
+	int pid, c, lenc, lenl, lenp;
+	FILE *pidout;
 
-   FILE *pidout;
-   int pid, c, lenc, lenl, lenp;
-   char spid[16];
+	do_stats_init();
+	do_scan_init();
 
-   do_stats_init();
-   do_scan_init();
+	while (1) {
+		c = getopt(argc, argv, "dcv:");
 
-   while(1)
-    {
-       c = getopt(argc, argv, "dcv:");
+		if (c == -1)
+			break;
 
-       if(c == -1)
-           break;
+		switch (c) {
+		case 'c':
+			CONFNAME = strdup(optarg);
+			break;
+		case 'd':
+			OPT_DEBUG++;
+			break;
+		case 'v':
+			CONFDIR = strdup(optarg);
+			break;
+		case '?':
+		default:
+			/* Unknown arg, guess we'll just do nothing for now. */
+			break;
+		}
+	}	
 
-       switch(c)
-        {
-	   case 'c':
-	       CONFNAME = strdup(optarg);
-	       break;
-           case 'd':
-               OPT_DEBUG++;
-               break;
-           case 'v':
-               CONFDIR = strdup(optarg);
-               break;
-           case '?':
-           default:
-               /* unknown arg, guess we'll just do nothing for now */
-               break;
-        }
-    }	
+	lenc = strlen(CONFDIR) + strlen(CONFNAME) + strlen(CONFEXT) + 3;
+	lenl = strlen(CONFDIR) + strlen(CONFNAME) + strlen(LOGEXT) + 3;
+	lenp = strlen(CONFDIR) + strlen(CONFNAME) + strlen(PIDEXT) + 3;
 
-   lenc = strlen(CONFDIR) + strlen(CONFNAME) + strlen(CONFEXT) + 3;
-   lenl = strlen(CONFDIR) + strlen(CONFNAME) + strlen(LOGEXT) + 3;
-   lenp = strlen(CONFDIR) + strlen(CONFNAME) + strlen(PIDEXT) + 3;
+	CONFFILE = (char *) malloc(lenc * sizeof(*CONFFILE));
+	LOGFILE = (char *) malloc(lenl * sizeof(*LOGFILE));
+	PIDFILE = (char *) malloc(lenp * sizeof(*PIDFILE));
 
-   CONFFILE = (char *) malloc(lenc * sizeof(char));
-   LOGFILE = (char *) malloc(lenl * sizeof(char));
-   PIDFILE = (char *) malloc(lenp * sizeof(char));
+	snprintf(CONFFILE, lenc, "%s/%s.%s", CONFDIR, CONFNAME, CONFEXT);
+	snprintf(LOGFILE, lenl, "%s/%s.%s", CONFDIR, CONFNAME, LOGEXT);
+	snprintf(PIDFILE, lenp, "%s/%s.%s", CONFDIR, CONFNAME, PIDEXT);
 
-   snprintf(CONFFILE, lenc, "%s/%s.%s", CONFDIR, CONFNAME, CONFEXT);
-   snprintf(LOGFILE, lenl, "%s/%s.%s", CONFDIR, CONFNAME, LOGEXT);
-   snprintf(PIDFILE, lenp, "%s/%s.%s", CONFDIR, CONFNAME, PIDEXT);
+	/* Fork off. */
 
-   /* Fork off */
+	if (!OPT_DEBUG) {
+		if ((pid = fork()) < 0) {
+			perror("fork()");
+			exit(EXIT_FAILURE);
+		} else if (pid != 0) {
+			pidout = fopen(PIDFILE, "w");
+			snprintf(spid, 16, "%d", pid);
 
-   if(!OPT_DEBUG)
-    {
-       if((pid = fork()) < 0)
-        {
-	   perror("fork()");
-	   exit(1);
+			if (pidout) {
+				fwrite(spid, sizeof(char), strlen(spid),
+				    pidout);
+			}
+
+			fclose(pidout);
+			exit(EXIT_SUCCESS);
+		}
+
+		/* Get us in our own process group. */
+		if (setpgid(0, 0) < 0) {
+			perror("setpgid()");
+			exit(EXIT_FAILURE);
+		}
+
+		/* Reset file mode. */
+		/* shasta: o+w is BAD, mmkay? */
+		umask(002);
+
+		/* Close file descriptors. */
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		close(STDERR_FILENO);
+
+		log_open(LOGFILE); 
+	} else {
+		log("MAIN -> Debug level %d", OPT_DEBUG);
 	}
-       else if(pid != 0)
-        {
-           pidout = fopen(PIDFILE, "w");
-           snprintf(spid, 16, "%d", pid);
 
-           if(pidout)         
-                fwrite(spid, sizeof(char), strlen(spid), pidout);   
-         
-           fclose(pidout);
+	log("MAIN -> BOPM %s started.", VERSION);
+	log("MAIN -> Reading configuration file...");
 
-           exit(0);
-        }
+	config_load(CONFFILE);
 
-       /* get us in our own process group */
-       if(setpgid(0, 0) < 0)
-        {
-	   perror("setpgid()");
-	   exit(1);
-	}
-
-       /* reset file mode */
-       /* shasta: o+w is BAD, mmkay? */
-       umask(002);
-
-       /* close file descriptors */
-       close(STDIN_FILENO);
-       close(STDOUT_FILENO);
-       close(STDERR_FILENO);
-
-       log_open(LOGFILE); 
-    }
-   else
-    {
-       log("MAIN -> Debug level %d", OPT_DEBUG);
-    }
-
-    log("MAIN -> BOPM %s started.", VERSION);
-    log("MAIN -> Reading configuration file...");
-
-    config_load(CONFFILE);
-
-    /* Setup alarm & int handlers */
+	/* Setup alarm & int handlers. */
  
-    ALARMACTION.sa_handler = &(do_signal);  
-    ALARMACTION.sa_flags = SA_RESTART;
-    INTACTION.sa_handler = &(do_signal);
+	ALARMACTION.sa_handler = &(do_signal);  
+	ALARMACTION.sa_flags = SA_RESTART;
+	INTACTION.sa_handler = &(do_signal);
     
-    sigaction(SIGALRM, &ALARMACTION, 0);
-    sigaction(SIGINT, &INTACTION, 0);
+	sigaction(SIGALRM, &ALARMACTION, 0);
+	sigaction(SIGINT, &INTACTION, 0);
 
-    /* Ignore SIGPIPE */
-    signal(SIGPIPE, SIG_IGN);
+	/* Ignore SIGPIPE. */
+	signal(SIGPIPE, SIG_IGN);
 
-    alarm(1);
+	alarm(1);
 
-    while(1)     
-     {
-	irc_cycle();
-        scan_cycle();
+	while (1) {
+		irc_cycle();
+		scan_cycle();
 
-        if(ALARMED)
-         {
-            irc_timer();
-            scan_timer();
-            ALARMED = 0;
-         }
-     }
+		if (ALARMED) {
+			irc_timer();
+			scan_timer();
+			ALARMED = 0;
+		}
+	}
     
-    if(!OPT_DEBUG)
-        log_close();
-    return 0;
+	if (!OPT_DEBUG)
+		log_close();
+	return(0);
 }
 
-void do_signal(int signum)
+static void do_signal(int signum)
 {
 	switch (signum) {
 	case SIGALRM:
