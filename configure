@@ -1573,9 +1573,12 @@ EOF
 fi
 
 
-echo $ac_n "checking for POSIX-compliant goat""... $ac_c" 1>&6
-echo "configure:1578: checking for POSIX-compliant goat" >&5
-echo "$ac_t""http://www.blitzed.org/goat_winter_2001.phtml" 1>&6
+echo $ac_n "checking for POSIX-compliant goat$ac_c"
+for bleh in 1 2 3; do
+ echo $ac_n "."        
+ sleep 1
+done
+echo "$ac_t"" http://www.blitzed.org/goat_winter_2001.phtml" 1>&6
 
 trap '' 1 2 15
 cat > confcache <<\EOF
@@ -1925,3 +1928,9 @@ chmod +x $CONFIG_STATUS
 rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
+
+echo
+echo "You'll find more (infrequently changed) options in options.h"
+echo "Type make to compile BOPM"
+echo "(requires GNU Make, so try gmake on BSD systems)"
+echo
