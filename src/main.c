@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 	do_scan_init();
 
 	while (1) {
-		c = getopt(argc, argv, "dc:v:");
+		c = getopt(argc, argv, "dc:");
 
 		if (c == -1)
 			break;
@@ -81,9 +81,6 @@ int main(int argc, char **argv)
 			break;
 		case 'd':
 			OPT_DEBUG++;
-			break;
-		case 'v':
-			CONFDIR = strdup(optarg);
 			break;
 		case '?':
 		default:
