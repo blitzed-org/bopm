@@ -16,19 +16,21 @@ CFLAGS += -pg
 LFLAGS += -pg
 endif
 
-objects = main.o config.o irc.o log.o misc.o scan.o stats.o opercmd.o
+objects = config.o dnsbl.o irc.o log.o main.o misc.o opercmd.o scan.o \
+          stats.o
 
 all: bopm
 	rm -f *.da
 
-config.o:  config.h                log.h
-irc.o:     config.h extern.h irc.h log.h        opercmd.h scan.h
-log.o:              extern.h       log.h
-main.o:             extern.h irc.h log.h        opercmd.h scan.h stats.h
-misc.o:             extern.h             misc.h
-opercmd.o:          extern.h irc.h log.h misc.h opercmd.h scan.h
-scan.o:    config.h extern.h irc.h log.h        opercmd.h scan.h stats.h
-stats.o:            extern.h irc.h       misc.h                  stats.h
+config.o:  config.h                        log.h
+dnsbl.o:            dnsbl.h extern.h irc.h log.h
+irc.o:     config.h dnsbl.h extern.h irc.h log.h        opercmd.h scan.h
+log.o:                      extern.h       log.h
+main.o:                     extern.h irc.h log.h        opercmd.h scan.h stats.h
+misc.o:                     extern.h             misc.h
+opercmd.o:                  extern.h irc.h log.h misc.h opercmd.h scan.h
+scan.o:    config.h dnsbl.h extern.h irc.h log.h        opercmd.h scan.h stats.h
+stats.o:                    extern.h irc.h       misc.h                  stats.h
 
 bopm: $(objects)
 	$(CC) $(LFLAGS) -o bopm $(objects)

@@ -17,6 +17,9 @@
     extern char *CONF_NICKSERV_IDENT;
     extern char *CONF_CHANSERV_INVITE;
     extern char *CONF_KLINE_COMMAND;
+    extern char *CONF_DNSBL_ZONE;
+    extern char *CONF_DNSBL_FROM;
+    extern char *CONF_DNSBL_TO;
 
     extern int   CONF_PORT;
     extern int   CONF_SCANPORT;

@@ -38,6 +38,7 @@ along with this program; if not, write to the Free Software
 #include "irc.h"
 #include "log.h"
 #include "config.h"
+#include "dnsbl.h"
 #include "opercmd.h"
 #include "scan.h"
 #include "stats.h"
@@ -581,7 +582,9 @@ void irc_parse()
                   irc_user = strtok(irc_user, "@"); /* username is everything before the '@' */
                      
                   irc_addr = strtok(NULL , ")");    /* irc_addr is everything between '@' and closing ')' */
-                                
+                  if(CONF_DNSBL_ZONE && dnsbl_check(addr, irc_nick,
+					            irc_user, irc_addr))
+	             return;
                   scan_connect(addr, irc_addr, irc_nick, irc_user, 0);
             }
      }

@@ -42,6 +42,9 @@ char *CONF_CHANNELS        = 0;
 char *CONF_NICKSERV_IDENT  = 0;
 char *CONF_CHANSERV_INVITE = 0;
 char *CONF_KLINE_COMMAND   = 0;
+char *CONF_DNSBL_ZONE      = 0;
+char *CONF_DNSBL_FROM      = 0;
+char *CONF_DNSBL_TO        = 0;
 
 int  CONF_SCANPORT         = 0;
 int  CONF_PORT             = 0;
@@ -63,6 +66,9 @@ config_hash hash[] = {
        {"NICKSERV_IDENT",      TYPE_STRING,     &CONF_NICKSERV_IDENT     },
        {"CHANSERV_INVITE",     TYPE_STRING,     &CONF_CHANSERV_INVITE    },
        {"KLINE_COMMAND",       TYPE_STRING,     &CONF_KLINE_COMMAND      },
+       {"DNSBL_ZONE",          TYPE_STRING,     &CONF_DNSBL_ZONE         },
+       {"DNSBL_FROM",          TYPE_STRING,     &CONF_DNSBL_FROM         },
+       {"DNSBL_TO",            TYPE_STRING,     &CONF_DNSBL_TO           },
 };
 
 

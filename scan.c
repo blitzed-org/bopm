@@ -35,6 +35,7 @@ along with this program; if not, write to the Free Software
 #include <sys/time.h>
 
 #include "config.h"
+#include "dnsbl.h"
 #include "irc.h"
 #include "log.h"
 #include "opercmd.h"
@@ -681,6 +682,9 @@ void do_manual_check(struct command *c)
 
    irc_send("PRIVMSG %s :Checking %s [%s] for open proxies at request of %s...",
             c->target, c->param, ip, c->nick);
+
+   if(CONF_DNSBL_ZONE)
+      dnsbl_check(ip, "*", "*", c->param);
 
    scan_connect(c->param, ip, "*", "*", 1);    /* Scan using verbose */
                                            
