@@ -115,5 +115,27 @@ int dnsbl_check(const char *addr, const char *irc_nick,
 /* send an email to report this open proxy */
 void dnsbl_report(struct scan_struct *ss)
 {
-   log("Would be emailing now");
+   FILE *fp;
+   char cmdbuf[512], buf[4096];
+
+   snprintf(cmdbuf, sizeof(cmdbuf), "%s -t", CONF_SENDMAIL);
+   snprintf(buf, sizeof(buf), "From: %s <%s>\n"
+            "To: <%s>\n"
+	    "Subject: BOPM Report\n\n"
+	    "%s: %s\n\n"
+	    "%s\n", CONF_NICK, CONF_DNSBL_FROM, CONF_DNSBL_TO,
+	    ss->protocol->type, ss->addr, ss->conn_notice);
+
+   if((fp = popen(cmdbuf, "w")) == NULL) {
+	   log("DNSBL -> Failed to create pipe to '%s' for email report!",
+	       cmdbuf);
+	   irc_send("PRIVMSG %s :I was trying to create a pipe to '%s' to "
+		    "send a DNSBL report, and it failed!  I'll give up "
+		    "for now.", CONF_CHANNELS, cmdbuf);
+	   return;
+   }
+
+   fputs(buf, fp);
+   pclose(fp);
+   log("DNSBL -> Sent report to %s", CONF_DNSBL_TO);
 }
