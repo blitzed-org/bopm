@@ -1,3 +1,11 @@
+2002-05-06 15:35 strtok/andy
+
+      * irc.c:
+       
+      irc.c: 
+               Temporarily fixed connect notice functions.
+               
+
 2002-05-06 06:00 dg
 
        * main.c: 
