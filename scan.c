@@ -49,7 +49,10 @@ along with this program; if not, write to the Free Software
 
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/poll.h>
+
+#ifdef HAVE_SYS_POLL_H
+# include <sys/poll.h>
+#endif
 
 #include "config.h"
 #include "irc.h"
@@ -244,7 +247,7 @@ void scan_cycle()
 void scan_check()
 {
 
-#ifdef USE_POLL
+#ifdef HAVE_SYS_POLL_H
     static struct pollfd ufds[MAX_POLL];  /* MAX_POLL is defined in options.h */
     int i;
     unsigned long size;
@@ -253,7 +256,7 @@ void scan_check()
     fd_set r_fdset;
     struct timeval scan_timeout;
     int highfd = 0;
-#endif /* USE_POLL */
+#endif /* HAVE_SYS_POLL_H */
 
     struct scan_struct *ss;
   
@@ -261,7 +264,7 @@ void scan_check()
        return;
 
 
-#ifdef USE_POLL
+#ifdef HAVE_SYS_POLL_H
 
     size = 0;
 
@@ -329,14 +332,14 @@ void scan_check()
     scan_timeout.tv_sec      = 0;  /* No timeout */
     scan_timeout.tv_usec     = 0;
 
-#endif /* USE_POLL */
+#endif /* HAVE_SYS_POLL_H */
 
 
-#ifdef USE_POLL
+#ifdef HAVE_SYS_POLL_H
     switch(poll(ufds, size, 0))
 #else /* select() */
     switch(select((highfd + 1), &r_fdset, &w_fdset, 0, &scan_timeout)) 
-#endif /* USE_POLL */
+#endif /* HAVE_SYS_POLL_H */
      {
 
         case -1:
@@ -346,7 +349,7 @@ void scan_check()
                         /* Pass pointer to connection to handler */
         default:
 
-#ifdef USE_POLL
+#ifdef HAVE_SYS_POLL_H
              for(ss = CONNECTIONS; ss; ss = ss->next)
               {
                  for(i = 0; i < size; i++)
@@ -376,7 +379,7 @@ void scan_check()
                  if(FD_ISSET(ss->fd, &w_fdset))
                    scan_writeready(ss);                                         
                }               
-#endif /* USE_POLL */
+#endif /* HAVE_SYS_POLL_H */
                         
      }               
      

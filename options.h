@@ -23,8 +23,6 @@
 
 #undef UNREAL
 
-/* Use poll() instead of select() */
-#define USE_POLL
 #define MAX_POLL 1024
 
 /* Client buffer size for scan 
