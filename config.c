@@ -35,6 +35,7 @@ char *CONF_SERVER          = 0;
 char *CONF_USER            = 0;
 char *CONF_NICK            = 0;
 char *CONF_OPER            = 0;
+char *CONF_REASON          = 0;
 int  CONF_PORT             = 0;
 
 perform_struct *CONF_PERFORM = 0;
@@ -47,7 +48,8 @@ config_hash hash[] = {
        {"USER",     &(param_user)     },
        {"NICK",     &(param_nick)     },
        {"PERFORM",  &(param_perform)  },
-       {"OPER",     &(param_oper)     }
+       {"OPER",     &(param_oper)     },
+       {"REASON",   &(param_reason)   }
 };
 
 
@@ -171,6 +173,20 @@ int param_oper(char *args)
 
          return 1;
 }
+
+int param_reason(char *args)
+{
+          if(CONF_REASON)
+              free(CONF_REASON);
+     
+          CONF_REASON = strdup(args);
+
+          if(!CONF_REASON)
+             config_memfail();
+
+          return 1;
+}
+
 
 int param_perform(char *args)
 {

@@ -42,6 +42,9 @@ along with this program; if not, write to the Free Software
 
 struct scan_struct *CONNECTIONS = 0;  /* Linked list head for connections */
 
+char SENDBUFF[513];
+char RECVBUFF[513];
+
 
 /*    Protocol Name, Port, Write Handler, Read Handler */ 
 
@@ -251,7 +254,7 @@ void scan_del(scan_struct *delconn)
                         /* Removing the head */
                    if(lastss == 0)
                      {
-                         CONNECTIONS = ss->next;
+                         CONNECTIONS = 0;
                          free(ss->addr);
                          free(ss->irc_addr);
                          free(ss);
@@ -263,6 +266,7 @@ void scan_del(scan_struct *delconn)
                          free(ss->irc_addr);
                          free(ss);
                      }
+                   break;
                }
 
              lastss = ss;
@@ -271,33 +275,39 @@ void scan_del(scan_struct *delconn)
 }
 
 
-/* Functions for handling open http data */
+/* Functions for handling open http data 
+ *
+ *  Return 1 on success.
+ *
+ */
 
-void scan_w_squid(struct scan_struct *ss)
+int scan_w_squid(struct scan_struct *ss)
 {
-    char sendbuff[128];
-
-    snprintf(sendbuff, 128, "CONNECT %s:%d HTTP/1.0\n\n", CONF_SERVER, CONF_PORT);
-    send(ss->fd, sendbuff, strlen(sendbuff), 0);
+   
+    snprintf(SENDBUFF, 128, "CONNECT %s:%d HTTP/1.0\n\n", CONF_SERVER, CONF_PORT);
+    send(ss->fd, SENDBUFF, strlen(SENDBUFF), 0);
 
     ss->state = STATE_SENT;
+    return 1;
 }
 
-void scan_r_squid(struct scan_struct *ss)
+int scan_r_squid(struct scan_struct *ss)
 {
 
   int len;
-  char readbuff[128];
 
-  if(ss->protocol->port != 8080)
-     return;
-
-  len = recv(ss->fd, readbuff, 512, 0);
-  readbuff[len] = 0; /* Make sure data is \0 terminated */
+  len = recv(ss->fd, RECVBUFF, 512, 0);
+  RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
+	
+  if(len <= 0)
+       return 0;
  
-  if(!strncasecmp(readbuff, "HTTP/1.0", 8))
-       irc_kline(ss->irc_addr, "Insert open http proxy message here");
+  if(!strncasecmp(RECVBUFF, "HTTP/1.0", 8))
+   { 
+       irc_kline(ss->irc_addr, CONF_REASON);
+       return 1;
+   }
 
-  scan_del(ss);  /* Remove from connection list */
- 
+  return 0;
 }
+

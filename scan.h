@@ -5,7 +5,7 @@
     
     typedef struct protocol_hash protocol_hash;
     typedef struct scan_struct scan_struct;
-    typedef void (*scan_function) (scan_struct *);
+    typedef int (*scan_function) (scan_struct *);
 
     #define STATE_ESTABLISHED 0
     #define STATE_SENT        1
@@ -38,6 +38,6 @@
      void scan_check();
     
 
-     void scan_w_squid(scan_struct *ss);
-     void scan_r_squid(scan_struct *ss);
+     int scan_w_squid(scan_struct *ss);
+     int scan_r_squid(scan_struct *ss);
 #endif 

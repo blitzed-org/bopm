@@ -29,5 +29,6 @@
        int param_nick(char *args);
        int param_oper(char *args);
        int param_perform(char *args);
+       int param_reason(char *args);
 
 #endif

@@ -9,6 +9,7 @@
     extern char *CONF_USER;
     extern char *CONF_NICK;
     extern char *CONF_OPER;
+    extern char *CONF_REASON;
 
     extern int   CONF_PORT;
 
