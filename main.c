@@ -39,6 +39,7 @@ along with this program; if not, write to the Free Software
 #include "opercmd.h"
 #include "scan.h"
 #include "stats.h"
+#include "options.h"
 
 void do_alarm(int);
 
@@ -123,7 +124,7 @@ int main(int argc, char **argv)
     log("MAIN -> BOPM started.");
     log("MAIN -> Reading configuration file...");
 
-    config_load("bopm.conf");
+    config_load(LOGFILE);
 
     /* Setup alarm */
  

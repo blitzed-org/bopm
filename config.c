@@ -86,6 +86,21 @@ void config_load(char *filename)
 	exit(1);
      }
     
+    /* Clear anything we have already */
+    for(i = 0; i < (sizeof(hash) / sizeof(config_hash)); i++)
+      {
+         switch(hash[i].type)
+          { 
+              case TYPE_STRING:
+                  if(( *(char**) hash[i].var))
+                       free(*(char**)hash[i].var);
+                  *(char**)hash[i].var = 0;
+                  break;
+              case TYPE_INT:
+                  *(int *) hash[i].var = 0;
+          }
+      }
+
     while(fgets(line,1023, in))  
       {
 
@@ -103,10 +118,7 @@ void config_load(char *filename)
                 {
                       switch(hash[i].type)
                         {
-                            case TYPE_STRING:
-                                 if(( *(char**) hash[i].var))
-                                    free(*(char**)hash[i].var);
-                                   
+                            case TYPE_STRING: 
                                  *(char**) hash[i].var = strdup(args);
                                  break;
                             case TYPE_INT:

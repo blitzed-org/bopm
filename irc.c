@@ -42,7 +42,7 @@ along with this program; if not, write to the Free Software
 #include "scan.h"
 #include "stats.h"
 #include "extern.h"
-
+#include "options.h"
 
 /* Certain variables we don't want to allocate memory for over and over again
  * so global scope is given */
@@ -56,7 +56,8 @@ int                 IRC_FD = -1;      /* File descriptor for IRC client        *
 struct sockaddr_in  IRC_SVR;          /* Sock Address Struct for IRC server    */
 struct sockaddr_in  IRC_LOCAL;        /* Sock Address Struct for Bind          */
 struct hostent     *IRC_HOST;         /* Hostent struct for IRC server         */
-fd_set              IRC_FDSET;        /* fd_set for IRC data for select()      */
+fd_set              IRC_READ_FDSET;   /* fd_set for IRC (read) data for select()*/
+fd_set              IRC_EX_FDSET;     /* fd_set for exceptions                 */
 
 struct timeval      IRC_TIMEOUT;      /* timeval struct for select() timeout   */
 time_t              IRC_NICKSERV_LAST = 0; /* Last notice from nickserv        */
@@ -71,21 +72,23 @@ void irc_cycle()
 {
    
 	
-      if(IRC_FD <= 0)                 /* No socket open */
+      if(IRC_FD <= 0)                 /* No socket open         */
         {
-          irc_init();                 /* Resolve remote host */
+          config_load(LOGFILE);       /* Reload config          */
+          irc_init();                 /* Resolve remote host    */
           irc_connect();              /* Connect to remote host */
         }
 
       IRC_TIMEOUT.tv_sec  = 0;
       IRC_TIMEOUT.tv_usec = 50000;   /* block .05 seconds to avoid excessive CPU use on select() */
            
-      FD_ZERO(&IRC_FDSET);
-      FD_SET(IRC_FD, &IRC_FDSET);
-      
-      
-                                
-      switch(select((IRC_FD + 1), &IRC_FDSET, 0, 0, &IRC_TIMEOUT))
+      FD_ZERO(&IRC_READ_FDSET);
+      FD_ZERO(&IRC_EX_FDSET);
+
+      FD_SET(IRC_FD, &IRC_READ_FDSET);
+      FD_SET(IRC_FD, &IRC_EX_FDSET);
+                                            
+      switch(select((IRC_FD + 1), &IRC_READ_FDSET, 0, &IRC_EX_FDSET, &IRC_TIMEOUT))
        {
             case -1:
                   switch(errno)		 
@@ -101,8 +104,10 @@ void irc_cycle()
             case 0:
 		  break;
             default:
-		   if(FD_ISSET(IRC_FD, &IRC_FDSET))     /* Check if IRC data is available */
+		   if(FD_ISSET(IRC_FD, &IRC_READ_FDSET))     /* Check if IRC data is available */
 		        irc_read();
+                   if(FD_ISSET(IRC_FD, &IRC_EX_FDSET)) /* Check if exception has occured  */
+                        IRC_FD = 0;                    /* Set FD 0 for reconnection       */
         }
       
       
@@ -602,7 +607,8 @@ void irc_timer()
    /* No data in 5 minutes */
    if((present - IRC_LAST) >= 300)
      {
-         IRC_FD = 0;      /* Set FD to 0, cycle will catch this and init/reconnct */
+         close(IRC_FD);   /* Close socket                                          */
+         IRC_FD = 0;      /* Set FD to 0, cycle will catch this and init/reconnct  */
          time(&IRC_LAST); /* Make sure we dont do this again for another 5 minutes */
      }
 

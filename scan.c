@@ -647,10 +647,10 @@ int scan_r_wingate(struct scan_struct *ss)
    
    if(!strncasecmp(RECVBUFF, "WinGate>", 8) ||
       !strncasecmp(RECVBUFF, "Too many connected users - try again later", 42))
-    {
-     STAT_NUM_WINGATE_OPEN++;
-     return 1;
-    }
+      {
+          STAT_NUM_WINGATE_OPEN++;
+          return 1;
+      }
 
    return 0;
 }
