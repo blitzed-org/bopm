@@ -88,8 +88,6 @@ node_t *list_remove(list_t *list, node_t *node)
       else
          list->tail = NULL;
 
-      list->elements--;
-
       return node;
    }
    else if(node == list->tail)
@@ -97,24 +95,17 @@ node_t *list_remove(list_t *list, node_t *node)
       list->tail = list->tail->prev;
       list->tail->next = NULL;
 
-      list->elements--;
-
       return node;
    }
-
-
-   for(p = list->head; p != NULL; p = p->next)
+   else
    {
-      if(p == node)
-      {
-         p->prev->next = p->next;
-         p->next->prev = p->prev;
-         list->elements--;
-         return p;
-      }
+      node->prev->next = node->next;
+      node->next->prev = node->prev;
    }
 
-   return NULL;
+   list->elements--;
+   return node;
+
 }
 
 void list_free(list_t *list)
