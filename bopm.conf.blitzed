@@ -186,7 +186,7 @@ scanner {
    protocol = SOCKS5:38994;
    protocol = SOCKS5:15859;
    protocol = SOCKS5:1027;
-   protocol = SOCKS5:2425
+   protocol = SOCKS5:2425;
 
    protocol = ROUTER:23;
 
