@@ -33,6 +33,7 @@ along with this program; if not, write to the Free Software
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/time.h>
+#include <sys/poll.h>
 
 #include "config.h"
 #include "irc.h"
@@ -42,7 +43,7 @@ along with this program; if not, write to the Free Software
 #include "stats.h"
 #include "dnsbl.h"
 #include "extern.h"
-
+#include "options.h"
 
 struct scan_struct *CONNECTIONS = 0;  /* Linked list head for connections */
 
@@ -78,7 +79,6 @@ void scan_memfail()
     log("SCAN -> Error allocating memory.");
     exit(1);
 }
-
 
 
 
@@ -224,18 +224,62 @@ void scan_cycle()
 void scan_check()
 {
 
+#ifdef USE_POLL
+    static struct pollfd ufds[MAX_POLL];  /* MAX_POLL is defined in options.h */
+    int i;
+    unsigned long size;
+#else /* select() */
     fd_set w_fdset;
     fd_set r_fdset;
-
     struct timeval scan_timeout;
-    struct scan_struct *ss;
-    struct scan_struct *tss;
-
     int highfd = 0;
+#endif /* USE_POLL */
 
-
+    struct scan_struct *ss;
+  
     if(!CONNECTIONS)
        return;
+
+
+#ifdef USE_POLL
+
+    size = 0;
+
+    /* Get size of list we're interested in */
+    for(ss = CONNECTIONS;ss; ss = ss->next)
+      if(ss->state != STATE_CLOSED && ss->state != STATE_UNESTABLISHED)
+         size++;
+    
+    i = 0;
+
+         /* Setup each element now */
+    for(ss = CONNECTIONS; ss; ss = ss->next)
+     {
+         if(ss->state == STATE_CLOSED || ss->state == STATE_UNESTABLISHED)
+            continue;
+
+         ufds[i].events = 0;
+         ufds[i].revents = 0;
+         ufds[i].fd = ss->fd;
+
+         ufds[i].events |= POLLHUP;   /* Check for HUNG UP    */
+         ufds[i].events |= POLLNVAL;  /* Check for INVALID FD */
+
+         switch(ss->state)
+          {
+             case STATE_ESTABLISHED:
+                  ufds[i].events |= POLLOUT;   /* Check for NO BLOCK ON WRITE */
+                  break;
+             case STATE_SENT:
+                  ufds[i].events |= POLLIN;    /* Check for data to be read   */
+                  break;
+          } 
+
+         if(++i > MAX_POLL)
+             break;
+     }     
+
+#else /* select() */
 
     FD_ZERO(&w_fdset);
     FD_ZERO(&r_fdset);
@@ -265,78 +309,136 @@ void scan_check()
     scan_timeout.tv_sec      = 0;  /* No timeout */
     scan_timeout.tv_usec     = 0;
 
+#endif /* USE_POLL */
+
+
+#ifdef USE_POLL
+    switch(poll(ufds, size, 0))
+#else /* select() */
     switch(select((highfd + 1), &r_fdset, &w_fdset, 0, &scan_timeout)) 
+#endif /* USE_POLL */
      {
 
         case -1:
-           return;  /* error in select */
+           return;     /* error in select/poll */
         case 0:
            break;
                         /* Pass pointer to connection to handler */
         default:
+
+#ifdef USE_POLL
              for(ss = CONNECTIONS; ss; ss = ss->next)
-               {
-                  if(FD_ISSET(ss->fd, &r_fdset) && (ss->state == STATE_SENT))
-                    {
-                        if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed and kline*/
-                         {
-                           irc_kline(ss->irc_addr, ss->addr);
+              {
+                 for(i = 0; i < size; i++)
+                  {
+                     if(ufds[i].fd == ss->fd)
+                      {
+                          if(ufds[i].revents & POLLIN)
+                             scan_readready(ss);
 
-			   if(CONF_DNSBL_FROM && CONF_DNSBL_TO &&
-			      CONF_SENDMAIL && !ss->verbose)
-			    {
-			      dnsbl_report(ss);
-			    }
+                          if(ufds[i].revents & POLLOUT)
+                             scan_writeready(ss);
+             
+                          if(ufds[i].revents & POLLHUP)
+                             scan_negfail(ss);
 
-                           log("SCAN -> %s: %s!%s@%s (%d)", ss->protocol->type , ss->irc_nick, ss->irc_user, 
-                                         ss->irc_addr, ss->protocol->port);
+                          break;
+                      }
+                  }
+               }        
+#else
 
-                           irc_send("PRIVMSG %s :%s (%d): OPEN PROXY -> "
-				    "%s!%s@%s", CONF_CHANNELS,
-				    ss->protocol->type, ss->protocol->port,
-				    ss->irc_nick, ss->irc_user,
-				    ss->irc_addr);
-                           ss->protocol->stat_numopen++; /* Increase number OPEN (insecure) of this type */
-
-                           ss->state = STATE_CLOSED;
-                           
-                           if(!ss->verbose)                     
-                            {
-                               for(tss = CONNECTIONS;tss;tss = tss->next)
-                                {
-                                 if(!strcmp(ss->irc_addr, tss->irc_addr))
-                                     tss->state = STATE_CLOSED;
-                                }
-                            }               
-                         }
-                      else      
-                          {
-                            /* Read returned false, we discard the connection as a closed proxy
-                             * to save CPU. */
-                            if(ss->verbose)
-                             {
-                               irc_send("PRIVMSG %s :%s (%d): Negotiation "
-					"to %s failed.", CONF_CHANNELS,
-					ss->protocol->type,
-					ss->protocol->port, ss->irc_addr);
-		             }
-                            ss->state = STATE_CLOSED; 
-                          }
-                     }
-
-                  if(FD_ISSET(ss->fd, &w_fdset))
-                    {                                   
-                      if((*ss->protocol->w_handler)(ss)) /* If write returns true, flag STATE_SENT */  
-                           ss->state = STATE_SENT;
-                      ss->protocol->stat_num++;     /* Increase number attempted negotiated of this type */
-                    }
+             for(ss = CONNECTIONS; ss; ss = ss->next)
+              {
+                 if(FD_ISSET(ss->fd, &r_fdset) && (ss->state == STATE_SENT))                    
+                   scan_readready(ss);     
+                    
+                 if(FD_ISSET(ss->fd, &w_fdset))
+                   scan_writeready(ss);                                         
+               }               
+#endif /* USE_POLL */
                         
-               }
-     } 
+     }               
+     
 }
 
 
+/*
+ *   Negotiation failed
+ */
 
+void scan_negfail(scan_struct *conn)
+{
+     /* Read returned false, we discard the connection as a closed proxy                
+      * to save CPU.                                                     
+      */
+      if(conn->verbose)
+       {
+          irc_send("PRIVMSG %s :%s (%d): Negotiation "
+                   "to %s failed.", CONF_CHANNELS,
+                   conn->protocol->type,
+                   conn->protocol->port, conn->irc_addr);
+       }
+       conn->state = STATE_CLOSED;
+}
+
+/*   Poll or select returned back that this connection
+ *   is ready for read.
+ */
+
+void scan_readready(scan_struct *conn)
+{
+        scan_struct *ss;
+
+        if((*conn->protocol->r_handler)(conn)) /* If read returns true, flag socket for closed and kline*/
+          {
+              irc_kline(conn->irc_addr, conn->addr);
+
+              if(CONF_DNSBL_FROM && CONF_DNSBL_TO && CONF_SENDMAIL && !conn->verbose)                
+                    dnsbl_report(conn);
+                
+              log("SCAN -> %s: %s!%s@%s (%d)", conn->protocol->type , conn->irc_nick, conn->irc_user,
+                             conn->irc_addr, conn->protocol->port);
+
+              irc_send("PRIVMSG %s :%s (%d): OPEN PROXY -> "
+                            "%s!%s@%s", CONF_CHANNELS,
+                            conn->protocol->type, conn->protocol->port,
+                            conn->irc_nick, conn->irc_user,
+                            conn->irc_addr);
+
+              conn->protocol->stat_numopen++; /* Increase number OPEN (insecure) of this type */
+
+              conn->state = STATE_CLOSED;
+
+              /* Flag connections with the same addr CLOSED aswell (if not verbose */
+              if(!conn->verbose)
+                {
+                    for(ss = CONNECTIONS;ss;ss = ss->next)
+                      {
+                         if(!strcmp(conn->irc_addr, ss->irc_addr))
+                                     ss->state = STATE_CLOSED;
+                       }
+                }
+
+            }
+         else
+           scan_negfail(conn);
+             
+           
+              
+}
+
+/* Poll or select returned back that this connect 
+ * is ready for write
+ */
+
+void scan_writeready(scan_struct *conn)
+{
+     if((*conn->protocol->w_handler)(conn)) /* If write returns true, flag STATE_SENT            */
+       conn->state = STATE_SENT;
+
+     conn->protocol->stat_num++;          /* Increase number attempted negotiated of this type */
+}
 
 /* Link struct to connection list 
  */

@@ -201,5 +201,7 @@ AWAY I'm a bot.  Your messages will be ignored.
 #                   not include file descriptors used for the IRC socket or log files.
 #                   Once limit has been reached, any further scans are queued until
 #                   there are file descriptors free
+#                   
+#                   Keep this limit equal or less than MAXPOLL as defined in options.h
 
 FDLIMIT 512

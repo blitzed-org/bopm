@@ -21,5 +21,8 @@
  */
 #undef UNREAL
 
+/* Use poll() instead of select() */
+#define USE_POLL
+#define MAX_POLL 1024
                 
 #endif /* OPTIONS_H */

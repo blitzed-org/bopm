@@ -46,6 +46,11 @@
      void scan_cycle();
      void scan_check();
      void scan_timer();    
+     void scan_readready();
+     void scan_writeready();
+     void scan_negfail();
+ 
+     int scan_listsize();
     
      int scan_w_squid(scan_struct *ss);
      int scan_r_squid(scan_struct *ss);
