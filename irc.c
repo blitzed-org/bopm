@@ -95,7 +95,7 @@ void irc_cycle()
                    {        /* Bad file desc ?! */
                        case EBADF: 
                        case EINVAL:
-                              IRC_FD = 0;  /* Set 0 so next call of irc_cycle() reconnects */                
+                              irc_reconnect();               
                               return;
                        default:
                               return;
@@ -107,7 +107,7 @@ void irc_cycle()
 		   if(FD_ISSET(IRC_FD, &IRC_READ_FDSET))     /* Check if IRC data is available */
 		        irc_read();
                    if(FD_ISSET(IRC_FD, &IRC_EX_FDSET)) /* Check if exception has occured  */
-                        IRC_FD = 0;                    /* Set FD 0 for reconnection       */
+                        irc_reconnect();
         }
       
       
@@ -305,6 +305,15 @@ void irc_connect()
 }
 
 
+void irc_reconnect()
+{
+  
+  if(IRC_FD > 0)
+      close(IRC_FD);
+  IRC_FD = 0;  /* Set IRC_FD 0 for reconnection on next irc_cycle() */
+
+}
+
 /* Read one character at a time until an
  * endline is hit, at which time control
  * is passed to irc_parse() to parse that
@@ -314,9 +323,16 @@ void irc_connect()
 void irc_read()
 {
       char c;
-      
-      while(read(IRC_FD, &c, 1))
+      int len;
+
+      while((len = read(IRC_FD, &c, 1)))
 	{
+           if(len <= 0)
+             {
+                 irc_reconnect();
+                 return;
+             } 
+            
 	   
 	   if(c == '\r')
 	       continue;
@@ -607,8 +623,7 @@ void irc_timer()
    /* No data in 5 minutes */
    if((present - IRC_LAST) >= 300)
      {
-         close(IRC_FD);   /* Close socket                                          */
-         IRC_FD = 0;      /* Set FD to 0, cycle will catch this and init/reconnct  */
+         irc_reconnect();
          time(&IRC_LAST); /* Make sure we dont do this again for another 5 minutes */
      }
 
