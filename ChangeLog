@@ -1,3 +1,52 @@
+2002-02-19 23:10  andy
+
+	* configure, configure.in:
+
+	configure.in:
+		$ac_c deprecated
+	
+2002-02-19 23:04  andy
+
+	* configure, configure.in:
+
+	configure.in:
+		Fix broken "echo -n" check
+	
+2002-02-19 23:00  andy
+
+	* configure, configure.in, setup.h.in:
+
+	configure.in:
+		Fix sys/poll.h check
+	
+2002-02-19 22:57  andy
+
+	* acconfig.h, configure, configure.in, setup.h.in:
+
+	configure.in:
+		Get rid of need for acconfig.h
+	acconfig.h:
+		No longer needed
+	
+2002-02-19 20:55  strtok
+
+	* version.h:
+
+	version.h: Incremented version to 2.1
+	
+2002-02-19 20:46  strtok
+
+	* scan.c:
+
+	Fix for select()
+	
+2002-02-17 17:15  andy
+
+	* README:
+
+	README:
+		Some credits we missed, oops.
+	
 2002-02-17 02:35  andy
 
 	* irc.c:
