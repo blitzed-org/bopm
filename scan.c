@@ -462,7 +462,7 @@ int scan_r_squid(struct scan_struct *ss)
 {
 
   int len;
-
+  char *newline;
 
   len = recv(ss->fd, RECVBUFF, 512, 0);
 
@@ -473,10 +473,27 @@ int scan_r_squid(struct scan_struct *ss)
  	
   
   if(!strncasecmp(RECVBUFF, "HTTP/1.0 200", 12) ||
-     !strncasecmp(RECVBUFF, "HTTP/1.1 200", 12))   
-        return 1;
-   
-   
+     !strncasecmp(RECVBUFF, "HTTP/1.1 200", 12))
+       {
+           newline = strchr(RECVBUFF, '\n');
+
+           if(!newline)
+                return 1;
+
+           newline++;  /* Increase sizeof(char) to bring us 1 char after /n */
+
+           if((newline - RECVBUFF) >= strlen(RECVBUFF)) 
+                return 1;
+
+           if(!strncasecmp(newline, "Date:",5))  
+                return 0;
+                                                /* Apache hack: (apache sends HTTP/1.x 200
+                                                 * sometimes when it shouldn't. This code checks
+                                                 * for the second header apache should send.*/
+
+           return 1;      /* Open Proxy */
+       }
+        
   return 0;
 }
 
