@@ -598,11 +598,7 @@ void scan_end(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
    if(OPT_DEBUG)
       log("SCAN -> Scan %s [%s] completed", remote->ip, scs->name);
 
-   if(ss->manual_target != NULL)
-      irc_send("PRIVMSG %s :Scan %s [%s] completed", ss->manual_target->name, remote->ip, scs->name);
-
    ss->scans--;
-
    scan_checkfinished(ss);
 }
 
@@ -638,7 +634,7 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
          if(OPT_DEBUG >= 2)
             log("SCAN -> Max read on %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
                 scan_gettype(remote->protocol), scs->name, remote->bytes_read);
-
+  
          if(ss->manual_target != NULL)
             irc_send("PRIVMSG %s :Negotiation failed %s:%d (%s) [%s] (%d bytes read)", ss->manual_target->name,
                      remote->ip, remote->port, scan_gettype(remote->protocol), scs->name, remote->bytes_read);
