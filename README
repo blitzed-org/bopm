@@ -140,7 +140,7 @@ Credits
          - Some code tidying patches
 
    The Hybrid Team
-         - String matching (math.[ch])
+         - String matching (match.[ch])
 
    Emre ERTUGAY <collide@tr.net>
          - TR-IRCD testing help
