@@ -60,5 +60,5 @@ void log(char *data, ...)
         va_end(arglist);
 
         fwrite("\n",1,1,logfile);
-
+        fflush(logfile);
 }
