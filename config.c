@@ -25,7 +25,7 @@ along with this program; if not, write to the Free Software
 #ifdef STDC_HEADERS
 #include <string.h>
 #include <stdlib.h>
-#undef
+#endif
 
 #include <stdio.h>
 #include <time.h>
