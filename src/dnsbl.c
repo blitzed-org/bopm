@@ -112,6 +112,8 @@ void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type
    if(strlen(ss->ip) < strlen(lookup)) {
       lookup += strlen(ss->ip) + 1;
    }
+
+
    if(ss->manual_target == NULL)
    {
       log("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick, ss->irc_username,
@@ -120,7 +122,7 @@ void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type
                         ss->irc_username, ss->irc_hostname, lookup, text_type);
    }
    else /* Manual scan */
-      irc_send("PRIVMSG %s :DNSBL -> %s appears in BL zone %s (%s)",
+      irc_send("PRIVMSG %s :CHECK -> DNSBL -> %s appears in BL zone %s (%s)",
                ss->manual_target->name, ss->ip, lookup, text_type);
 
    /* record stat */

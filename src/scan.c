@@ -487,8 +487,9 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
       /* Report to blacklist */
       dnsbl_report(ss);
 
-      irc_send_channels("OPEN PROXY -> %s!%s@%s %s:%d (%s) [%s]", ss->irc_nick, ss->irc_username, ss->irc_hostname,
-                        remote->ip, remote->port, scan_gettype(remote->protocol), scs->name);
+      irc_send_channels("OPEN PROXY -> %s!%s@%s %s:%d (%s) [%s]", ss->irc_nick, ss->irc_username, 
+                         ss->irc_hostname, remote->ip, remote->port, scan_gettype(remote->protocol), 
+                         scs->name);
 
       log("SCAN -> OPEN PROXY %s!%s@%s %s:%d (%s) [%s]", ss->irc_nick, ss->irc_username, ss->irc_hostname,
                         remote->ip, remote->port, scan_gettype(remote->protocol), scs->name);
@@ -496,10 +497,11 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
    }
    else
    {
-      irc_send_channels("OPEN PROXY -> %s:%d (%s) [%s]", remote->ip, remote->port, 
-                        scan_gettype(remote->protocol), scs->name);
+      irc_send("PRIVMSG %s :CHECK -> OPEN PROXY %s:%d (%s) [%s]", ss->manual_target->name, remote->ip, 
+                remote->port, scan_gettype(remote->protocol), scs->name);
 
-      log("SCAN -> OPEN PROXY %s:%d (%s) [%s]", remote->ip, remote->port, scan_gettype(remote->protocol), scs->name);
+      log("SCAN -> OPEN PROXY %s:%d (%s) [%s]", remote->ip, remote->port, 
+           scan_gettype(remote->protocol), scs->name);
    }
 
 
@@ -538,8 +540,9 @@ void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, 
           scan_gettype(remote->protocol), scs->name, remote->bytes_read);
 
    if(ss->manual_target != NULL)
-      irc_send("PRIVMSG %s :Negotiation failed %s:%d (%s) [%s] (%d bytes read)", ss->manual_target->name,
-               remote->ip, remote->port, scan_gettype(remote->protocol), scs->name, remote->bytes_read);
+      irc_send("PRIVMSG %s :CHECK -> Negotiation failed %s:%d (%s) [%s] (%d bytes read)", 
+                ss->manual_target->name, remote->ip, remote->port, scan_gettype(remote->protocol), 
+                scs->name, remote->bytes_read);
 
 }
 
@@ -573,8 +576,9 @@ void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
           scan_gettype(remote->protocol), scs->name, remote->bytes_read);
 
    if(ss->manual_target != NULL)
-      irc_send("PRIVMSG %s :Negotiation timed out %s:%d (%s) [%s] (%d bytes read)", ss->manual_target->name,
-               remote->ip, remote->port, scan_gettype(remote->protocol), scs->name, remote->bytes_read);
+      irc_send("PRIVMSG %s :CHECK -> Negotiation timed out %s:%d (%s) [%s] (%d bytes read)", 
+                ss->manual_target->name, remote->ip, remote->port, scan_gettype(remote->protocol), 
+                scs->name, remote->bytes_read);
 
 }
 
@@ -641,8 +645,9 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
                 scan_gettype(remote->protocol), scs->name, remote->bytes_read);
   
          if(ss->manual_target != NULL)
-            irc_send("PRIVMSG %s :Negotiation failed %s:%d (%s) [%s] (%d bytes read)", ss->manual_target->name,
-                     remote->ip, remote->port, scan_gettype(remote->protocol), scs->name, remote->bytes_read);
+            irc_send("PRIVMSG %s :CHECK -> Negotiation failed %s:%d (%s) [%s] (%d bytes read)", 
+                      ss->manual_target->name, remote->ip, remote->port, scan_gettype(remote->protocol), 
+                      scs->name, remote->bytes_read);
          break;
       case OPM_ERR_BIND:
          log("SCAN -> Bind error on %s:%d (%s) [%s]", remote->ip, remote->port,
@@ -651,6 +656,10 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
       case OPM_ERR_NOFD:
          log("SCAN -> File descriptor allocation error %s:%d (%s) [%s]", remote->ip, remote->port,
                 scan_gettype(remote->protocol), scs->name);
+
+         irc_send("PRIVMSG %s :CHECK -> Scan failed %s:%d (%s) [%s] (file descriptor allocation error)",
+                   ss->manual_target->name, remote->ip, remote->port, scan_gettype(remote->protocol),
+                   scs->name);
          break;
       default:   /* Unknown Error! */
          if(OPT_DEBUG)
@@ -884,6 +893,7 @@ void scan_checkfinished(struct scan_struct *ss)
  */
 void scan_manual(char *param, struct ChannelConf *target)
 {
+   struct hostent *he;
    struct scan_struct *ss;
    struct scanner_struct *scs;
 
@@ -912,13 +922,43 @@ void scan_manual(char *param, struct ChannelConf *target)
 
    ss = (struct scan_struct *) MyMalloc(sizeof(struct scan_struct));
 
+   /* If IP is a hostname, resolve it using gethostbyname (which will block!) */
+   if (!(he = gethostbyname(ip)))
+   {
+      switch (h_errno)
+      {
+         case HOST_NOT_FOUND:
+            irc_send("PRIVMSG %s :CHECK -> Host '%s' is unknown.",
+                      target->name, ip);
+            return;
+         case NO_ADDRESS:
+            irc_send("PRIVMSG %s :CHECK -> The specified name '%s' exists, but has no address.",
+                      target->name, ip);
+            return;
+         case NO_RECOVERY:
+            irc_send("PRIVMSG %s :CHECK -> An unrecoverable error occured whilst resolving '%s'.",
+                      target->name, ip);
+            return;
+         case TRY_AGAIN:
+            irc_send("PRIVMSG %s :CHECK -> A temporary nameserver error occurred resolving '%s'.",
+                      target->name, ip);
+            return;
+         default:
+            irc_send("PRIVMSG %s :CHECK -> Unknown error resolving '%s' (sorry!)", target->name, ip);
+            return;
+      }
+   }
+
+   /* IP = the resolved IP now (it was the ip OR hostname before) */
+   ip = inet_ntoa(*((struct in_addr *) he->h_addr));
+
    /* These don't exist in a manual scan */
    ss->irc_nick     = NULL;
    ss->irc_username = NULL;
    ss->irc_hostname = NULL;
    ss->proof        = NULL;
 
-   ss->ip = DupString(param);
+   ss->ip = DupString(ip);
 
    ss->remote = opm_remote_create(ss->ip);
    ss->remote->data = ss;
@@ -928,6 +968,13 @@ void scan_manual(char *param, struct ChannelConf *target)
    ss->manual_target = target;
 
    assert(ss->remote);
+
+   if(scannername != NULL)
+      irc_send("PRIVMSG %s :CHECK -> Checking '%s' for open proxies [%s]", 
+                target->name, ip,  scannername);
+   else
+      irc_send("PRIVMSG %s :CHECK -> Checking '%s' for open proxies on all scanners",
+                target->name, ip);
 
    if(LIST_SIZE(OpmItem->blacklists) > 0)
       dnsbl_add(ss);
@@ -964,6 +1011,12 @@ void scan_manual(char *param, struct ChannelConf *target)
       }
       else
          ss->scans++; /* Increase scan count only if OPM_SUCCESS */
+   }
+
+   if((scannername != NULL) && (ss->scans == 0))
+   {
+      irc_send("PRIVMSG %s :CHECK -> No such scanner '%s'", ss->manual_target->name, scannername);
+      scan_free(ss);
    }
 }
 
