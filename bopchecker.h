@@ -1,6 +1,7 @@
 #ifndef BOPCHECKER_H
 #define BOPCHECKER_H
 
+#define PROXY_CISCO   0x08
 #define PROXY_HTTP    0x10
 #define PROXY_WINGATE 0x20
 #define PROXY_SOCKS4  0x40
