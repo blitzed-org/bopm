@@ -54,7 +54,8 @@ protocol_hash SCAN_PROTOCOLS[] = {
        {"OpenSquid", 3128, &(scan_w_squid),  &(scan_r_squid)  },
        {"OpenSquid",   80, &(scan_w_squid),  &(scan_r_squid)  },
        {"Socks4"   , 1080, &(scan_w_socks4), &(scan_r_socks4) },
-       {"Socks5"   , 1080, &(scan_w_socks5), &(scan_r_socks5) }
+       {"Socks5"   , 1080, &(scan_w_socks5), &(scan_r_socks5) },
+       {"Wingate"  ,   23, &(scan_w_wingate),&(scan_r_wingate)}
 };
 
 
@@ -481,6 +482,39 @@ int scan_r_socks5(struct scan_struct *ss)
    /* Version is 5 and method is 0 (no auth) */
    if(RECVBUFF[0] == 5 && RECVBUFF[1] == 0)
        return 1;
+
+   return 0;
+}
+
+
+
+/*
+ *  Functions to handle wingates
+ *
+ *
+ */
+
+/*  Open wingates require no authentication, they
+ *  will send a prompt when connect. No need to
+ *  send any data.
+ */
+
+int scan_w_wingate(struct scan_struct *ss)
+{
+    return 1;
+}
+
+
+int scan_r_wingate(struct scan_struct *ss)
+{
+   int len;
+
+   len = recv(ss->fd, RECVBUFF, 512, 0);
+   RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
+   
+   if(!strncasecmp(RECVBUFF, "WinGate>", 8) ||
+      !strncasecmp(RECVBUFF, "Too many connected users - try again later", 42))
+     return 1;
 
    return 0;
 }

@@ -48,4 +48,7 @@
      int scan_w_socks5(scan_struct *ss);
      int scan_r_socks5(scan_struct *ss);
 
+     int scan_w_wingate(scan_struct *ss);
+     int scan_r_wingate(scan_struct *ss);
+
 #endif 
