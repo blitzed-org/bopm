@@ -1,18 +1,25 @@
 Make
 ----
 
-    Compilation of BOPM requires GNU Make. No configuration scripts are
+    Compilation of BOPM requires GNU Make.  No configuration scripts are
 neccessary, just 'make' (gmake on BSD systems) to compile the bot.
 
 Configuration
 -------------
 
-    Rename bopm.conf.sample to bopm.conf, edit as needed. Most options are
+    Rename bopm.conf.sample to bopm.conf, edit as needed.  Most options are
 self explanatory and contain a short description.
 
 Execution
 ---------
 
-    Run bopm from the same directory as bopm.conf. The bot will fork and
-connect to the IRC server immediately. Any errors and debug information
-can be found in bopm.log.
+    Run bopm from the same directory as bopm.conf.  The bot will fork and
+connect to the IRC server immediately.  Any errors and debug information can be
+found in bopm.log.
+
+    Further debugging can be enabled by using one or more -d switches.  One or
+more -d switches will cause the bot to not fork on startup, and it will send
+all log messages to stederr (i.e., your terminal) instead of its logfile.  It
+will also cause extra debugging information that is not normally of interest to
+be sent to stderr.  Two or more -d switches will enable logging of all IRC
+traffic received and sent.
