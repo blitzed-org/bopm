@@ -31,6 +31,7 @@ along with this program; if not, write to the Free Software
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <time.h>
+#include <sys/time.h>
 #include <errno.h>
 
 #include "irc.h"
