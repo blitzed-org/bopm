@@ -32,6 +32,7 @@ along with this program; if not, write to the Free Software
 
 #include <time.h>
 
+#include "config.h"
 #include "extern.h"
 #include "log.h"
 

@@ -36,6 +36,7 @@ along with this program; if not, write to the Free Software
 #include "misc.h"
 #include "opercmd.h"
 #include "scan.h"
+#include "config.h"
 #include "extern.h"
 
 void do_oper_cmd(const char *nick, const char *cmd, const char *param,

@@ -29,6 +29,7 @@ along with this program; if not, write to the Free Software
 # include <string.h>
 #endif
 
+#include "config.h"
 #include "extern.h"
 
 /* split a time_t into an English-language explanation of how
