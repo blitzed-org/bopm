@@ -24,15 +24,15 @@ checker_obj = bopchecker.o config.o misc.o scan.o
 all: bopm bopchecker
 	rm -f *.da
 
-config.o:  config.h                        log.h
-dnsbl.o:            dnsbl.h extern.h irc.h log.h        opercmd.h scan.h
-irc.o:     config.h dnsbl.h extern.h irc.h log.h        opercmd.h scan.h
-log.o:                      extern.h       log.h
-main.o:                     extern.h irc.h log.h        opercmd.h scan.h stats.h
-misc.o:                     extern.h             misc.h
-opercmd.o:                  extern.h irc.h log.h misc.h opercmd.h scan.h
-scan.o:    config.h dnsbl.h extern.h irc.h log.h        opercmd.h scan.h stats.h
-stats.o:                    extern.h irc.h       misc.h                  stats.h
+config.o:  config.h log.h
+dnsbl.o:   dnsbl.h extern.h irc.h log.h opercmd.h scan.h
+irc.o:     config.h dnsbl.h extern.h irc.h log.h opercmd.h options.h scan.h
+log.o:     extern.h log.h
+main.o:    extern.h irc.h log.h opercmd.h scan.h stats.h
+misc.o:    extern.h misc.h
+opercmd.o: extern.h irc.h log.h misc.h opercmd.h scan.h
+scan.o:    config.h dnsbl.h extern.h irc.h log.h opercmd.h scan.h stats.h
+stats.o:   extern.h irc.c misc.h stats.h
 
 bopchecker.o: bopchecker.h config.h irc.h options.h scan.h
 
