@@ -485,11 +485,17 @@ int scan_r_squid(struct scan_struct *ss)
            if((newline - RECVBUFF) >= strlen(RECVBUFF)) 
                 return 1;
 
-           if(!strncasecmp(newline, "Date:",5))  
-                return 0;
-                                                /* Apache hack: (apache sends HTTP/1.x 200
-                                                 * sometimes when it shouldn't. This code checks
-                                                 * for the second header apache should send.*/
+          if(newline[0] != ':' &&                              /* ircd message */
+	     newline[0] != '\r' &&                             /* another newline */
+             strncasecmp(newline, "NOTICE",6) != 0 &&          /* hybrid ircd */
+             strncasecmp(newline, "Proxy-Type:",11) != 0) {    /* some open proxies */
+	       if (OPT_DEBUG)
+	        {
+	          log("SCAN -> Found a proxy/httpd which replied, but "
+		      "don't think it is open, got:\n%s\n", newline);
+		}
+               return 0;
+          }
 
            return 1;      /* Open Proxy */
        }
