@@ -1,4 +1,4 @@
-CFLAGS= -Wall -O3
+CFLAGS= -Wall -g
 CC= gcc
 
 ifdef DEBUG_GCOV
@@ -12,6 +12,7 @@ endif
 objects = main.o config.o irc.o log.o scan.o
 
 all: bopm
+	rm -f *.da
 
 config.o:	extern.h	config.h
 irc.o:		extern.h	irc.h
@@ -24,5 +25,5 @@ bopm: $(objects)
 
 .PHONY: clean
 clean: 
-	rm -f *.o bopm
+	rm -f *.o *.da bopm
 

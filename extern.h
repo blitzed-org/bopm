@@ -21,5 +21,6 @@
     extern int   CONF_PORT;
     extern int   CONF_SCANPORT;
 
+    extern int   OPT_DEBUG;
 
 #endif    

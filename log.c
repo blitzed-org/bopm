@@ -27,6 +27,7 @@ along with this program; if not, write to the Free Software
 
 #include <time.h>
 
+#include "extern.h"
 #include "log.h"
 
 
@@ -57,7 +58,7 @@ void log(char *data, ...)
  
         char data2[513];
 	
-        if(!logfile)
+        if(!OPT_DEBUG && !logfile)
             return;
 
         time(&present);
@@ -66,7 +67,11 @@ void log(char *data, ...)
         vsnprintf(data2, 512, data, arglist);
         va_end(arglist);
 
-        fprintf(logfile, "[%d] %s\n", (int) present, data2);
-        fflush(logfile);
+	if(OPT_DEBUG)
+	    fprintf(stderr, "[%d] %s\n", (int) present, data2);
+	else {
+            fprintf(logfile, "[%d] %s\n", (int) present, data2);
+            fflush(logfile);
+	 }
 }
 

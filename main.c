@@ -28,6 +28,7 @@ along with this program; if not, write to the Free Software
 #include <netdb.h>
 #include <signal.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "config.h"
 #include "extern.h"
@@ -39,33 +40,60 @@ void do_alarm(int);
 
 int ALARMED = 0;
 
+int OPT_DEBUG = 0;
+
 struct sigaction ALARMACTION;
 
-int main()
+int main(int argc, char **argv)
 {
 
    FILE *pidout;
-   int pid;
+   int pid, c;
    char spid[16];
- 
+
+   while(1)
+    {
+       int opt_index = 0;
+       static struct option long_options[] =
+        {
+	       {"debug", 0, NULL, 'd'},
+           {0, 0, 0, 0}
+    	};
+
+       c = getopt_long(argc, argv, "d", long_options, &opt_index);
+
+       if(c == -1)
+           break;
+
+       switch(c)
+        {
+           case 'd':
+               OPT_DEBUG = 1;
+               break;
+           default:
+               /* unknown arg, guess just do nothing for now */
+               break;
+        }
+    }	
 
    /* Fork off */
 
-   if((pid = fork()))
+   if(!OPT_DEBUG)
     {
-       pidout = fopen("bopm.pid", "w");
-       snprintf(spid, 16, "%d", pid);
+       if((pid = fork()))
+        {
+           pidout = fopen("bopm.pid", "w");
+           snprintf(spid, 16, "%d", pid);
 
-       if(pidout)         
-            fwrite(spid, sizeof(char), strlen(spid), pidout);   
+           if(pidout)         
+                fwrite(spid, sizeof(char), strlen(spid), pidout);   
          
-       fclose(pidout);
+           fclose(pidout);
 
-       exit(0);
+           exit(0);
+        }
+       log_open("bopm.log"); 
     }
-
-
-    log_open("bopm.log"); 
 
     log("MAIN -> BOPM started.");
     log("MAIN -> Reading configuration file...");
@@ -97,7 +125,8 @@ int main()
          }
      }
     
-    log_close();
+    if(!OPT_DEBUG)
+        log_close();
     return 0;
 }
 
