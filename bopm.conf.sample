@@ -458,17 +458,25 @@ scanner {
          * This should be some string out of the data that your ircd usually
          * sends on connect.  The example below will work on most
          * hybrid/bahamut ircds.  Multiple target strings are allowed.
+         *
+         * NOTE: Try to keep the number of target strings to a minimum. Two
+         *       should be fine. One for normal connections and one for throttled
+         *       connections. Comment out any others for efficiency.
 	 */
 
         /* Usually first line sent to client on connection to ircd. */
-        target_string = "Looking up your hostname...";
+        target_string = "*** Looking up your hostname...";
+
+        /* Some ircds give a source for the NOTICE AUTH (bahamut for example). Use the following
+           instead of the generic "*** Looking up your hostname..." if your ircd supports it. */
+#       target_string = ":server.yournetwork.org NOTICE AUTH :*** Looking up your hostname...";
 
 	/* If you try to connect too fast, you'll be throttled by your own
          * ircd.  Here's what a hybrid throttle message looks like:
          */
 	target_string = "ERROR :Trying to reconnect too fast.";
 
-	/* And the same for bahamut: */
+	/* And the same for bahamut (comment this out if you're not using bahamut): */
 	target_string = "ERROR :Your host is trying to (re)connect too fast -- throttled.";
 };
 
