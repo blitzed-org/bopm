@@ -25,6 +25,7 @@ along with this program; if not, write to the Free Software
 #include "setup.h"
 
 #include <stdio.h>
+#include <unistd.h>
 
 #ifdef STDC_HEADERS
 # include <stdlib.h>
@@ -49,7 +50,6 @@ along with this program; if not, write to the Free Software
 
 #include <sys/resource.h> /* getrlimit */
 #include <errno.h>
-#include <fcntl.h>
 
 #include "irc.h"
 #include "misc.h"
@@ -220,7 +220,7 @@ void fdstats_output(char *target)
 {
    unsigned total_fd_use;
    struct rlimit rlim;
-   int i, ret;
+   int i, newfd;
 
    /* Get file descriptor ceiling */
    if(getrlimit(RLIMIT_NOFILE, &rlim) == -1)
@@ -231,13 +231,46 @@ void fdstats_output(char *target)
       return;
    }
 
-   /* Check which file descriptors are active */
+   /*
+    * Check which file descriptors are active, based on suggestions from:
+    * http://groups.google.com/groups?th=a48b9fe8ca43947c&rnum=1
+    */
    total_fd_use = 0;
    for(i = 0; i < rlim.rlim_cur; i++)
    {
-      ret = fcntl(i,F_GETFD,0);
-      if((errno != EBADF) && (ret != -1))
+      newfd = dup(i);
+
+      if(newfd > 0) {
          total_fd_use++;
+         close(newfd);
+      }
+      else
+      {
+         switch (errno)
+         {
+            case EMFILE:
+               /*
+                * We ran out of FDs whilst trying to dup an existing one,
+                * so all fds are open and we can stop checking here.
+                */
+               i = total_fd_use = rlim.rlim_cur;
+               break;
+
+            case EBADF:
+               /* Not an FD in use. */
+               break;
+
+            case EINTR:
+               /* Try again. */
+               i--;
+               break;
+
+            default:
+               /* We don't expect any other errors. */
+               log("fd %u errno = %u (%s)", i, errno, strerror(errno));
+               break;
+         }
+      }
    }
 
    irc_send("PRIVMSG %s :Total open FD: %u/%d", target, total_fd_use, rlim.rlim_cur);
