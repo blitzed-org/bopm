@@ -41,7 +41,6 @@
 void *MyMalloc(size_t bytes)
 {
     void *ret = calloc(1, bytes);
-
     assert(ret);
 
     return ret;

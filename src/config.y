@@ -28,7 +28,7 @@
 #include "malloc.h"
 #include "config.h"
 
-int yydebug=1; 
+//int yydebug=1; 
 void *tmp;        /* Variable to temporarily hold nodes before insertion to list */
 
 %}
@@ -40,6 +40,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token IRC
 %token KEY
 %token MASK
+%token MAX_READ
 %token MODE
 %token NAME
 %token NEGCACHE
@@ -57,6 +58,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token TARGET_IP
 %token TARGET_PORT
 %token TARGET_STRING
+%token TIMEOUT
 %token USERNAME
 %token USER
 %token VHOST
@@ -295,9 +297,12 @@ scanner_entry:
    item->target_ip = DupString("127.0.0.1");
    item->target_port = 6667;
    item->target_string = DupString("Looking up your hostname...");
+   item->timeout = 30;
+   item->max_read = 4096;
    item->protocols = list_create();
 
    node = node_create(item);
+
    list_add(ScannerItemList, node);
    tmp = (void *) item;
 }
@@ -313,6 +318,8 @@ scanner_item: scanner_name          |
               scanner_target_port   |
               scanner_target_string |
               scanner_protocol      |
+              scanner_timeout       |
+              scanner_max_read      |
               error;
 
 scanner_name: NAME '=' STRING ';'
@@ -353,6 +360,18 @@ scanner_target_port: TARGET_PORT '=' NUMBER ';'
 {
    struct ScannerConf *item = (struct ScannerConf *) tmp;
    item->target_port = $3;
+};
+
+scanner_timeout: TIMEOUT '=' NUMBER ';'
+{
+   struct ScannerConf *item = (struct ScannerConf *) tmp;
+   item->timeout = $3;
+};
+
+scanner_max_read: MAX_READ '=' NUMBER ';'
+{
+   struct ScannerConf *item = (struct ScannerConf *) tmp;
+   item->max_read = $3;
 };
 
 scanner_protocol: PROTOCOL '=' PROTOCOLTYPE ':' NUMBER ';'

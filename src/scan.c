@@ -68,6 +68,104 @@
 #include "libopm/src/opm_error.h"
 #include "libopm/src/opm_types.h"
 
+
+/* GLOBAL LISTS */
+
+static list_t *SCANNERS = NULL;   /* List of OPM_T */
+static list_t *MASKS    = NULL;   /* Associative list of masks->scanners */
+
+
+/* scan_init
+
+      Initialize scanner and masks list based on configuration.
+
+   Parameters:
+      None
+   
+   Return:
+      None
+*/
+
+void scan_init()
+{
+   node_t *p, *p1, *p2, *p3, *node;
+
+   struct UserConf *uc;
+   struct ScannerConf *sc;
+   struct ProtocolConf *pc;
+
+   struct scanner_struct *ss;
+   struct mask_struct    *ms;
+
+   char *mask;
+   char *scannername;
+
+   /* FIXME: If rehash code is ever added, cleanup would need done here. */
+
+   SCANNERS = list_create();
+   MASKS    = list_create();
+
+   /* Setup each individual scanner */   
+   LIST_FOREACH(p, ScannerItemList->head)
+   {
+      sc = (struct ScannerConf *) p->data;
+      ss = (struct scanner_struct *) MyMalloc(sizeof(struct scanner_struct));
+
+      if(OPT_DEBUG >= 2)
+         log("SCAN -> Setting up scanner [%s]", sc->name);
+
+      /* Build the scanner */
+      ss->scanner = opm_create();
+      ss->name = (char *) DupString(sc->name);
+
+      /* Setup configuration */
+      opm_config(ss->scanner, OPM_CONFIG_FD_LIMIT, &(sc->fd));
+      opm_config(ss->scanner, OPM_CONFIG_SCAN_IP, sc->target_ip);
+      opm_config(ss->scanner, OPM_CONFIG_SCAN_PORT, &(sc->target_port));
+      opm_config(ss->scanner, OPM_CONFIG_TIMEOUT, &(sc->timeout));
+      opm_config(ss->scanner, OPM_CONFIG_MAX_READ, &(sc->max_read));
+      opm_config(ss->scanner, OPM_CONFIG_TARGET_STRING, sc->target_string);
+
+      /* Setup the protocols */
+      LIST_FOREACH(p1, sc->protocols->head)
+      {
+         pc = (struct ProtocolConf *) p1->data;
+         opm_addtype(ss->scanner, pc->type, pc->port);
+      }
+     
+      node = node_create(ss);
+      list_add(SCANNERS, node);
+   }
+
+
+   /* Link masks to scanners */
+   LIST_FOREACH(p, UserItemList->head)
+   {
+      uc = (struct UserConf *) p->data;
+      LIST_FOREACH(p1, uc->masks->head)
+      {
+         mask = (char *) p1->data;
+         LIST_FOREACH(p2, uc->scanners->head)
+         {
+            scannername = (char *) p2->data;
+            LIST_FOREACH(p3, SCANNERS->head)
+            {
+               ss = (struct scanner_struct *) p3->data;
+               if(strcasecmp(scannername, ss->name))
+               {
+                  if(OPT_DEBUG >= 2)
+                     log("SCAN -> Linking the mask [%s] to scanner [%s]", mask, scannername);
+                  ms = (struct mask_struct *) MyMalloc(sizeof(struct mask_struct));
+                  ms->mask = (char *) DupString(mask);
+                  ms->ss = ss;
+               }
+            }            
+         } 
+      }
+   }
+}
+
+
 /* scan_connect
  *
  *    scan_connect is called when m_notice (irc.c) matches a connection

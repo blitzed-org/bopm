@@ -1,6 +1,8 @@
 #ifndef SCAN_H
 #define SCAN_H
 
+#include "libopm/src/opm.h"
+
 struct scan_struct
 {
    char *irc_nick;
@@ -14,6 +16,19 @@ struct scan_struct
 };
 
 
+struct mask_struct
+{
+   char  *mask;
+   struct scanner_struct *ss;   
+};
+
+struct scanner_struct
+{
+   char *name;
+   OPM_T *scanner;
+};
+
+extern void scan_init();
 void scan_connect(char **user, char *msg);
 
 #endif /* SCAN_H */

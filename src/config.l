@@ -99,6 +99,7 @@ FD                      { return FD;           }
 IRC                     { return IRC;          }
 KEY                     { return KEY;          }
 MASK                    { return MASK;         }
+MAX_READ                { return MAX_READ;     }
 MODE                    { return MODE;         }
 NAME                    { return NAME;         }
 NEGCACHE                { return NEGCACHE;     }
@@ -115,6 +116,7 @@ SERVER                  { return SERVER;       }
 TARGET_IP               { return TARGET_IP;    }
 TARGET_PORT             { return TARGET_PORT;  }
 TARGET_STRING           { return TARGET_STRING;}
+TIMEOUT                 { return TIMEOUT;      }
 USER                    { return USER;         }
 USERNAME                { return USERNAME;     }
 VHOST                   { return VHOST;        }

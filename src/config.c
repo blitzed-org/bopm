@@ -107,6 +107,5 @@ void config_setup()
 void yyerror(const char *str)
 {
     log("CONFIG -> %s: line %d", str, linenum);
-
     exit(EXIT_FAILURE);
 }
