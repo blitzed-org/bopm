@@ -40,6 +40,8 @@ extern void scan_connect(char **, char *);
 extern void scan_checkfinished(struct scan_struct *);
 extern void scan_manual(char *, struct ChannelConf *);
 extern int scan_checkexempt(char *, char *);
+extern void scan_timer(void);
+extern void scan_positive(struct scan_struct *, char *, char *);
 
 struct kline_format_assoc
 {

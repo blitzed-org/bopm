@@ -46,6 +46,8 @@ along with this program; if not, write to the Free Software
 #include "log.h"
 #include "malloc.h"
 #include "scan.h"
+#include "irc.h"
+#include "stats.h"
 
 
 /*

@@ -66,11 +66,16 @@ static int i6;
 static struct in6_addr servers6[FDNS_MAX];
 #endif
 
-/* linked list of open DNS queries; populated by firedns_add_query(), decimated by firedns_getresult() */
+/*
+ * linked list of open DNS queries; populated by firedns_add_query(),
+ * decimated by firedns_getresult()
+ */
 static list_t *CONNECTIONS = NULL;
 
-/* List of errors, in order of values used in FDNS_ERR_*, returned
- * by firedns_strerror */
+/*
+ * List of errors, in order of values used in FDNS_ERR_*, returned by
+ * firedns_strerror
+ */
 static char *errors[] = {
    "Success",
    "Format error",
@@ -89,7 +94,10 @@ static char *errors[] = {
 /* open DNS query */
 struct s_connection
 {
-   /* unique ID (random number), matches header ID; both set by firedns_add_query() */
+   /*
+    * unique ID (random number), matches header ID; both set by
+    * firedns_add_query()
+    */
    unsigned char id[2];
    unsigned short class;
    unsigned short type;
@@ -149,7 +157,10 @@ static int firedns_send_requests(struct s_header *h, struct s_connection *s,
 
 void firedns_init(void)
 {
-   /* populates servers4 (or -6) struct with up to FDNS_MAX nameserver IP addresses from /etc/firedns.conf (or /etc/resolv.conf) */
+   /*
+    * populates servers4 (or -6) struct with up to FDNS_MAX nameserver IP
+    * addresses from /etc/firedns.conf (or /etc/resolv.conf)
+    */
    FILE *f;
    int i;
    struct in_addr addr4;
@@ -296,8 +307,12 @@ char *firedns_resolveip(int type, const char * const name)
    return NULL;
 }
 
+/*
+ * build, add and send specified query; retrieve result with
+ * firedns_getresult()
+ */
 int firedns_getip(int type, const char * const name, void *info)
-{ /* build, add and send specified query; retrieve result with firedns_getresult() */
+{
    struct s_connection *s;
    node_t *node;
    int fd;
@@ -352,7 +367,7 @@ static struct s_connection *firedns_add_query(void)
    return s;
 }
 
-static firedns_doquery(struct s_connection *s)
+static int firedns_doquery(struct s_connection *s)
 {
    int len;
    struct s_header h;
@@ -369,8 +384,12 @@ static firedns_doquery(struct s_connection *s)
    return firedns_send_requests(&h, s, len);
 }
 
-static int firedns_build_query_payload(const char * const name, unsigned short rr, unsigned short class, unsigned char * payload)
-{ /* populate payload with query: name= question, rr= record type */
+/*
+ * populate payload with query: name= question, rr= record type
+ */
+static int firedns_build_query_payload(const char * const name,
+      unsigned short rr, unsigned short class, unsigned char * payload)
+{
    short payloadpos;
    const char * tempchr, * tempchr2;
    unsigned short l;
@@ -408,9 +427,10 @@ static int firedns_build_query_payload(const char * const name, unsigned short r
    return payloadpos + 4;
 }
 
+/* send DNS query */
 static int firedns_send_requests(struct s_header *h, struct s_connection *s,
       int l)
-{ /* send DNS query */
+{
    int i, sent_ok = 0;
    struct sockaddr_in addr4;
 

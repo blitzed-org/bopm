@@ -41,4 +41,6 @@ struct OperCommandHash
 extern void command_init(void);
 extern void command_userhost(char *);
 extern void command_timer(void);
+extern void command_parse(char *, char *, struct ChannelConf *,
+      struct UserInfo *);
 #endif

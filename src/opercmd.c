@@ -41,6 +41,7 @@ along with this program; if not, write to the Free Software
 #include "extern.h"
 #include "malloc.h"
 #include "list.h"
+#include "stats.h"
 
 /* List of active commands */
 
@@ -53,7 +54,9 @@ static void command_free(struct Command *);
 static void cmd_check(char *, char *, struct ChannelConf *);
 static void cmd_stat(char *, char *, struct ChannelConf *);
 static void cmd_fdstat(char *, char *, struct ChannelConf *);
+#if 0
 static void cmd_op(char *, char *, struct ChannelConf *);
+#endif
 
 static struct OperCommandHash COMMAND_TABLE[] =
    {
@@ -143,7 +146,8 @@ void command_timer()
  *
  */
 
-void command_parse(char *command, char *msg, struct ChannelConf *target, struct UserInfo *source_p)
+void command_parse(char *command, char *msg, struct ChannelConf *target,
+      struct UserInfo *source_p)
 {
    unsigned int i;
    char *param; /* Parsed parameters */
@@ -152,7 +156,10 @@ void command_parse(char *command, char *msg, struct ChannelConf *target, struct 
    node_t *node;
 
    if(OPT_DEBUG)
-      log_printf("COMMAND -> Parsing command (%s) from %s [%s]", command, source_p->irc_nick, target->name);
+   {
+      log_printf("COMMAND -> Parsing command (%s) from %s [%s]", command,
+            source_p->irc_nick, target->name);
+   }
 
    /* Only allow COMMANDMAX commands in the queue */
    if(LIST_SIZE(COMMANDS) >= COMMANDMAX)
@@ -202,6 +209,8 @@ void command_parse(char *command, char *msg, struct ChannelConf *target, struct 
    }
 
    irc_send("USERHOST %s", source_p->irc_nick);
+
+   USE_VAR(msg);
 }
 
 
@@ -335,6 +344,8 @@ void command_userhost(char *reply)
 static void cmd_check(char *param, char *source, struct ChannelConf *target)
 {
    scan_manual(param, target);
+
+   USE_VAR(source);
 }
 
 
@@ -352,6 +363,9 @@ static void cmd_check(char *param, char *source, struct ChannelConf *target)
 static void cmd_stat(char *param, char *source, struct ChannelConf *target)
 {
    stats_output(target->name);
+
+   USE_VAR(param);
+   USE_VAR(source);
 }
 
 
@@ -368,6 +382,9 @@ static void cmd_stat(char *param, char *source, struct ChannelConf *target)
 static void cmd_fdstat(char *param, char *source, struct ChannelConf *target)
 {
    fdstats_output(target->name);
+
+   USE_VAR(param);
+   USE_VAR(source);
 }
 
 
@@ -379,9 +396,16 @@ static void cmd_fdstat(char *param, char *source, struct ChannelConf *target)
  *    param: Parameters of the command
  *    source: irc_nick of user who requested the command
  *    target: channel command was sent to
+ *
+ * XXX - Doesn't seem to currently be in use anywhere?
+ *  -grifferz
  */
 
+#if 0
 static void cmd_op(char *param, char *source, struct ChannelConf *target)
 {
    irc_send("MODE %s +o %s", target->name, param);
+
+   USE_VAR(source);
 }
+#endif

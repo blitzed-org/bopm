@@ -10,8 +10,9 @@ struct cnode
    struct cnode *r;	/* Node to the right. */
 };
 
-extern void nc_init(struct cnode **head);
-extern struct cnode *check_neg_cache(const unsigned long ip);
-extern void negcache_insert(const char *ipstr);
+extern void nc_init(struct cnode **);
+extern struct cnode *check_neg_cache(const unsigned long);
+extern void negcache_insert(const char *);
+extern void negcache_rebuild(void);
 
 #endif

@@ -62,6 +62,7 @@ along with this program; if not, write to:
 #include "negcache.h"
 #include "config.h"
 #include "malloc.h"
+#include "log.h"
 
 extern unsigned int OPT_DEBUG;
 

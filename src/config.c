@@ -21,15 +21,29 @@
  *
  */
 
+#include "setup.h"
+
 #include <stdio.h>
+
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+
 #include "extern.h"
 #include "config.h"
 #include "malloc.h"
 #include "log.h"
 #include "scan.h"
+#include "irc.h"
+#include "opercmd.h"
+#include "stats.h"
+#include "firedns.h"
 
-void config_setup();
-void config_init();
+extern FILE *yyin;
+extern int yyparse(void);
+
+void config_setup(void);
+void config_init(void);
 
 
 

@@ -825,6 +825,11 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
       else
          irc_send("JOIN %s", channel->name);
    }
+
+   USE_VAR(parv);
+   USE_VAR(parc);
+   USE_VAR(msg);
+   USE_VAR(notused);
 }
 
 
@@ -846,6 +851,9 @@ static void m_ping(char **parv, unsigned int parc, char *msg, struct UserInfo *s
       log_printf("IRC -> PING? PONG!");
 
    irc_send("PONG %s", parv[2]);
+   
+   USE_VAR(msg);
+   USE_VAR(source_p);
 }
 
 
@@ -875,6 +883,9 @@ static void m_invite(char **parv, unsigned int parc, char *msg, struct UserInfo 
       return;
 
    irc_send("JOIN %s %s", channel->name, channel->key);
+   
+   USE_VAR(msg);
+   USE_VAR(source_p);
 }
 
 
@@ -947,7 +958,13 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
 static void m_ctcp(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
    if(strncasecmp(parv[3], "\001VERSION\001", 9) == 0)
-      irc_send("NOTICE %s :\001VERSION Blitzed Open Proxy Monitor %s\001", source_p->irc_nick, VERSION);
+   {
+      irc_send("NOTICE %s :\001VERSION Blitzed Open Proxy Monitor %s\001",
+            source_p->irc_nick, VERSION);
+   }
+
+   USE_VAR(parc);
+   USE_VAR(msg);
 }
 
 
@@ -1060,12 +1077,16 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
  *
  */
 
-static void m_userhost(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+static void m_userhost(char **parv, unsigned int parc, char *msg,
+      struct UserInfo *source_p)
 {
    if(parc < 4)
       return;
 
    command_userhost(parv[3]);
+
+   USE_VAR(msg);
+   USE_VAR(source_p);
 }
 
 /* m_cannot_join
@@ -1078,7 +1099,8 @@ static void m_userhost(char **parv, unsigned int parc, char *msg, struct UserInf
  *
  */
 
-static void m_cannot_join(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+static void m_cannot_join(char **parv, unsigned int parc, char *msg,
+      struct UserInfo *source_p)
 {
    struct ChannelConf *channel;
 
@@ -1093,6 +1115,9 @@ static void m_cannot_join(char **parv, unsigned int parc, char *msg, struct User
       return;
 
    irc_send("%s", channel->invite);
+
+   USE_VAR(msg);
+   USE_VAR(source_p);
 }
 
 
@@ -1110,4 +1135,9 @@ static void m_kill(char **parv, unsigned int parc, char *msg, struct UserInfo *s
 {
    /* Restart bopm to rehash */
    main_restart();
+
+   USE_VAR(parv);
+   USE_VAR(parc);
+   USE_VAR(msg);
+   USE_VAR(source_p);
 }

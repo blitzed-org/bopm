@@ -33,7 +33,9 @@ along with this program; if not, write to the Free Software
 
 #ifdef HAVE_STRINGS_H
 # include <strings.h>
-#elif HAVE_STRING_H
+#endif
+
+#if HAVE_STRING_H
 # include <string.h>
 #endif
 
@@ -112,7 +114,7 @@ void stats_init(void)
 
 void stats_openproxy(int type)
 {
-   int i;
+   unsigned int i;
 
    for(i = 0; i < (sizeof(STATS_PROXIES) / sizeof(struct StatsHash)); i++)
       if(STATS_PROXIES[i].type == type)
@@ -185,7 +187,7 @@ void stats_dnsblsend(void)
 
 void stats_output(char *target)
 {
-   int i;
+   unsigned int i;
    time_t present;
    time_t uptime;
 
@@ -195,14 +197,25 @@ void stats_output(char *target)
    irc_send("PRIVMSG %s :Uptime: %s", target, dissect_time(uptime));
 
    if(STATS_DNSBLRECV > 0)
-      irc_send("PRIVMSG %s :DNSBL: %u successful lookups from blacklists", target, STATS_DNSBLRECV);
+   {
+      irc_send("PRIVMSG %s :DNSBL: %u successful lookups from blacklists",
+            target, STATS_DNSBLRECV);
+   }
 
    if(STATS_DNSBLSENT > 0)
-      irc_send("PRIVMSG %s :DNSBL: %u reports sent", target, STATS_DNSBLSENT);
+   {
+      irc_send("PRIVMSG %s :DNSBL: %u reports sent", target,
+            STATS_DNSBLSENT);
+   }
 
    for(i = 0; i < (sizeof(STATS_PROXIES) / sizeof(struct StatsHash)); i++)
+   {
       if(STATS_PROXIES[i].count > 0)
-         irc_send("PRIVMSG %s :Found %u (%s) open.", target, STATS_PROXIES[i].count, STATS_PROXIES[i].name);
+      {
+         irc_send("PRIVMSG %s :Found %u (%s) open.", target,
+               STATS_PROXIES[i].count, STATS_PROXIES[i].name);
+      }
+   }
 
    irc_send("PRIVMSG %s :Number of connects: %u (%.2f/minute)",
             target, STATS_CONNECTIONS, STATS_CONNECTIONS ?
@@ -226,7 +239,7 @@ void fdstats_output(char *target)
 {
    unsigned total_fd_use;
    struct rlimit rlim;
-   int i, newfd;
+   unsigned int i, newfd;
 
    /* Get file descriptor ceiling */
    if(getrlimit(RLIMIT_NOFILE, &rlim) == -1)

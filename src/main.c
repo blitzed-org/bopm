@@ -53,6 +53,7 @@ along with this program; if not, write to the Free Software
 #include "options.h"
 #include "malloc.h"
 #include "firedns.h"
+#include "main.h"
 
 static RETSIGTYPE do_signal(int signum);
 
@@ -263,7 +264,7 @@ static void do_signal(int signum)
 }
 
 
-void main_restart()
+void main_restart(void)
 {
    RESTART = 1;
 }
