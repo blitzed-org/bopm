@@ -11,6 +11,17 @@ AC_ARG_WITH(select,
 AC_ARG_WITH(unreal, 
 [  --with-unreal           you need this if you are using Unreal ircd (any version)], with_unreal=yes, with_unreal=no)
 
+dnl ipv6?
+AC_ARG_ENABLE(ipv6,
+[  --enable-ipv6                Enable IPV6 support.
+  --disable-ipv6               Disable IPV6 support. ],
+    [ ac_cv_ipv6=$enableval ], [ ac_cv_ipv6='no' ])
+
+if test "$ac_cv_ipv6" = "yes" ; then
+        AC_DEFINE(IPV6, 1, Use Ipv6 Support)
+        echo "Using IPv6 support"
+fi
+
 dnl Checks for programs.
 AC_PROG_CC
 
@@ -53,6 +64,9 @@ if test "$with_select" = "yes" || test "$have_sys_poll_h" = "no"; then
 fi
 
 AC_CHECK_FUNCS(inet_aton socket strdup strstr)
+
+dnl Check if we can use gethostbyname2 for ipv6
+AC_CHECK_FUNCS(gethostbyname gethostbyname2)
 
 dnl AIX fun
 AC_C_BIGENDIAN

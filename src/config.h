@@ -3,9 +3,10 @@
 
 typedef struct config_hash config_hash;
 
-#define TYPE_STRING 1
-#define TYPE_INT 2
-#define TYPE_LIST 3
+#define TYPE_STRING 	1
+#define TYPE_INT 	2
+#define TYPE_LIST 	3
+#define TYPE_AF		4	/* similar to string, but with aftype */
 
 struct config_hash
 {

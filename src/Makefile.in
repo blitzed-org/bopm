@@ -71,10 +71,10 @@ AM_CPPFLAGS = -DBOPM_ETCDIR="\"$(sysconfdir)\"" -DBOPM_LOGDIR="\"$(localstatedir
 
 bopm_SOURCES = compat.c compat.h config.c config.h dnsbl.c dnsbl.h extern.h \
     irc.c irc.h log.c log.h main.c match.c match.h misc.c misc.h opercmd.c \
-    opercmd.h options.h scan.c scan.h setup.h stats.c stats.h
+    opercmd.h options.h scan.c scan.h setup.h stats.c stats.h inet.c inet.h
 
 bopchecker_SOURCES = bopchecker.c bopchecker.h compat.c compat.h config.c \
-    config.h match.c match.h misc.c misc.h scan.c scan.h setup.h
+    config.h match.c match.h misc.c misc.h scan.c scan.h setup.h inet.c inet.h
 
 
 bopm_LDADD = @LNSL@ @LSOCKET@
@@ -90,11 +90,11 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 bopm_OBJECTS =  compat.o config.o dnsbl.o irc.o log.o main.o match.o \
-misc.o opercmd.o scan.o stats.o
+misc.o opercmd.o scan.o stats.o inet.o
 bopm_DEPENDENCIES = 
 bopm_LDFLAGS = 
 bopchecker_OBJECTS =  bopchecker.o compat.o config.o match.o misc.o \
-scan.o
+scan.o inet.o
 bopchecker_DEPENDENCIES = 
 bopchecker_LDFLAGS = 
 CFLAGS = @CFLAGS@

@@ -42,6 +42,9 @@ static void add_to_list(string_list *oldlist, const char *item);
 static void free_list(string_list *list);
 static void add_to_config(const char *key, const char *val);
 
+extern int remote_is_ipv6;
+extern int bindto_ipv6;
+
 /* Global Configuration Variables */
 
 char *CONF_SERVER          = 0;
@@ -77,7 +80,8 @@ unsigned int  CONF_TIMEOUT          = 0;
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
 /*      NAME                  , TYPE   , REQ, REQMET, PTR TO VAR        */
 config_hash hash[] = {
-       {"SERVER",              TYPE_STRING, 1,0,    &CONF_SERVER             },
+       {"SERVER",              TYPE_STRING, 0,0,    &CONF_SERVER             },
+       {"SERVER6",	       TYPE_AF, 0,0,	    &CONF_SERVER	     },
        {"PORT",                TYPE_INT   , 1,0,    &CONF_PORT               },
        {"PASSWORD",            TYPE_STRING, 0,0,    &CONF_PASSWORD           },
        {"USER",                TYPE_STRING, 1,0,    &CONF_USER               },
@@ -89,6 +93,8 @@ config_hash hash[] = {
        {"SCANPORT",            TYPE_INT   , 1,0,    &CONF_SCANPORT           },
        {"BINDIRC",             TYPE_STRING, 0,0,    &CONF_BINDIRC            },
        {"BINDSCAN",            TYPE_STRING, 0,0,    &CONF_BINDSCAN           },
+       {"BINDIRC6",            TYPE_AF, 0,0,        &CONF_BINDIRC            },
+       {"BINDSCAN6",           TYPE_AF, 0,0,        &CONF_BINDSCAN           },
        {"FDLIMIT",             TYPE_INT   , 1,0,    &CONF_FDLIMIT            },
        {"CHANNELS",            TYPE_STRING, 1,0,    &CONF_CHANNELS           },
        {"KEYS",                TYPE_STRING, 0,0,    &CONF_KEYS               },
@@ -129,6 +135,7 @@ void config_load(char *filename)
 	for (i = 0; i < (sizeof(hash) / sizeof(config_hash) - 1); i++) {
 		switch(hash[i].type) { 
 		case TYPE_STRING:
+		case TYPE_AF:
 			if (( *(char**) hash[i].var))
 				free(*(char**)hash[i].var);
 			*(char**)hash[i].var = 0;
@@ -178,6 +185,7 @@ static void config_checkreq()
 			errfnd++;
 		} else if (OPT_DEBUG >= 3 && hash[i].reqmet) {
 			switch (hash[i].type) {
+			case TYPE_AF:
 			case TYPE_STRING:
 				log("CONFIG -> Set [%s]: %s", hash[i].key,
 				    *(char**) hash[i].var);
@@ -275,6 +283,19 @@ static void add_to_config(const char *key, const char *val)
 			case TYPE_STRING: 
 				*(char**) hash[i].var = strdup(val);
 				break;
+			case TYPE_AF:
+                                *(char**) hash[i].var = strdup(val);
+				
+			/* Ugly hack here. The letter E means, it is the word SERVER */
+			/* BINDIRC and BINDSCAN do not have an E in them. */
+			/* -TimeMr14C - 28.06.2002 */
+				if (strchr(key, 'E'))
+					remote_is_ipv6 = 1;
+				else
+					bindto_ipv6 = 1;
+			/* This was required when setting ipv6 savvy values */
+
+                                break;
 			case TYPE_INT:
 				*(int *) hash[i].var = atoi(val);
 				break;

@@ -20,6 +20,13 @@ along with this program; if not, write to the Free Software
 
 */
 
+/* The old sockaddr_in or in_addr structures were replaced with
+ * bopm based newer structures.
+ * Also took inetpton and friends from hybrid7/trircd5 tree
+ * Implemented ipv6.
+ * -TimeMr14C
+ */
+
 #include "setup.h"
 
 #include <stdio.h>
@@ -54,9 +61,9 @@ along with this program; if not, write to the Free Software
 #include <errno.h>
 #include <stdarg.h>
 
+#include "config.h"
 #include "irc.h"
 #include "log.h"
-#include "config.h"
 #include "opercmd.h"
 #include "scan.h"
 #include "dnsbl.h"
@@ -93,9 +100,17 @@ char                IRC_RAW[MSGLENMAX];      /* Buffer to read data into        
 char                IRC_SENDBUFF[MSGLENMAX]; /* Send buffer                           */
 int                 IRC_RAW_LEN = 0;         /* Position of IRC_RAW                   */
 
+int remote_is_ipv6 = 1;
+int bindto_ipv6 = 1;
+
 int                 IRC_FD = -1;      /* File descriptor for IRC client        */
-struct sockaddr_in  IRC_SVR;          /* Sock Address Struct for IRC server    */
-struct sockaddr_in  IRC_LOCAL;        /* Sock Address Struct for Bind          */
+
+struct bopm_sockaddr IRC_SVR;        /* Sock Address Struct for IRC server    */
+struct bopm_ircaddr IRC_LOCAL;      /* Sock Address Struct for Bind          */
+
+unsigned int ssize = -1;
+unsigned int isize = -1;
+
 struct hostent     *IRC_HOST;         /* Hostent struct for IRC server         */
 fd_set              IRC_READ_FDSET;   /* fd_set for IRC (read) data for select()*/
 
@@ -148,52 +163,76 @@ void irc_cycle(void)
 
 static void irc_init(void)
 {
-	if (IRC_FD)
-		close(IRC_FD);  
+    struct bopm_sockaddr bsadr;
 
-	memset(&IRC_SVR, 0, sizeof(IRC_SVR));
-	memset(&IRC_LOCAL, 0, sizeof(IRC_LOCAL));
+    ssize = sizeof(struct bopm_sockaddr);
+    isize = sizeof(struct bopm_ircaddr);
+
+    if (IRC_FD)
+        close(IRC_FD);
+
+    memset(&IRC_SVR, 0, ssize);
+    memset(&IRC_LOCAL, 0, isize);
+    memset(&bsadr, 0, sizeof(struct bopm_sockaddr));
 
 	/* Resolve IRC host. */
-	if (!(IRC_HOST = gethostbyname(CONF_SERVER))) {
+	if (!(IRC_HOST = bopm_gethostbyname(CONF_SERVER))) {
 		switch(h_errno) {
 		case HOST_NOT_FOUND:
-			log("IRC -> gethostbyname(): The specified host "
+			log("IRC -> bopm_gethostbyname(): The specified host "
 			    "(%s) is unknown", CONF_SERVER);
 			break;
 		case NO_ADDRESS:
-			log("IRC -> gethostbyname(): The specified name "
+			log("IRC -> bopm_gethostbyname(): The specified name "
 			    "(%s) exists, but does not have an IP",
 			    CONF_SERVER);
 			break;
 		case NO_RECOVERY:
-			log("IRC -> gethostbyname(): An unrecoverable "
+			log("IRC -> bopm_gethostbyname(): An unrecoverable "
 			    "error occured resolving (%s)", CONF_SERVER);
 			break;
 		case TRY_AGAIN:
-			log("IRC -> gethostbyname(): Error occured with "
+			log("IRC -> bopm_gethostbyname(): Error occured with "
 			    "authoritive name server (%s)", CONF_SERVER);
 			break;
 		default:
-			log("IRC -> gethostbyname(): Unknown error "
+			log("IRC -> bopm_gethostbyname(): Unknown error "
 			    "resolving (%s)", CONF_SERVER);
 			break;
                 }
 		exit(EXIT_FAILURE);
 	}
 
-	IRC_SVR.sin_family      = AF_INET;
-	IRC_SVR.sin_port        = htons(CONF_PORT);
-	IRC_SVR.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
+#ifdef IPV6
+    if (remote_is_ipv6) {
+        IRC_SVR.sas.sa6.sin6_family = AF_INET6;
+        IRC_SVR.sas.sa6.sin6_port = htons(CONF_PORT);
+        IRC_SVR.sas.sa6.sin6_addr = *((struct in6_addr *) IRC_HOST->h_addr_list[0]);
+        if (IN6_ARE_ADDR_EQUAL(&(IRC_SVR.sas.sa6.sin6_addr), &in6addr_any)) {
+            log("IRC -> Unknown error resolving remote host (%s)", CONF_SERVER);
+            exit(1);
+        }
+    } else {
+        IRC_SVR.sas.sa4.sin_family = AF_INET;
+        IRC_SVR.sas.sa4.sin_port = htons(CONF_PORT);
+        IRC_SVR.sas.sa4.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
+        if (IRC_SVR.sas.sa4.sin_addr.s_addr == INADDR_NONE) {
+            log("IRC -> Unknown error resolving remote host (%s)", CONF_SERVER);
+            exit(1);
+        }
+    }
+#else
+    IRC_SVR.sas.sa4.sin_family = AF_INET;
+    IRC_SVR.sas.sa4.sin_port = htons(CONF_PORT);
+    IRC_SVR.sas.sa4.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
+    if (IRC_SVR.sas.sa4.sin_addr.s_addr == INADDR_NONE) {
+        log("IRC -> Unknown error resolving remote host (%s)", CONF_SERVER);
+        exit(1);
+    }
+#endif
 
-	if (IRC_SVR.sin_addr.s_addr == INADDR_NONE) {
-		log("IRC -> Unknown error resolving remote host (%s)",
-		    CONF_SERVER);
-		exit(EXIT_FAILURE);
-	}
-
-	/* Request file desc for IRC client socket. */
-	IRC_FD = socket(PF_INET, SOCK_STREAM, 0);
+    IRC_FD = socket(remote_is_ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, 0);
+                /* Request file desc for IRC client socket */
 
 	if (IRC_FD == -1) {
 		switch(errno) {
@@ -227,17 +266,19 @@ static void irc_init(void)
 	}
 
 	if (CONF_BINDIRC) {
-		if (!inet_aton(CONF_BINDIRC, &(IRC_LOCAL.sin_addr))) {
-			log("IRC -> bind(): %s is an invalid address",
-			    CONF_BINDIRC);
-			exit(EXIT_FAILURE);
-		}
-
-		IRC_LOCAL.sin_family = AF_INET;
-		IRC_LOCAL.sin_port = 0;
-
-		if (bind(IRC_FD, (struct sockaddr *)&IRC_LOCAL,
-		    sizeof(struct sockaddr_in)) == -1) {
+        	if (bindto_ipv6) {
+            		if (!inetpton(AF_INET6, CONF_BINDIRC, &(IRC_LOCAL.ins.in6.s6_addr))) {
+                		log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
+                 		exit(1);
+            		}   
+        	} else {
+            		if (!inetpton(AF_INET, CONF_BINDIRC, &(IRC_LOCAL.ins.in4.s_addr))) {
+                		log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
+                 		exit(1);
+            		}
+        	}
+		copy_s_addr(bsadr.sas.sa6.sin6_addr.s6_addr, IRC_LOCAL.ins.in6.s6_addr);
+		if (bind(IRC_FD, (struct sockaddr *)&bsadr, sizeof(struct bopm_sockaddr))) {
 			switch(errno) {
 			case EACCES:
 				log("IRC -> bind(): No access to bind to %s",
@@ -435,11 +476,11 @@ static void irc_parse(void)
 	/* 001 is sent on initial connect to the IRC host. */
 
 	if (!strcasecmp(token[1], "001")) { 
-		do_perform();
 		if (CONF_AWAY)
 			irc_send("AWAY :%s (/msg %s INFO)", CONF_AWAY, CONF_NICK);
 		irc_send("OPER %s", CONF_OPER);
 		irc_send("MODE %s %s", CONF_NICK, CONF_OPER_MODES);      
+                do_perform();
 		return;
 	}   
     
@@ -639,6 +680,8 @@ static void do_perform(void)
 		/* Identify to nickserv. */
 		irc_send(CONF_NICKSERV_IDENT);
 	}
+
+	log("CONF_CHANNELS %s", CONF_CHANNELS);
 	
 	/* Join all listed channels. */
 	if (CONF_KEYS)
@@ -675,6 +718,7 @@ static void do_connect(char *addr, char *irc_nick, char *irc_user,
     char *irc_addr, char *conn_notice)
 {
 	string_list *list;
+	int aftype;
 
 	/*
 	 * Check that neither the user's IP nor host matches anything in our
@@ -694,7 +738,14 @@ static void do_connect(char *addr, char *irc_nick, char *irc_user,
 	    dnsbl_check(addr, irc_nick, irc_user, irc_addr))
 		return;
 
-	scan_connect(addr, irc_addr, irc_nick, irc_user, 0, conn_notice);
+	/* FIXME: Ipv6 is required here */
+
+	if (strchr(irc_addr, ':'))
+	    aftype = AF_INET6;
+	else
+	    aftype = AF_INET;
+
+	scan_connect(addr, irc_addr, irc_nick, irc_user, 0, AF_INET, conn_notice);
 }
 
 /*
