@@ -154,18 +154,18 @@ static void dnsbl_positive(struct scan_struct *ss, struct BlacklistConf *bl,
       irc_send("PRIVMSG %s :CHECK -> DNSBL -> %s appears in BL zone %s (%s)",
             ss->manual_target->name, ss->ip, bl->name, text_type);
    }
-   else
+   else if(!ss->positive)
    {
       /* Only report it if no other scans have found positives yet. */
-      if(!ss->positive)
-      {
-         scan_positive(ss, (bl->kline[0] ? bl->kline : IRCItem->kline),
-               text_type);
+      scan_positive(ss, (bl->kline[0] ? bl->kline : IRCItem->kline),
+            text_type);
 
-         log_printf("DNSBL -> %s!%s@%s appears in BL zone %s (%s)",
-               ss->irc_nick, ss->irc_username, ss->irc_hostname, bl->name,
-               text_type);
-      }
+      irc_send_channels("DNSBL -> %s!%s@%s appears in BL zone %s (%s)",
+            ss->irc_nick, ss->irc_username, ss->irc_hostname, bl->name,
+            text_type);
+      log_printf("DNSBL -> %s!%s@%s appears in BL zone %s (%s)",
+            ss->irc_nick, ss->irc_username, ss->irc_hostname, bl->name,
+            text_type);
    }
 
    /* record stat */
