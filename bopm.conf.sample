@@ -363,7 +363,7 @@ OPM {
 #	    name = "dnsbl.njabl.org";
 #	    type = "A record reply";
 #	    reply {
-#	       8 = "Open proxy";
+#	       9 = "Open proxy";
 #	    };
 #	    ban_unknown = no;
 #	    kline = "KLINE *@%h :Open proxy found on your host, please visit www.njabl.org/cgi-bin/lookup.cgi?query=%i";
