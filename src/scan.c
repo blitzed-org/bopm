@@ -167,8 +167,11 @@ void scan_init()
       opm_config(scs->scanner, OPM_CONFIG_SCAN_PORT, &(sc->target_port));
       opm_config(scs->scanner, OPM_CONFIG_TIMEOUT, &(sc->timeout));
       opm_config(scs->scanner, OPM_CONFIG_MAX_READ, &(sc->max_read));
-      opm_config(scs->scanner, OPM_CONFIG_TARGET_STRING, sc->target_string);
 
+      /* add target strings */
+      LIST_FOREACH(p1, sc->target_string->head)
+         opm_config(scs->scanner, OPM_CONFIG_TARGET_STRING, (char *) p1->data);
+      
 
       /* Setup callbacks */
       opm_callback(scs->scanner, OPM_CALLBACK_OPENPROXY, &scan_open_proxy, scs);

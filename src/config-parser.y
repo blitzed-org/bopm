@@ -310,10 +310,11 @@ scanner_entry:
    item->fd = 512;
    item->target_ip = DupString("127.0.0.1");
    item->target_port = 6667;
-   item->target_string = DupString("Looking up your hostname...");
    item->timeout = 30;
    item->max_read = 4096;
+
    item->protocols = list_create();
+   item->target_string = list_create();
 
    node = node_create(item);
 
@@ -360,8 +361,11 @@ scanner_target_ip: TARGET_IP '=' STRING ';'
 scanner_target_string: TARGET_STRING '=' STRING ';'
 {
    struct ScannerConf *item = (struct ScannerConf *) tmp;
-   MyFree(item->target_string);
-   item->target_string = DupString($3);
+
+   node_t *node;
+   node = node_create($3);
+
+   list_add(item->target_string, node);
 };
 
 scanner_fd: FD '=' NUMBER ';'

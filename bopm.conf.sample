@@ -70,8 +70,17 @@ scanner {
         /* Target port to tell the proxy to connect to */
         target_port   = 6667;
 
-        /* String target IP:PORT will send back to verify */
+
+        /* 
+           String target IP:PORT will send back to verify 
+           Multiple target strings are allowed.
+        */
+
+        /* Usually first line sent to client on connection to ircd */                                                            
         target_string = "Looking up your hostname...";
+
+        /* Catch throttled proxies on hybrid */
+        target_string = "ERROR :Trying to reconnect too fast.";
 };
 
 scanner {

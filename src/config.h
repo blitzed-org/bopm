@@ -67,10 +67,11 @@ struct ScannerConf
 
    char   *target_ip;
    int     target_port;
-   char   *target_string;
 
    int     timeout;
    int     max_read;
+
+   list_t  *target_string;
 };
 
 struct ProtocolConf
