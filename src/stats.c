@@ -1,23 +1,23 @@
 /*
 Copyright (C) 2002  Erik Fears
-
+ 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
-
+ 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
+ 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-
+ 
       Foundation, Inc.
       59 Temple Place - Suite 330
       Boston, MA  02111-1307, USA.
-
+ 
 */
 
 #include "setup.h"
@@ -40,56 +40,3 @@ along with this program; if not, write to the Free Software
 #include "scan.h"
 #include "stats.h"
 
-time_t STAT_START_TIME;
-unsigned int STAT_NUM_CONNECTS;
-unsigned int STAT_DNSBL_MATCHES;
-unsigned int STAT_DNSBL_REPORTS;
-
-extern protocol_hash SCAN_PROTOCOLS[];
-extern size_t SCAN_NUMPROTOCOLS;
-
-extern unsigned int FD_USE;
-
-void do_stats_init(void)
-{
-	STAT_START_TIME = time(NULL);
-	STAT_NUM_CONNECTS = 0;
-}
-
-void do_stats(const char *target)
-{
-	time_t now, uptime;
-	size_t i;
-
-	now = time(NULL);
-	uptime = now - STAT_START_TIME;
- 
-	irc_send("PRIVMSG %s :Uptime: %s", target, dissect_time(uptime));
-        irc_send("PRIVMSG %s :Using %d/%d file descriptors", target, FD_USE, CONF_FDLIMIT);
-
-	if (CONF_DNSBL_ZONE) {
-		irc_send("PRIVMSG %s :DNSBL: %u successful lookup%s from "
-		    "zone %s", target, STAT_DNSBL_MATCHES,
-		    STAT_DNSBL_MATCHES == 1 ? "" : "s", CONF_DNSBL_ZONE);
-	}
-
-	if(CONF_DNSBL_FROM && CONF_DNSBL_TO && CONF_SENDMAIL) {
-		irc_send("PRIVMSG %s :DNSBL: %u report%s sent",
-		    target, STAT_DNSBL_REPORTS,
-		    STAT_DNSBL_REPORTS == 1 ? "" : "s");
-	} else {
-		irc_send("PRIVMSG %s :DNSBL: reporting is disabled", target);
-	}
-	
-	for(i = 0; i < SCAN_NUMPROTOCOLS; i++) {
-		irc_send("PRIVMSG %s :Found %u %s (%d), %u open.", target,
-		    SCAN_PROTOCOLS[i].stat_num, SCAN_PROTOCOLS[i].type,
-		    SCAN_PROTOCOLS[i].port,SCAN_PROTOCOLS[i].stat_numopen);
-	}
-
-	irc_send("PRIVMSG %s :Number of connects: %u (%.2f/minute)",
-	    target, STAT_NUM_CONNECTS, STAT_NUM_CONNECTS ?
-	    (float)STAT_NUM_CONNECTS / ((float)uptime / 60.0) : 0.0);
-
-	return;
-}

@@ -1,23 +1,23 @@
 /*
 Copyright (C) 2002 Andy Smith
-
+ 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
-
+ 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
+ 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to:
-
+ 
       the Free Software Foundation, Inc.
       59 Temple Place - Suite 330
       Boston, MA  02111-1307, USA.
-
+ 
 */
 
 /*
@@ -29,24 +29,25 @@ along with this program; if not, write to:
 
 #include "setup.h"
 #include "dlclist.h"
+#include "malloc.h"
 
 /*
  * Create a new DLC list and return a pointer to it, or NULL on failure.
  */
 struct dlclist *dlclist_init(void)
 {
-	struct dlclist *l;
+    struct dlclist *l;
 
-	l = malloc(sizeof(*l));
+    l = MyMalloc(sizeof(*l));
 
-	if (!l)
-		return(NULL);
-	
-	l->next = l;
-	l->prev = l;
-	l->val = NULL;
+    if (!l)
+        return(NULL);
 
-	return(l);
+    l->next = l;
+    l->prev = l;
+    l->val = NULL;
+
+    return(l);
 }
 
 /*
@@ -55,9 +56,9 @@ struct dlclist *dlclist_init(void)
  */
 void dlclist_delete_node(struct dlclist *n)
 {
-	n->prev->next = n->next;
-	n->next->prev = n->prev;
-	free(n);
+    n->prev->next = n->next;
+    n->next->prev = n->prev;
+    MyFree(n);
 }
 
 /*
@@ -66,10 +67,10 @@ void dlclist_delete_node(struct dlclist *n)
  */
 void dlclist_destroy(struct dlclist *head)
 {
-	while (head->next != head)
-		dlclist_delete_node(head->next);
+    while (head->next != head)
+        dlclist_delete_node(head->next);
 
-	free(head);
+    MyFree(head);
 }
 
 /*
@@ -78,20 +79,20 @@ void dlclist_destroy(struct dlclist *head)
  */
 struct dlclist *dlclist_insert_before(struct dlclist *n, void *v)
 {
-	struct dlclist *t;
+    struct dlclist *t;
 
-	t = malloc(sizeof(*t));
+    t = MyMalloc(sizeof(*t));
 
-	if (!t)
-		return(NULL);
+    if (!t)
+        return(NULL);
 
-	t->val = v;
-	t->next = n;
-	t->prev = n->prev;
-	t->next->prev = t;
-	t->prev->next = t;
+    t->val = v;
+    t->next = n;
+    t->prev = n->prev;
+    t->next->prev = t;
+    t->prev->next = t;
 
-	return(t);
+    return(t);
 }
 
 /*
@@ -100,5 +101,5 @@ struct dlclist *dlclist_insert_before(struct dlclist *n, void *v)
  */
 struct dlclist *dlclist_insert_after(struct dlclist *n, void *v)
 {
-	return(dlclist_insert_before(n->next, v));
+    return(dlclist_insert_before(n->next, v));
 }

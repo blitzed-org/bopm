@@ -1,23 +1,23 @@
 /*
 Copyright (C) 2002 by the past and present ircd coders, and others.
-
+ 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
-
+ 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
+ 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-
+ 
       Foundation, Inc.
       59 Temple Place - Suite 330
       Boston, MA  02111-1307, USA.
-
+ 
 */
 
 /*
@@ -62,37 +62,38 @@ along with this program; if not, write to the Free Software
 extern const unsigned char ToLowerTab[];
 #define ToLower(c) (ToLowerTab[(unsigned char)(c)])
 
-/* 
+/*
  * From: Thomas Helvey <tomh@inxpress.net>
  */
-static const char *IpQuadTab[] = {
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-    "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
-    "20", "21", "22", "23", "24", "25", "26", "27", "28", "29",
-    "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
-    "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
-    "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
-    "60", "61", "62", "63", "64", "65", "66", "67", "68", "69",
-    "70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
-    "80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
-    "90", "91", "92", "93", "94", "95", "96", "97", "98", "99",
-    "100", "101", "102", "103", "104", "105", "106", "107", "108", "109",
-    "110", "111", "112", "113", "114", "115", "116", "117", "118", "119",
-    "120", "121", "122", "123", "124", "125", "126", "127", "128", "129",
-    "130", "131", "132", "133", "134", "135", "136", "137", "138", "139",
-    "140", "141", "142", "143", "144", "145", "146", "147", "148", "149",
-    "150", "151", "152", "153", "154", "155", "156", "157", "158", "159",
-    "160", "161", "162", "163", "164", "165", "166", "167", "168", "169",
-    "170", "171", "172", "173", "174", "175", "176", "177", "178", "179",
-    "180", "181", "182", "183", "184", "185", "186", "187", "188", "189",
-    "190", "191", "192", "193", "194", "195", "196", "197", "198", "199",
-    "200", "201", "202", "203", "204", "205", "206", "207", "208", "209",
-    "210", "211", "212", "213", "214", "215", "216", "217", "218", "219",
-    "220", "221", "222", "223", "224", "225", "226", "227", "228", "229",
-    "230", "231", "232", "233", "234", "235", "236", "237", "238", "239",
-    "240", "241", "242", "243", "244", "245", "246", "247", "248", "249",
-    "250", "251", "252", "253", "254", "255"
-};
+static const char *IpQuadTab[] =
+    {
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+        "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+        "20", "21", "22", "23", "24", "25", "26", "27", "28", "29",
+        "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
+        "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
+        "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
+        "60", "61", "62", "63", "64", "65", "66", "67", "68", "69",
+        "70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
+        "80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
+        "90", "91", "92", "93", "94", "95", "96", "97", "98", "99",
+        "100", "101", "102", "103", "104", "105", "106", "107", "108", "109",
+        "110", "111", "112", "113", "114", "115", "116", "117", "118", "119",
+        "120", "121", "122", "123", "124", "125", "126", "127", "128", "129",
+        "130", "131", "132", "133", "134", "135", "136", "137", "138", "139",
+        "140", "141", "142", "143", "144", "145", "146", "147", "148", "149",
+        "150", "151", "152", "153", "154", "155", "156", "157", "158", "159",
+        "160", "161", "162", "163", "164", "165", "166", "167", "168", "169",
+        "170", "171", "172", "173", "174", "175", "176", "177", "178", "179",
+        "180", "181", "182", "183", "184", "185", "186", "187", "188", "189",
+        "190", "191", "192", "193", "194", "195", "196", "197", "198", "199",
+        "200", "201", "202", "203", "204", "205", "206", "207", "208", "209",
+        "210", "211", "212", "213", "214", "215", "216", "217", "218", "219",
+        "220", "221", "222", "223", "224", "225", "226", "227", "228", "229",
+        "230", "231", "232", "233", "234", "235", "236", "237", "238", "239",
+        "240", "241", "242", "243", "244", "245", "246", "247", "248", "249",
+        "250", "251", "252", "253", "254", "255"
+    };
 
 
 /*
@@ -194,9 +195,11 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, unsigned int 
      * to use pointer overlays.  All the world's not a VAX.
      */
     char tmp[sizeof "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255"], *tp;
-    struct {
+    struct
+    {
         int base, len;
-    } best, cur;
+    }
+    best, cur;
     u_int words[IN6ADDRSZ / INT16SZ];
     int i;
 
@@ -210,22 +213,28 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, unsigned int 
         words[i / 2] = (src[i] << 8) | src[i + 1];
     best.base = -1;
     cur.base = -1;
-    for (i = 0; i < (IN6ADDRSZ / INT16SZ); i++) {
-        if (words[i] == 0) {
+    for (i = 0; i < (IN6ADDRSZ / INT16SZ); i++)
+    {
+        if (words[i] == 0)
+        {
             if (cur.base == -1)
                 cur.base = i, cur.len = 1;
             else
                 cur.len++;
-        } else {
-            if (cur.base != -1) {
+        }
+        else
+        {
+            if (cur.base != -1)
+            {
                 if (best.base == -1 || cur.len > best.len)
                     best = cur;
                 cur.base = -1;
             }
         }
     }
-    if (cur.base != -1) {  
-        if (best.base == -1 || cur.len > best.len) 
+    if (cur.base != -1)
+    {
+        if (best.base == -1 || cur.len > best.len)
             best = cur;
     }
     if (best.base != -1 && best.len < 2)
@@ -235,9 +244,11 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, unsigned int 
      * Format the result.
      */
     tp = tmp;
-    for (i = 0; i < (IN6ADDRSZ / INT16SZ); i++) {
+    for (i = 0; i < (IN6ADDRSZ / INT16SZ); i++)
+    {
         /* Are we inside the best run of 0x00's? */
-        if (best.base != -1 && i >= best.base && i < (best.base + best.len)) {
+        if (best.base != -1 && i >= best.base && i < (best.base + best.len))
+        {
             if (i == best.base)
                 *tp++ = ':';
             continue;
@@ -246,7 +257,8 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, unsigned int 
         if (i != 0)
             *tp++ = ':';
         /* Is this address an encapsulated IPv4? */
-        if (i == 6 && best.base == 0 && (best.len == 6 || (best.len == 5 && words[5] == 0xffff))) {
+        if (i == 6 && best.base == 0 && (best.len == 6 || (best.len == 5 && words[5] == 0xffff)))
+        {
             if (!inet_ntop4(src + 12, tp, sizeof tmp - (tp - tmp)))
                 return (NULL);
             tp += strlen(tp);
@@ -264,7 +276,8 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, unsigned int 
      * Check for overflow, copy, and we're done.
      */
 
-    if ((tp - tmp) > size) {
+    if ((tp - tmp) > size)
+    {
         return (NULL);
     }
     return strcpy(dst, tmp);
@@ -281,21 +294,24 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, unsigned int 
  */
 const char *inetntop(int af, const void *src, char *dst, unsigned int size)
 {
-    switch (af) {
-        case AF_INET:
-            return (inet_ntop4(src, dst, size));
+    switch (af)
+    {
+    case AF_INET:
+        return (inet_ntop4(src, dst, size));
 #ifdef IPV6
-        case AF_INET6: 
-            if (IN6_IS_ADDR_V4MAPPED((const struct in6_addr *) src) ||
-                    IN6_IS_ADDR_V4COMPAT((const struct in6_addr *) src))
-                return (inet_ntop4
-                        ((unsigned char *) &((struct in6_addr *) src)->s6_addr[12], dst, size));
-            else
-                return (inet_ntop6(src, dst, size));
+
+    case AF_INET6:
+        if (IN6_IS_ADDR_V4MAPPED((const struct in6_addr *) src) ||
+                IN6_IS_ADDR_V4COMPAT((const struct in6_addr *) src))
+            return (inet_ntop4
+                    ((unsigned char *) &((struct in6_addr *) src)->s6_addr[12], dst, size));
+        else
+            return (inet_ntop6(src, dst, size));
 
 #endif
-        default:
-            return (NULL);
+
+    default:
+        return (NULL);
     }
     /* NOTREACHED */
 }
@@ -329,41 +345,47 @@ const char *inetntop(int af, const void *src, char *dst, unsigned int size)
  */
 
 static int inet_pton4(src, dst)
-     const char *src;
-     unsigned char *dst;
+const char *src;
+unsigned char *dst;
 {
-int saw_digit, octets, ch;
-unsigned char tmp[INADDRSZ], *tp;
+    int saw_digit, octets, ch;
+    unsigned char tmp[INADDRSZ], *tp;
 
-    saw_digit = 0;  
+    saw_digit = 0;
     octets = 0;
     *(tp = tmp) = 0;
-    while ((ch = *src++) != '\0') {
+    while ((ch = *src++) != '\0')
+    {
 
-        if (ch >= '0' && ch <= '9') {
-unsigned int new = *tp * 10 + (ch - '0');
+        if (ch >= '0' && ch <= '9')
+        {
+            unsigned int new = *tp * 10 + (ch - '0');
 
             if (new > 255)
                 return (0);
             *tp = new;
-            if (!saw_digit) {
+            if (!saw_digit)
+            {
                 if (++octets > 4)
-                    return (0);   
+                    return (0);
                 saw_digit = 1;
-            }   
-        } else if (ch == '.' && saw_digit) {
+            }
+        }
+        else if (ch == '.' && saw_digit)
+        {
             if (octets == 4)
                 return (0);
             *++tp = 0;
             saw_digit = 0;
-        } else  
+        }
+        else
             return (0);
     }
-    if (octets < 4) 
+    if (octets < 4)
         return (0);
     memcpy(dst, tmp, INADDRSZ);
     return (1);
-}  
+}
 
 #ifdef IPV6
 /* int
@@ -381,14 +403,14 @@ unsigned int new = *tp * 10 + (ch - '0');
  */
 
 static int inet_pton6(src, dst)
-     const char *src;
-     unsigned char *dst;
+const char *src;
+unsigned char *dst;
 {
-static const char xdigits[] = "0123456789abcdef";
-unsigned char tmp[IN6ADDRSZ], *tp, *endp, *colonp;
-const char *curtok;
-int ch, saw_xdigit;
-unsigned int val;
+    static const char xdigits[] = "0123456789abcdef";
+    unsigned char tmp[IN6ADDRSZ], *tp, *endp, *colonp;
+    const char *curtok;
+    int ch, saw_xdigit;
+    unsigned int val;
 
     tp = memset(tmp, '\0', IN6ADDRSZ);
     endp = tp + IN6ADDRSZ;
@@ -400,28 +422,34 @@ unsigned int val;
     curtok = src;
     saw_xdigit = 0;
     val = 0;
-    while ((ch = ToLower(*src++)) != '\0') {
-const char *pch;
+    while ((ch = ToLower(*src++)) != '\0')
+    {
+        const char *pch;
 
-       pch = strchr(xdigits, ch);
-        if (pch != NULL) {
+        pch = strchr(xdigits, ch);
+        if (pch != NULL)
+        {
             val <<= 4;
             val |= (pch - xdigits);
-            if (val > 0xffff)  
+            if (val > 0xffff)
                 return (0);
             saw_xdigit = 1;
             continue;
         }
-        if (ch == ':') {   
+        if (ch == ':')
+        {
             curtok = src;
-            if (!saw_xdigit) {
+            if (!saw_xdigit)
+            {
                 if (colonp)
                     return (0);
                 colonp = tp;
                 continue;
-            } else if (*src == '\0') {
+            }
+            else if (*src == '\0')
+            {
                 return (0);
-            }  
+            }
             if (tp + INT16SZ > endp)
                 return (0);
             *tp++ = (unsigned char) (val >> 8) & 0xff;
@@ -431,33 +459,39 @@ const char *pch;
             continue;
         }
 
-        if (*src != '\0' && ch == '.') {
-            if (((tp + INADDRSZ) <= endp) && inet_pton4(curtok, tp) > 0) {
+        if (*src != '\0' && ch == '.')
+        {
+            if (((tp + INADDRSZ) <= endp) && inet_pton4(curtok, tp) > 0)
+            {
                 tp += INADDRSZ;
                 saw_xdigit = 0;
                 break;          /* '\0' was seen by inet_pton4(). */
             }
-        } else
+        }
+        else
             continue;
         return (0);
     }
-    if (saw_xdigit) {
+    if (saw_xdigit)
+    {
         if (tp + INT16SZ > endp)
             return (0);
         *tp++ = (unsigned char) (val >> 8) & 0xff;
         *tp++ = (unsigned char) val & 0xff;
     }
-    if (colonp != NULL) {
+    if (colonp != NULL)
+    {
         /*
          * Since some memmove()'s erroneously fail to handle
          * overlapping regions, we'll do the shift by hand.
          */
-const int n = tp - colonp;
-int i;
+        const int n = tp - colonp;
+        int i;
 
         if (tp == endp)
             return (0);
-        for (i = 1; i <= n; i++) {
+        for (i = 1; i <= n; i++)
+        {
             endp[-i] = colonp[n - i];
             colonp[n - i] = 0;
         }
@@ -469,26 +503,31 @@ int i;
     return (1);
 }
 #endif
-int inetpton(af, src, dst) 
-     int af;
-     const char *src;
-     void *dst;
+int inetpton(af, src, dst)
+int af;
+const char *src;
+void *dst;
 {
-    switch (af) {             
-        case AF_INET:
-            return (inet_pton4(src, dst));
+    switch (af)
+    {
+    case AF_INET:
+        return (inet_pton4(src, dst));
 #ifdef IPV6
-        case AF_INET6:   
-            /* Somebody might have passed as an IPv4 address this is sick but it works */
-            if (inet_pton4(src, dst)) {
-char tmp[HOSTIPLEN];
-                sprintf(tmp, "::ffff:%s", src);
-                return (inet_pton6(tmp, dst));
-            } else
-                return (inet_pton6(src, dst));
+
+    case AF_INET6:
+        /* Somebody might have passed as an IPv4 address this is sick but it works */
+        if (inet_pton4(src, dst))
+        {
+            char tmp[HOSTIPLEN];
+            sprintf(tmp, "::ffff:%s", src);
+            return (inet_pton6(tmp, dst));
+        }
+        else
+            return (inet_pton6(src, dst));
 #endif
-        default:
-            return (-1);
+
+    default:
+        return (-1);
     }
     /* NOTREACHED */
 }
@@ -504,18 +543,24 @@ char tmp[HOSTIPLEN];
 
 struct hostent *bopm_gethostbyname(const char *name)
 {
-struct hostent *he;
+    struct hostent *he;
 
 #if defined(HAVE_GETHOSTBYNAME2)
-    if (strchr(name, ':')) {
+
+    if (strchr(name, ':'))
+    {
         return gethostbyname2(name, AF_INET6);
-    } else {
-	he = gethostbyname2(name, AF_INET);
-	if (h_errno == NO_ADDRESS) {
-	    return gethostbyname2(name, AF_INET6);
-	} else
-	    return he;
-    }	
+    }
+    else
+    {
+        he = gethostbyname2(name, AF_INET);
+        if (h_errno == NO_ADDRESS)
+        {
+            return gethostbyname2(name, AF_INET6);
+        }
+        else
+            return he;
+    }
 #else
     return gethostbyname(name);
 #endif

@@ -1,6 +1,6 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
-  
+
 /* The default name for conf, log, pid files */
 #define DEFAULTNAME "bopm"
 
@@ -20,7 +20,7 @@
 
 #define MAX_POLL 1024
 
-/* Client buffer size for scan 
+/* Client buffer size for scan
  * Increase as needed, but should never need to be be over 512 bytes */
 
 #define SCANBUFFER 128
@@ -42,5 +42,5 @@
  * connecting (hundreds per minute).  Default is 12 hours.
  */
 #define NEG_CACHE_REBUILD (60 * 60 * 12)
-     
+
 #endif /* OPTIONS_H */

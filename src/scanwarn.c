@@ -1,23 +1,23 @@
 /*
 Copyright (C) 2002 Andy Smith
-
+ 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
-
+ 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
+ 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to:
-
+ 
       the Free Software Foundation, Inc.
       59 Temple Place - Suite 330
       Boston, MA  02111-1307, USA.
-
+ 
 */
 
 /*
@@ -40,9 +40,9 @@ along with this program; if not, write to:
 #include "config.h"
 #include "options.h"
 #include "scanwarn.h"
+#include "malloc.h"
 
 extern int OPT_DEBUG;
-extern string_list *CONF_SCAN_WARNING;
 
 struct dlclist *warnq = NULL;
 
@@ -51,22 +51,24 @@ struct dlclist *warnq = NULL;
  */
 void do_scanwarn_init(void)
 {
-	struct dlclist *n;
-	
-	if (warnq) {
-		/*
-		 * There's an existing queue; delete it all and start
-		 * afresh.
-		 */
-		for (n = warnq->next; n->next != warnq; n = n->next) {
-			if (n->val)
-				free(n->val);
-		}
-		
-		dlclist_destroy(warnq);
-	}
+    struct dlclist *n;
 
-	warnq = dlclist_init();
+    if (warnq)
+    {
+        /*
+         * There's an existing queue; delete it all and start
+         * afresh.
+         */
+        for (n = warnq->next; n->next != warnq; n = n->next)
+        {
+            if (n->val)
+                MyFree(n->val);
+        }
+
+        dlclist_destroy(warnq);
+    }
+
+    warnq = dlclist_init();
 }
 
 /*
@@ -74,31 +76,7 @@ void do_scanwarn_init(void)
  */
 void add_warning(const char *nick)
 {
-	string_list *list;
-	struct scanwarn *w, *t;
-	struct dlclist *n, *x;
-
-	if (OPT_DEBUG >= 3)
-		log("Enqueueing warning for target '%s'", nick);
-
-	for (list = (string_list *)CONF_SCAN_WARNING->next; list;
-	    list = list->next) {
-		w = malloc(sizeof(*w));
-
-		strncpy(w->target, nick, NICKMAX);
-
-		/*
-		 * We never change these strings and neither does anything
-		 * else, so it is safe just to point to them.
-		 */
-		w->text = strdup(list->text);
-
-		dlclist_insert_after(warnq, w);
-
-		for (x = warnq->next; x != warnq; x = x->next) {
-			t = x->val;
-		}
-	}
+    //FIXME
 }
 
 /*
@@ -107,38 +85,42 @@ void add_warning(const char *nick)
  */
 void scanwarn_timer(void)
 {
-	unsigned int i;
-	struct dlclist *n;
-	struct scanwarn *w;
+    unsigned int i;
+    struct dlclist *n;
+    struct scanwarn *w;
 
-	for (i = 0; i < NOTICES_PER_LOOP; i++) {
-		n = warnq->prev;
-	
-		if (n == warnq) {
-			/* Queue is empty. */
-			break;
-		}
+    for (i = 0; i < NOTICES_PER_LOOP; i++)
+    {
+        n = warnq->prev;
 
-		w = n->val;
+        if (n == warnq)
+        {
+            /* Queue is empty. */
+            break;
+        }
 
-		if (!w) {
-			/*
-			 * Somehow it managed to not have a valid scanwarn
-			 * structure there.
-			 */
-			log("WARNING: I've just found a node on the "
-			    "warning queue that didn't have a scanwarn "
-			    "structure!");
-			break;
-		}
+        w = n->val;
 
-		if (OPT_DEBUG >= 3) {
-			log("Sending scan warning to '%s': %s", w->target,
-			    w->text);
-		}
+        if (!w)
+        {
+            /*
+             * Somehow it managed to not have a valid scanwarn
+             * structure there.
+             */
+            log("WARNING: I've just found a node on the "
+                "warning queue that didn't have a scanwarn "
+                "structure!");
+            break;
+        }
 
-		irc_send("NOTICE %s :%s", w->target, w->text);
-		free(n->val);
-		dlclist_delete_node(n);
-	}
+        if (OPT_DEBUG >= 3)
+        {
+            log("Sending scan warning to '%s': %s", w->target,
+                w->text);
+        }
+
+        irc_send("NOTICE %s :%s", w->target, w->text);
+        MyFree(n->val);
+        dlclist_delete_node(n);
+    }
 }

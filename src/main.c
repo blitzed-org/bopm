@@ -1,23 +1,23 @@
 /*
 Copyright (C) 2002  Erik Fears
-
+ 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
-
+ 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
+ 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-
+ 
       Foundation, Inc.
       59 Temple Place - Suite 330
       Boston, MA  02111-1307, USA.
-
+ 
 */
 
 #include "setup.h"
@@ -46,9 +46,10 @@ along with this program; if not, write to the Free Software
 #include "stats.h"
 #include "negcache.h"
 #include "options.h"
+#include "malloc.h"
 
-extern string_list *CONF_SCAN_WARNING;
-extern unsigned int CONF_NEG_CACHE;
+#define CONF_PIDFILE "bopm.pid"
+
 extern struct cnode *nc_head;
 
 static RETSIGTYPE do_signal(int signum);
@@ -57,6 +58,9 @@ int ALARMED = 0;
 
 unsigned int OPT_DEBUG = 0;
 char *CONFNAME = DEFAULTNAME;
+
+#define BOPM_ETCDIR "etc"
+#define BOPM_LOGDIR "log"
 
 char *CONFDIR = BOPM_ETCDIR;
 char *LOGDIR = BOPM_LOGDIR;
@@ -67,152 +71,160 @@ struct sigaction INTACTION;
 
 int main(int argc, char **argv)
 {
-	char spid[16];
-	pid_t pid;
-	int c, lenc, lenl, lenp;
-	unsigned int nc_counter;
-	FILE *pidout;
+    char spid[16];
+    pid_t pid;
+    int c, lenc, lenl, lenp;
+    unsigned int nc_counter;
+    FILE *pidout;
 
-	nc_counter = 0;
-	
-	do_stats_init();
-	do_scan_init();
+    nc_counter = 0;
 
-	while (1) {
-		c = getopt(argc, argv, "dc:");
+    while (1)
+    {
+        c = getopt(argc, argv, "dc:");
 
-		if (c == -1)
-			break;
+        if (c == -1)
+            break;
 
-		switch (c) {
-		case 'c':
-			CONFNAME = strdup(optarg);
-			break;
-		case 'd':
-			OPT_DEBUG++;
-			break;
-		case '?':
-		default:
-			/* Unknown arg, guess we'll just do nothing for now. */
-			break;
-		}
-	}	
+        switch (c)
+        {
+        case 'c':
+            CONFNAME = strdup(optarg);
+            break;
+        case 'd':
+            OPT_DEBUG++;
+            break;
+        case '?':
+        default:
+            /* Unknown arg, guess we'll just do nothing for now. */
+            break;
+        }
+    }
 
-	lenc = strlen(CONFDIR) + strlen(CONFNAME) + strlen(CONFEXT) + 3;
-	lenl = strlen(LOGDIR) + strlen(CONFNAME) + strlen(LOGEXT) + 3;
-	lenp = strlen(LOGDIR) + strlen(CONFNAME) + strlen(PIDEXT) + 3;
+    lenc = strlen(CONFDIR) + strlen(CONFNAME) + strlen(CONFEXT) + 3;
+    lenl = strlen(LOGDIR) + strlen(CONFNAME) + strlen(LOGEXT) + 3;
+    lenp = strlen(LOGDIR) + strlen(CONFNAME) + strlen(PIDEXT) + 3;
 
-	CONFFILE = (char *) malloc(lenc * sizeof(*CONFFILE));
-	LOGFILE = (char *) malloc(lenl * sizeof(*LOGFILE));
+    CONFFILE = (char *) MyMalloc(lenc * sizeof(*CONFFILE));
+    LOGFILE = (char *) MyMalloc(lenl * sizeof(*LOGFILE));
 
-	snprintf(CONFFILE, lenc, "%s/%s.%s", CONFDIR, CONFNAME, CONFEXT);
-	snprintf(LOGFILE, lenl, "%s/%s.%s", LOGDIR, CONFNAME, LOGEXT);
+    snprintf(CONFFILE, lenc, "%s/%s.%s", CONFDIR, CONFNAME, CONFEXT);
+    snprintf(LOGFILE, lenl, "%s/%s.%s", LOGDIR, CONFNAME, LOGEXT);
 
-	/* Fork off. */
+    /* Fork off. */
 
-	if (!OPT_DEBUG) {
-		if ((pid = fork()) < 0) {
-			perror("fork()");
-			exit(EXIT_FAILURE);
-		} else if (pid != 0) {
-			_exit(EXIT_SUCCESS);
-		}
+    if (!OPT_DEBUG)
+    {
+        if ((pid = fork()) < 0)
+        {
+            perror("fork()");
+            exit(EXIT_FAILURE);
+        }
+        else if (pid != 0)
+        {
+            _exit(EXIT_SUCCESS);
+        }
 
-		/* Get us in our own process group. */
-		if (setpgid(0, 0) < 0) {
-			perror("setpgid()");
-			exit(EXIT_FAILURE);
-		}
+        /* Get us in our own process group. */
+        if (setpgid(0, 0) < 0)
+        {
+            perror("setpgid()");
+            exit(EXIT_FAILURE);
+        }
 
-		/* Reset file mode. */
-		/* shasta: o+w is BAD, mmkay? */
-		umask(002);
+        /* Reset file mode. */
+        /* shasta: o+w is BAD, mmkay? */
+        umask(002);
 
-		/* Close file descriptors. */
-		close(STDIN_FILENO);
-		close(STDOUT_FILENO);
-		close(STDERR_FILENO);
+        /* Close file descriptors. */
+        close(STDIN_FILENO);
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
 
-		log_open(LOGFILE); 
-	} else {
-		log("MAIN -> Debug level %d", OPT_DEBUG);
-	}
+        log_open(LOGFILE);
+    }
+    else
+    {
+        log("MAIN -> Debug level %d", OPT_DEBUG);
+    }
 
-	log("MAIN -> BOPM %s started.", VERSION);
-	log("MAIN -> Reading configuration file...");
+    log("MAIN -> BOPM %s started.", VERSION);
+    log("MAIN -> Reading configuration file...");
 
-	config_load(CONFFILE);
+    config_load(CONFFILE);
 
-	pid = getpid();
+    pid = getpid();
 
-	pidout = fopen(CONF_PIDFILE, "w");
-	snprintf(spid, 16, "%u", pid);
+    pidout = fopen(CONF_PIDFILE, "w");
+    snprintf(spid, 16, "%u", pid);
 
-	if (pidout) {
-		fwrite(spid, sizeof(char), strlen(spid), pidout);
-		fclose(pidout);
-	}
+    if (pidout)
+    {
+        fwrite(spid, sizeof(char), strlen(spid), pidout);
+        fclose(pidout);
+    }
 
-	/* Initialise negative cache */
-	if (CONF_NEG_CACHE)
-		nc_init(&nc_head);
+    /* Initialise negative cache */
+    //	if (CONF_NEG_CACHE)
+    //		nc_init(&nc_head);
 
-	if (CONF_SCAN_WARNING)
-		do_scanwarn_init();
+    //	if (CONF_SCAN_WARNING)
+    //		do_scanwarn_init();
 
-	/* Setup alarm & int handlers. */
- 
-	ALARMACTION.sa_handler = &(do_signal);  
-	ALARMACTION.sa_flags = SA_RESTART;
-	INTACTION.sa_handler = &(do_signal);
-    
-	sigaction(SIGALRM, &ALARMACTION, 0);
-	sigaction(SIGINT, &INTACTION, 0);
+    /* Setup alarm & int handlers. */
 
-	/* Ignore SIGPIPE. */
-	signal(SIGPIPE, SIG_IGN);
+    ALARMACTION.sa_handler = &(do_signal);
+    ALARMACTION.sa_flags = SA_RESTART;
+    INTACTION.sa_handler = &(do_signal);
 
-	alarm(1);
+    sigaction(SIGALRM, &ALARMACTION, 0);
+    sigaction(SIGINT, &INTACTION, 0);
 
-	while (1) {
-		irc_cycle();
-		scan_cycle();
+    /* Ignore SIGPIPE. */
+    signal(SIGPIPE, SIG_IGN);
 
-		if (ALARMED) {
-			irc_timer();
-			if (CONF_SCAN_WARNING)
-				scanwarn_timer();
-			scan_timer();
-			ALARMED = 0;
+    alarm(1);
 
-			if (CONF_NEG_CACHE) {
-				if (nc_counter++ >= NEG_CACHE_REBUILD) {
-					/*
-					 * Time to rebuild the negative
-					 * cache.
-					 */
-					negcache_rebuild();
-					nc_counter = 0;
-				}
-			}
-		}
-	}
-    
-	if (!OPT_DEBUG)
-		log_close();
-	return(0);
+    while (1)
+    {
+        irc_cycle();
+
+        if (ALARMED)
+        {
+            irc_timer();
+            //if (CONF_SCAN_WARNING)
+            //	scanwarn_timer();
+            ALARMED = 0;
+
+            //			if (CONF_NEG_CACHE) {
+            //				if (nc_counter++ >= NEG_CACHE_REBUILD) {
+            /*
+             * Time to rebuild the negative
+             * cache.
+             */
+            //					negcache_rebuild();
+            //					nc_counter = 0;
+            //				}
+            //			}
+        }
+    }
+
+    if (!OPT_DEBUG)
+        log_close();
+    return(0);
 }
 
 static void do_signal(int signum)
 {
-	switch (signum) {
-	case SIGALRM:
-		ALARMED = 1;
-		alarm(1);
-		break;
-	case SIGINT:
-		log("MAIN -> Caught SIGINT, bye!");
-		exit(0);
-		break;
-	}
+    switch (signum)
+    {
+    case SIGALRM:
+        ALARMED = 1;
+        alarm(1);
+        break;
+    case SIGINT:
+        log("MAIN -> Caught SIGINT, bye!");
+        exit(0);
+        break;
+    }
 }
