@@ -41,7 +41,7 @@ IRC {
 	channel {
 	   name = "#bopm";
 	   #key = "somekey";
-		#invite = "privmsg chanserv :invite #bopm";
+	   #invite = "privmsg chanserv :invite #bopm";
 	};
 
 	/*
@@ -146,6 +146,10 @@ scanner {
 
 	/* Catch throttled proxies on hybrid */
 	target_string = "ERROR :Trying to reconnect too fast.";
+
+	/* Catch throttled proxies on bahamut */
+	#target_string = "ERROR :Your host is trying to (re)connect too fast -- throttled.";
+	
 };
 
 scanner {
