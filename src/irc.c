@@ -1077,7 +1077,9 @@ static void m_cannot_join(char **parv, unsigned int parc, char *msg, struct User
    if(parc < 5)
       return;
 
-   channel = get_channel(parv[3]);
+   /* Is it one of our channels? */
+   if((channel = get_channel(parv[3])) == NULL)
+      return;
 
    if(strlen(channel->invite) == 0)
       return;
