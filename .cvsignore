@@ -2,3 +2,5 @@
 *.bb*
 bopm
 bopm.conf
+bopm.log
+bopm.pid
