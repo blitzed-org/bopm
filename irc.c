@@ -90,17 +90,9 @@ void irc_cycle()
                                             
       switch(select((IRC_FD + 1), &IRC_READ_FDSET, 0, &IRC_EX_FDSET, &IRC_TIMEOUT))
        {
-            case -1:
-                  switch(errno)		 
-                   {        /* Bad file desc ?! */
-                       case EBADF: 
-                       case EINVAL:
-                              irc_reconnect();               
-                              return;
-                       default:
-                              return;
-                   }
-		  break;
+            case -1:         
+                  irc_reconnect();
+                  break;
             case 0:
 		  break;
             default:
@@ -310,6 +302,7 @@ void irc_reconnect()
   
   if(IRC_FD > 0)
       close(IRC_FD);
+
   IRC_FD = 0;  /* Set IRC_FD 0 for reconnection on next irc_cycle() */
 
   log("IRC -> Connectiong to (%s) lost, rehashing and reconnecting.", CONF_SERVER);
