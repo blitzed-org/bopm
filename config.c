@@ -173,7 +173,7 @@ void config_checkreq()
             log("CONFIG -> Parameter [%s] required but not defined in config.", hash[i].key);
             errfnd++;
          }
-        else if(OPT_DEBUG && hash[i].reqmet)
+        else if(OPT_DEBUG >= 3 && hash[i].reqmet)
          {
             switch(hash[i].type)
              {
