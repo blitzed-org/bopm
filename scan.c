@@ -73,6 +73,11 @@ unsigned int FD_USE = 0;                 /* Keep track of numbers of open FD's, 
 
 /*    Protocol Name, Port, Write Handler, Read Handler */ 
 
+/*
+ *    Always scan Cisco before Wingate, because cisco routers
+ *    only allow 4 connects at once.
+ */
+
 protocol_hash SCAN_PROTOCOLS[] = {
 
        {"HTTP"      , 8080, &(scan_w_squid),    0 ,0 },
@@ -80,8 +85,8 @@ protocol_hash SCAN_PROTOCOLS[] = {
        {"HTTP"      ,   80, &(scan_w_squid),    0 ,0 },
        {"Socks4"    , 1080, &(scan_w_socks4),   0 ,0 },
        {"Socks5"    , 1080, &(scan_w_socks5),   0 ,0 },
+       {"Cisco"     ,   23, &(scan_w_cisco),    0 ,0 },
        {"Wingate"   ,   23, &(scan_w_wingate),  0 ,0 },
-       {"Cisco"     ,   23, &(scan_w_cisco),    0 ,0 }
 };
 
 size_t SCAN_NUMPROTOCOLS;
