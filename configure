@@ -254,8 +254,8 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 # Identity of this package.
 PACKAGE_NAME='bopm'
 PACKAGE_TARNAME='bopm'
-PACKAGE_VERSION='2.40-RC1'
-PACKAGE_STRING='bopm 2.40-RC1'
+PACKAGE_VERSION='3.0pre1'
+PACKAGE_STRING='bopm 3.0pre1'
 PACKAGE_BUGREPORT=''
 
 ac_unique_file="src/opercmd.h"
