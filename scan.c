@@ -84,6 +84,8 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick, char *irc_user)
       scan_struct *newconn; 
       struct sockaddr_in  SCAN_LOCAL; /* For local bind() */ 
 
+      if(OPT_DEBUG)
+	      log("SCAN -> checking user %s!%s@%s", irc_nick, irc_user, irc_addr);
 
       memset(&SCAN_LOCAL, 0, sizeof(struct sockaddr_in));
 
