@@ -813,7 +813,7 @@ void scan_irckline(struct scan_struct *ss)
       /* continue to next character in format */
       pos++;
    }
-   irc_send(message);
+   irc_send("%s", message);
 }
 
 
