@@ -1,37 +1,90 @@
 Make
 ----
 
-    Edit options.h (compile options) and define as needed.
+    Quick Start:
 
-    Compilation of BOPM requires GNU Make.  No configuration scripts are
-neccessary, just 'make' (gmake on BSD systems) to compile the bot.
+    1. ./configure
+    2. make
+    3. copy bopm.conf.sample to bopm.conf and edit to suit
+    4. ./bopm
+
+    In detail:
+
+    ./configure has a few options which you might need:
+
+    --with-unreal       You need this if you are using Unreal ircd (any
+                        version).  At this stage Unreal also requires
+                        patching, you can get that patch from our web site.
+
+    --with-select       Use select() instead of poll() even if your system
+                        has poll()
+
+    There are some further options in options.h which may be moved to
+    configure at some point.  If you think you need to change these then we
+    assume you've read the code and know why.
+
+    Compilation of BOPM requires GNU Make (usually 'gmake' on BSD systems).
 
 Configuration
 -------------
 
     Rename bopm.conf.sample to bopm.conf, edit as needed.  Most options are
-self explanatory and contain a short description.
+    self explanatory and contain a short description.
+
+    Please take note of the TARGET_STRING, this is new in version 2 and may be
+    different for your ircd.  Because we now check that we really have
+    connected back onto IRC, bopm needs to be told what your ircd says during
+    the first part of a connection.  If you're not sure, the best thing to do
+    is telnet to your ircd from your shell, e.g.:
+
+      [andy@fullers bopm]$ telnet porkscratchings.blitzed.org 6667
+      Trying 207.8.219.202...
+      Connected to porkscratchings.blitzed.org.
+      Escape character is '^]'.
+      :porkscratchings.pa.us.blitzed.org NOTICE AUTH :*** Looking up your hostname...
+      :porkscratchings.pa.us.blitzed.org NOTICE AUTH :*** Checking Ident
+      :porkscratchings.pa.us.blitzed.org NOTICE AUTH :*** Got Ident response
+      :porkscratchings.pa.us.blitzed.org NOTICE AUTH :*** Found your hostname
+
+    The above should explain why we on Blitzed use "*** Looking up your
+    hostname...", just try to pick something in the first line of IRC output
+    (for efficiency reasons).
+
+    If you don't run an ircd at all (some people are using bopchecker for spam
+    checking, etc.) then you're going to have to use a bit of ingenuity.  You
+    basically need any port on your own machine that responds with a plain text
+    challenge that is unlikely to appear anywhere else.
+
+    NNTP servers are good examples because they give a banner.  Don't be
+    tempted to use port 25 (SMTP) because although it looks like just what you
+    want, too many networks transparent proxy outgoing port 25 connections to
+    their own smart host, so you'll miss many proxies.
+
+    The same applies if you run some kind of ircd that has no form of
+    banner at all (ircnet??).  Worst case is you'll need to make something
+    listen on one of your ports that gives some predictable string.
+
 
 Execution
 ---------
 
     Run bopm from the same directory as bopm.conf.  The bot will fork and
-connect to the IRC server immediately.  Any errors and debug information can be
-found in bopm.log.
+    connect to the IRC server immediately.  Any errors and debug information
+    can be found in bopm.log.
 
     You can tell bopm to use a different config file with the -c argument,
-this works the same way that wgmon's -c argument does, just give the name of
-the config file not including the ".conf".  This also affects the log and PID
-files i.e. ./bopm -c myserver will read from myserver.conf, log to myserver.log
-and write PID to myserver.pid.  If you do not use -c, the files bopm.conf,
-bopm.log and bopm.pid will be used by default.  This can be altered in
-options.h.
+    this works the same way that wgmon's -c argument does, just give the name
+    of the config file not including the ".conf".  This also affects the log
+    and PID files i.e. ./bopm -c myserver will read from myserver.conf, log to
+    myserver.log and write PID to myserver.pid.  If you do not use -c, the
+    files bopm.conf, bopm.log and bopm.pid will be used by default.  This can
+    be altered in options.h.
 
     Further debugging can be enabled by using one or more -d switches.  One or
-more -d switches will cause the bot to not fork on startup, and it will send
-all log messages to stederr (i.e., your terminal) instead of its logfile.  It
-will also cause extra debugging information that is not normally of interest to
-be sent to stderr.  Two or more -d switches will enable logging of all IRC
-traffic received and sent.
+    more -d switches will cause the bot to not fork on startup, and it will
+    send all log messages to stederr (i.e., your terminal) instead of its
+    logfile.  It will also cause extra debugging information that is not
+    normally of interest to be sent to stderr.  Two or more -d switches will
+    enable logging of all IRC traffic received and sent.
 
     The -c and -d arguments may appear in any order.
