@@ -484,11 +484,24 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
 }
 
 
+/* scan_gettype(int protocol)
+ *
+ *    Return human readable name of OPM PROTOCOL given OPM_TYPE_PROTOCOL
+ *
+ * Parameters:
+ *    protocol: Protocol to return (from libopm/src/opm_types.h)
+ *
+ * Return:
+ *    Pointer to static string containing human readable form of protocol
+ *    name
+ *
+ */
 
 char *scan_gettype(int protocol)
 {
    int i;
    static char *undef = "undefined";
+
    static struct protocol_assoc protocols[] = 
    {
       { OPM_TYPE_HTTP,     "HTTP"     },

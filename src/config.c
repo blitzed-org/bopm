@@ -106,6 +106,7 @@ void config_setup()
     IRCItem->server = DupString("myserver.blitzed.org");
     IRCItem->vhost = DupString("");
     IRCItem->connregex = DupString("\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*");
+    IRCItem->kline = DupString("KLINE %u@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%s for more information.");
 
 
     /* Setup options block defaults */
