@@ -46,6 +46,8 @@ along with this program; if not, write to the Free Software
 #include "options.h"
 #include "version.h"
 
+extern char *CONFFILE;
+
 /* Certain variables we don't want to allocate memory for over and over again
  * so global scope is given */
 
@@ -75,7 +77,7 @@ void irc_cycle()
 	
       if(IRC_FD <= 0)                 /* No socket open         */
         {
-          config_load(LOGFILE);       /* Reload config          */
+          config_load(CONFFILE);      /* Reload config          */
           irc_init();                 /* Resolve remote host    */
           irc_connect();              /* Connect to remote host */
         }
@@ -400,7 +402,7 @@ void irc_parse()
     if(!strcasecmp(token[1], "001"))
      { 
          irc_send("OPER %s", CONF_OPER);
-         irc_send("MODE %s +c", CONF_NICK);      
+         irc_send("MODE %s +c-h", CONF_NICK);      
 	 if(CONF_AWAY)
 	    irc_send("AWAY :%s (/msg %s INFO)", CONF_AWAY, CONF_NICK);
          do_perform();   

@@ -26,6 +26,7 @@
 
     extern int   CONF_PORT;
     extern int   CONF_SCANPORT;
+    extern int   CONF_PING;
 
     extern int   OPT_DEBUG;
  

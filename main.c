@@ -48,6 +48,9 @@ void do_int(int);
 int ALARMED = 0;
 
 int OPT_DEBUG = 0;
+char *CONFNAME = DEFAULTNAME;
+
+char *CONFFILE, *LOGFILE, *PIDFILE;
 
 struct sigaction ALARMACTION;
 struct sigaction INTACTION;
@@ -56,20 +59,24 @@ int main(int argc, char **argv)
 {
 
    FILE *pidout;
-   int pid, c;
+   int pid, c, lenc, lenl, lenp;
    char spid[16];
 
    do_stats_init();
    do_scan_init();
+
    while(1)
     {
-       c = getopt(argc, argv, "d");
+       c = getopt(argc, argv, "dc:");
 
        if(c == -1)
            break;
 
        switch(c)
         {
+	   case 'c':
+	       CONFNAME = strdup(optarg);
+	       break;
            case 'd':
                OPT_DEBUG++;
                break;
@@ -79,6 +86,18 @@ int main(int argc, char **argv)
                break;
         }
     }	
+
+   lenc = strlen(CONFNAME) + strlen(CONFEXT) + 2;
+   lenl = strlen(CONFNAME) + strlen(LOGEXT) + 2;
+   lenp = strlen(CONFNAME) + strlen(PIDEXT) + 2;
+
+   CONFFILE = (char *) malloc(lenc * sizeof(char));
+   LOGFILE = (char *) malloc(lenl * sizeof(char));
+   PIDFILE = (char *) malloc(lenp * sizeof(char));
+
+   snprintf(CONFFILE, lenc, "%s.%s", CONFNAME, CONFEXT);
+   snprintf(LOGFILE, lenl, "%s.%s", CONFNAME, LOGEXT);
+   snprintf(PIDFILE, lenp, "%s.%s", CONFNAME, PIDEXT);
 
    /* Fork off */
 
@@ -91,7 +110,7 @@ int main(int argc, char **argv)
 	}
        else if(pid != 0)
         {
-           pidout = fopen("bopm.pid", "w");
+           pidout = fopen(PIDFILE, "w");
            snprintf(spid, 16, "%d", pid);
 
            if(pidout)         
@@ -117,7 +136,7 @@ int main(int argc, char **argv)
        close(STDOUT_FILENO);
        close(STDERR_FILENO);
 
-       log_open("bopm.log"); 
+       log_open(LOGFILE); 
     }
    else
     {
@@ -127,7 +146,7 @@ int main(int argc, char **argv)
     log("MAIN -> BOPM %s started.", VERSION);
     log("MAIN -> Reading configuration file...");
 
-    config_load(LOGFILE);
+    config_load(CONFFILE);
 
     /* Setup alarm & int handlers */
  

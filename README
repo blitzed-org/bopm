@@ -37,16 +37,22 @@ Credits
 -------
 
    Erik Fears <strtok@blitzed.org>
-         Main Developer.
+         - Main Developer.
 
    Andy Smith <grifferz@blitzed.org>
-         Developed operator interface, interface to DNSbl, makefile
-         trickery, poking people with sticks until they did things,
-         debugging.
+         - Developed operator interface
+         - Interface to DNSbl
+         - Makefile trickery
+         - Poking people with sticks until they did things
+         - Debugging
+         - Evil bopchecker hack
  
    David Leadbeater <dg@blitzed.org> 
-         Developed perl script (see proxy-tools in Blitzed CVS repository)
-         to test BOPM's support for scanning many clients at once.
+	 - Developed perl script (see proxy-tools in Blitzed CVS repository) to
+	   test BOPM's support for scanning many clients at once
 
+   Sotiris Tsimbonis <stsimb@irc.gr>
+         - Added -c command line argument
+         - Idea to make bopm set umode -h on oper
 
    For support, irc.blitzed.org #blitzed before emailing a developer. Thank you.

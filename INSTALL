@@ -17,9 +17,19 @@ Execution
 connect to the IRC server immediately.  Any errors and debug information can be
 found in bopm.log.
 
+    You can tell bopm to use a different config file with the -c argument,
+this works the same way that wgmon's -c argument does, just give the name of
+the config file not including the ".conf".  This also affects the log and PID
+files i.e. ./bopm -c myserver will read from myserver.conf, log to myserver.log
+and write PID to myserver.pid.  If you do not use -c, the files bopm.conf,
+bopm.log and bopm.pid will be used by default.  This can be altered in
+options.h.
+
     Further debugging can be enabled by using one or more -d switches.  One or
 more -d switches will cause the bot to not fork on startup, and it will send
 all log messages to stederr (i.e., your terminal) instead of its logfile.  It
 will also cause extra debugging information that is not normally of interest to
 be sent to stderr.  Two or more -d switches will enable logging of all IRC
 traffic received and sent.
+
+    The -c and -d arguments may appear in any order.

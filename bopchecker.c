@@ -41,56 +41,85 @@ along with this program; if not, write to the Free Software
 extern struct scan_struct *CONNECTIONS;
 
 int OPT_DEBUG = 1;
+char *CONFNAME = DEFAULTNAME;
+char *CONFFILE;
 
 int main(int argc, char **argv)
 {
 	struct hostent *he;
-	char *ip;
+	char *ip, *host;
 	struct scan_struct *ss;
-	
-	if (argc != 2) {
+	int len, c;
+
+	while (1) {
+		c = getopt(argc, argv, "+c:");
+
+		if (c == -1)
+			break;
+
+		switch (c) {
+			case 'c':
+				CONFNAME = strdup(optarg);
+				break;
+			case '?':
+			default:
+				/* unknown arg, just do nothing */
+				break;
+		}
+	}
+
+	if (argc - optind != 1) {
 		usage(argv);
 		return(EXIT_FAILURE);
 	}
 
 	signal(SIGPIPE, SIG_IGN);
 
-	config_load(LOGFILE);
+	len = strlen(CONFNAME) + strlen(CONFEXT) + 2;
+	CONFFILE = (char *) malloc(len * sizeof(char));
+	snprintf(CONFFILE, len, "%s.%s", CONFNAME, CONFEXT);
+
+	config_load(CONFFILE);
 	do_scan_init();
 
-	if(!(he = gethostbyname(argv[1]))) {
+	if (optind > 0)
+		host = argv[optind];
+	else
+		host = argv[1];
+
+	if(!(he = gethostbyname(host))) {
 		switch(h_errno) {
 			case HOST_NOT_FOUND:
-				fprintf(stderr, "Host '%s' is unknown.",
-					argv[1]);
+				fprintf(stderr, "Host '%s' is unknown.\n",
+					host);
 				return(1);
 			case NO_ADDRESS:
 				fprintf(stderr, "The specified name '%s' "
-					"exists, but has no address.",
-					argv[1]);
+					"exists, but has no address.\n",
+					host);
 				return(1);
 			case NO_RECOVERY:
 				fprintf(stderr, "An unrecoverable error "
-					"occured whilst resolving '%s'.",
-					argv[1]);
+					"occured whilst resolving '%s'.\n",
+					host);
 				return(1);
 			case TRY_AGAIN:
 				fprintf(stderr, "A temporary error "
 					"occurred on an authoritative name "
-					"server.");
+					"server.\n");
 				return(1);
 			default:
 				fprintf(stderr, "Unknown error resolving "
-					"'%s'.", argv[1]);
+					"'%s'.\n", host);
 				return(EXIT_FAILURE);
 		}
 	}
 
 	ip = inet_ntoa(*((struct in_addr *) he->h_addr));
 
-	fprintf(stderr, "Checking %s [%s] for open proxies\n", argv[1], ip);
+	fprintf(stderr, "Checking %s [%s] for open proxies\n", host, ip);
 
-	scan_connect(ip, argv[1], "*", "*", 1, 0);    /* Scan using verbose */
+	scan_connect(ip, host, "*", "*", 1, 0);    /* Scan using verbose */
 
 	do {
 		int still_alive = 0;
@@ -111,7 +140,7 @@ int main(int argc, char **argv)
 
 void usage(char **argv)
 {
-	fprintf(stderr, "Usage: %s <host>\n", argv[0]);
+	fprintf(stderr, "Usage: %s [-c configname] <host>\n", argv[0]);
 }
 
 void log(char *data,...)
