@@ -18,14 +18,14 @@ AC_HEADER_STDC
 
 if test "$with_select" = "yes"; then
  echo "use of select() forced, skipping poll() checks..."
- AC_DEFINE(WITH_SELECT)
+ AC_DEFINE(WITH_SELECT, 1, [Define if you wish to force use of select() even when poll() may be present])
 else
  AC_CHECK_HEADER(sys/poll.h, have_poll_sys_h=yes, have_sys_poll_h=no)
 fi
 
 if test "$with_unreal" = "yes"; then
  echo "configuring for Unreal ircd"
- AC_DEFINE(WITH_UNREAL)
+ AC_DEFINE(WITH_UNREAL, 1, [Define if you are using Unreal ircd (any version)])
 fi
 
 AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h)
