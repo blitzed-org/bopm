@@ -28,11 +28,11 @@ Credits
 -------
 
    Erik Fears <strtok@blitzed.org>
-         Main Developer
+         Main Developer.
 
    Andy Smith <andy@blitzed.org>
          Developed operator interface, interface to DNSbl, makefile trickery, debugging.
  
    David Leadbeater <dg@blitzed.org> 
-         Developed perl script for testing BOPM's support for scanning many clients
-         at once
+         Developed perl script to test BOPM's support for scanning many clients
+         at once.
