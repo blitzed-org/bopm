@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 			}
 
 			fclose(pidout);
-			exit(EXIT_SUCCESS);
+			_exit(EXIT_SUCCESS);
 		}
 
 		/* Get us in our own process group. */
