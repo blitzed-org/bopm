@@ -306,6 +306,7 @@ void scan_connect(char **user, char *msg)
    /* Have to use MSGLENMAX here because it is unknown what the max size of username/hostname can be.
       Some ircds use really mad values for these */
    static char mask[MSGLENMAX];
+   static char ipmask[MSGLENMAX];
 
    /* Check negcache before anything */
    if(OptionsItem->negcache > 0)
@@ -329,10 +330,10 @@ void scan_connect(char **user, char *msg)
 
    /* Generate user mask */
    snprintf(mask, MSGLENMAX, "%s!%s@%s", user[0], user[1], user[2]);
-
+   snprintf(ipmask, MSGLENMAX, "%s!%s@%s", user[0], user[1], user[3]);
 
    /* Check exempt list now that we have a mask */
-   if(scan_checkexempt(mask))
+   if(scan_checkexempt(mask, ipmask))
    {
       if(OPT_DEBUG)
          log("SCAN -> %s is exempt from scanning", mask);
@@ -1047,7 +1048,7 @@ void scan_manual(char *param, struct ChannelConf *target)
  *     0 if mask is not in list 
  */
 
-int scan_checkexempt(char *mask)
+int scan_checkexempt(char *mask, char *ipmask)
 {
    node_t *node;
    char *exempt_mask;
@@ -1055,7 +1056,7 @@ int scan_checkexempt(char *mask)
    LIST_FOREACH(node, ExemptItem->masks->head)
    {
       exempt_mask = (char *) node->data;
-      if(match(exempt_mask, mask))
+      if(match(exempt_mask, mask) || match(exempt_mask, ipmask))
          return 1;
    }
 
