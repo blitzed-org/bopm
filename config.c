@@ -221,6 +221,7 @@ void config_checkreq()
 {
       int i;
       int errfnd = 0;
+      string_list *list;
 
       for(i = 0; i < (sizeof(hash) / sizeof(config_hash) - 1); i++)
         if(hash[i].req && !hash[i].reqmet)
@@ -237,6 +238,10 @@ void config_checkreq()
                       break;
                  case TYPE_INT:
                       log("CONFIG -> Set [%s]: %d", hash[i].key, *(int *) hash[i].var);
+                      break;
+                 case TYPE_LIST:
+                      for(list = *(string_list**) (hash[i].var); list; list = list->next)
+                         log("CONFIG-> Set [%s]: %s", hash[i].key, list->text);
                       break;
              }
          }
