@@ -436,11 +436,11 @@ static void irc_parse(void)
 	/* 001 is sent on initial connect to the IRC host. */
 
 	if (!strcasecmp(token[1], "001")) { 
-		irc_send("OPER %s", CONF_OPER);
-		irc_send("MODE %s %s", CONF_NICK, CONF_OPER_MODES);      
+		do_perform();
 		if (CONF_AWAY)
 			irc_send("AWAY :%s (/msg %s INFO)", CONF_AWAY, CONF_NICK);
-		do_perform();
+		irc_send("OPER %s", CONF_OPER);
+		irc_send("MODE %s %s", CONF_NICK, CONF_OPER_MODES);      
 		return;
 	}   
     
