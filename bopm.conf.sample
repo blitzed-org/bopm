@@ -61,7 +61,9 @@ CHANSERV_INVITE CHANSERV :INVITE %s
 
 
 
-# SERVER <servername> : IRC host BOPM will be monitoring connections on
+# SERVER <servername> : IRC host BOPM will be monitoring connections on.
+#                       This is what bopm will connect to, so please make
+#                       sure it works.
 #
 
 SERVER myserver.blitzed.org
