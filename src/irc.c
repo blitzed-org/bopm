@@ -71,6 +71,7 @@
 #include "compat.h"
 #include "negcache.h"
 #include "malloc.h"
+#include "main.h"
 
 static void irc_init(void);
 static void irc_connect(void);
@@ -91,6 +92,7 @@ static void m_notice(char **, unsigned int, char *, struct UserInfo *);
 static void m_perform(char **, unsigned int, char *, struct UserInfo *);
 static void m_userhost(char **, unsigned int, char *, struct UserInfo *);
 static void m_cannot_join(char **, unsigned int, char *, struct UserInfo *);
+static void m_kill(char **, unsigned int, char *, struct UserInfo *);
 
 extern struct cnode *nc_head;
 
@@ -104,7 +106,7 @@ char                 IRC_SENDBUFF[MSGLENMAX];    /* Send buffer                 
 char                 IRC_CHANNELS[MSGLENMAX];    /* Stores comma delim list of channels   */
 int                  IRC_RAW_LEN    = 0;         /* Position of IRC_RAW                   */
 
-int                  IRC_FD         = -1;        /* File descriptor for IRC client        */
+int                  IRC_FD         = 0;        /* File descriptor for IRC client        */
 
 struct bopm_sockaddr IRC_SVR;                   /* Sock Address Struct for IRC server    */
 struct bopm_ircaddr  IRC_LOCAL;                 /* Sock Address Struct for Bind          */
@@ -115,6 +117,7 @@ struct timeval       IRC_TIMEOUT;                /* timeval struct for select() 
 
 time_t               IRC_LAST = 0;               /* Last full line of data from irc server*/
 time_t               IRC_LASTRECONNECT = 0;      /* Time of last reconnection */
+
 /* Table should be ordered with most occuring (or priority)
    commands at the top of the list. */
 
@@ -129,6 +132,7 @@ static struct CommandHash COMMAND_TABLE[] = {
          {"473",                  m_cannot_join    },
          {"474",                  m_cannot_join    },
          {"475",                  m_cannot_join    },
+         {"KILL",                 m_kill           }
       };
 
 /* irc_cycle
@@ -244,9 +248,8 @@ static void irc_init(void)
       exit(EXIT_FAILURE);
    }
 
-   IRC_FD = socket(AF_INET, SOCK_STREAM, 0);
-
    /* Request file desc for IRC client socket */
+   IRC_FD = socket(AF_INET, SOCK_STREAM, 0);
 
    if (IRC_FD == -1)
    {
@@ -1102,3 +1105,19 @@ static void m_cannot_join(char **parv, unsigned int parc, char *msg, struct User
    irc_send("%s", channel->invite);
 }
 
+
+/* m_kill
+ *
+ * parv[0]  = source
+ * parv[1]  = numeric
+ * parv[2]  = target (bopm)
+ * parv[3]  = channel
+ * parv[4]  = error text
+ *
+ */
+
+static void m_kill(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+{
+   /* Restart bopm to rehash */
+   main_restart();
+}

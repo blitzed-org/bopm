@@ -52,6 +52,7 @@ void log_open(char *filename)
       perror("Cannot open log file. Aborting.");
       exit(EXIT_FAILURE);
    }
+
 }
 
 void log_close(void)

@@ -33,6 +33,9 @@ along with this program; if not, write to the Free Software
 #include <netdb.h>
 #include <signal.h>
 #include <unistd.h>
+#include <errno.h>
+#include <sys/resource.h> /* getrlimit */
+#include <fcntl.h>
 
 #ifdef STDC_HEADERS
 #include <stdlib.h>
@@ -53,8 +56,9 @@ along with this program; if not, write to the Free Software
 
 static RETSIGTYPE do_signal(int signum);
 
-int ALARMED = 0;
-unsigned int OPT_DEBUG = 0;
+int RESTART = 0;             /* Flagged to restart on next cycle */
+int ALARMED = 0;             /* Flagged to call timer functions on next cycle */
+unsigned int OPT_DEBUG = 0;  /* Debug level */
 
 char *CONFNAME = DEFAULTNAME;
 char *CONFDIR = BOPM_ETCDIR;
@@ -69,8 +73,9 @@ int main(int argc, char **argv)
    char spid[16];
    pid_t pid;
    int c, lenc, lenl, lenp;
-   unsigned int nc_counter;
+   unsigned int nc_counter, i;
    FILE *pidout;
+   struct rlimit rlim;
 
    nc_counter = 0;
 
@@ -177,10 +182,44 @@ int main(int argc, char **argv)
 
    while (1)
    {
+      
+
+      /* Main cycles */
       irc_cycle();
       scan_cycle();
 
-      if (ALARMED)
+
+      /* Restart bopm if main_restart() was called (usually happens by m_kill in irc.c) */
+      if(RESTART)
+      {
+         log("MAIN -> Restarting process");
+
+         /* Get upper file descriptor limit */
+         if(getrlimit(RLIMIT_NOFILE, &rlim) == -1) 
+         {
+            log("MAIN RESTART -> getrlimit() error retrieving RLIMIT_NOFILE (%s)", strerror(errno));
+            return; 
+         }
+
+         if(OPT_DEBUG)
+            log("MAIN RESTART -> Setting file descriptors %d-%d F_SETFL", STDERR_FILENO + 1,
+                  rlim.rlim_cur);
+
+         /* Set file descriptors strderr-rlim_cur close on exec */
+         for(i = STDERR_FILENO + 1; i < rlim.rlim_cur; i++)
+            fcntl(i, F_SETFD, FD_CLOEXEC);
+
+         /* execute new process */
+         if(execve(argv[0], argv, NULL) == -1)
+            log("MAIN RESTART -> Execution of \"%s\" failed. ERROR: %s", strerror(errno));
+
+         /* Should only get here if execve failed */
+         RESTART = 0;
+      }
+
+
+      /* Call 1 second timers */
+      if(ALARMED)
       {
          irc_timer();
          scan_timer();
@@ -188,6 +227,8 @@ int main(int argc, char **argv)
 
          ALARMED = 0;
       }
+
+
    }
 
    if (!OPT_DEBUG)
@@ -212,4 +253,10 @@ static void do_signal(int signum)
          exit(0);
          break;
    }
+}
+
+
+void main_restart()
+{
+   RESTART = 1;
 }
