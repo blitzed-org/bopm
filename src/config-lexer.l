@@ -45,7 +45,7 @@ char linebuf[512];
 
 string                 \"[^\"\n]*[\"\n]
 comment                #.*
-whitespace             [ \t]*
+whitespace             [ \t\r]*
 
 %%
 
