@@ -49,13 +49,16 @@ Credits
          - Evil bopchecker hack
  
    David Leadbeater <dg@blitzed.org> 
-	 - Developed perl script (see proxy-tools in Blitzed CVS repository) to
-	   test BOPM's support for scanning many clients at once
+         - Developed perl script (see proxy-tools in Blitzed CVS repository) to
+           test BOPM's support for scanning many clients at once
 
    Sotiris Tsimbonis <stsimb@irc.gr>
          - Added -c command line argument
          - Idea to make bopm set umode -h on oper
          - Mutliple DNSBL_TO idea
+
+   Rob Levin <levin@openprojects.net>
+         - PASSWORD config option
 
    For support, irc.blitzed.org #blitzed before emailing a developer. Thank you.
 
