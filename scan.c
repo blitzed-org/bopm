@@ -202,7 +202,7 @@ void scan_establish(scan_struct *conn)
      fcntl(conn->fd, F_SETFL, O_NONBLOCK);                   /* Set socket non blocking                    */
      connect(conn->fd, (struct sockaddr *) &(conn->sockaddr), sizeof(conn->sockaddr));  /* Connect !       */
 
-     conn->data = malloc(SCANBUFFER * sizeof(char));         /* Allocate memory for the scan buffer        */
+     conn->data = malloc((SCANBUFFER + 1) * sizeof(char));         /* Allocate memory for the scan buffer        */
      conn->datasize = 0;
 
      FD_USE++;                                               /* Increase global FD Use counter             */      
@@ -414,8 +414,8 @@ void scan_readready(scan_struct *conn)
                                continue;
                            }
 
-                          if(conn->datasize < SCANBUFFER)
-                               conn->data[++(conn->datasize) - 1] = c;
+                          if(conn->datasize < SCANBUFFER)  /* -1 to pad for null term */
+                               conn->data[(++conn->datasize) - 1] = c;
               }
 
          }
