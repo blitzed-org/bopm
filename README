@@ -55,6 +55,7 @@ Any questions regarding compatibility should be sent to the developers. If
 feasible we might be able to add compatibility to multiple ircd types to the
 project in the future.
 
+
 Command Line Options
 --------------------
 
@@ -83,10 +84,26 @@ for example !all stats (fixed in BOPM 3.0.4).
 
 
 Rehashing BOPM 
---------------------------------
+--------------
 
 A /kill to bopm will cause the process to restart, rehashing the configuration file
 and ending all queued scans.
+
+
+Logging
+-------
+
+Once started, BOPM logs all significant events to a file called "bopm.log"
+which by default can be found at $HOME/bopm/var/bopm.log.  There is also a
+config option to log all proxy scans initiated, which can be quite useful if
+you receive an abuse report related to portscanning.
+
+These log files, especially the scan log, can grow quite large.  It is
+suggested that you arrange for these files to be rotated periodically.  An
+example shell script is provided in the contrib/logrotate directory.  If you
+prefer to use the log rotation facilities of your operating system then you
+should send a USR1 signal to BOPM after moving its logfiles - this will cause
+BOPM to reopen those files.
 
 
 Support
