@@ -267,7 +267,7 @@ void scan_check()
                            irc_kline(ss->irc_addr);
 
 			   if(CONF_DNSBL_FROM && CONF_DNSBL_TO &&
-			      CONF_SENDMAIL)
+			      CONF_SENDMAIL && !ss->verbose)
 			    {
 			      dnsbl_report(ss);
 			    }

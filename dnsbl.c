@@ -118,6 +118,9 @@ void dnsbl_report(struct scan_struct *ss)
    FILE *fp;
    char cmdbuf[512], buf[4096];
 
+   if(!ss || !ss->addr)
+      return;
+
    snprintf(cmdbuf, sizeof(cmdbuf), "%s -t", CONF_SENDMAIL);
    snprintf(buf, sizeof(buf), "From: %s <%s>\n"
             "To: <%s>\n"
