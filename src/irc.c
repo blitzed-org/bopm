@@ -941,8 +941,9 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
          regerror(errnum, preg, errmsg, 256);
          log("IRC REGEX -> Error when compiling regular expression");
          log("IRC REGEX -> %s", errmsg);
-         preg = NULL;
 
+         MyFree(preg);
+         preg = NULL;
          return;
       }
    }
