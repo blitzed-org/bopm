@@ -30,6 +30,7 @@ IRC {
             * left over from the days of dalnet's wgmon.  Please don't put
             * your bopm into any other channels as it spews out some sensitive
             * info from time to time.
+            */
 	   name = "#wg";
 
            /*
