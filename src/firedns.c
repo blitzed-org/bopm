@@ -700,6 +700,9 @@ void firedns_cycle(void)
 
    LIST_FOREACH_SAFE(node, next, CONNECTIONS->head)
    {
+      if(size >= OptionsItem->dns_fdlimit)
+         break;
+
       p = (struct s_connection *) node->data; 
 
       if(p->fd < 0)
