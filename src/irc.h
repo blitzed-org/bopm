@@ -7,8 +7,6 @@
 #define MSGLENMAX 513
 
 
-typedef void (*irc_command) (void);
-
 struct bopm_sockaddr
 {
     union {
@@ -40,9 +38,11 @@ struct UserInfo
    char *irc_nick;
    char *irc_username;
    char *irc_hostname;
- 
+
    char *ip;
 };
+
+typedef void (*irc_command) (struct UserInfo *);
 
 struct CommandHash
 {

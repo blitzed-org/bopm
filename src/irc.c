@@ -73,12 +73,16 @@ static void irc_connect(void);
 static void irc_reconnect(void);
 static void irc_read(void);
 static void irc_parse(void);
-static void do_perform(void);
 
-static struct ChannelConf *get_channel(const char *channel);
+static struct ChannelConf *get_channel(const char *);
 
-static void m_ping();
-static void m_invite();
+static struct UserInfo *userinfo_create(char *);
+static void userinfo_free(struct UserInfo *source);
+
+static void m_ping(struct UserInfo *);
+static void m_invite(struct UserInfo *);
+static void m_privmsg(struct UserInfo *);
+static void m_perform(struct UserInfo *);
 
 extern time_t LAST_REAP_TIME;
 extern struct cnode *nc_head;
@@ -115,9 +119,10 @@ int                  parc;
 
 
 struct CommandHash COMMAND_TABLE[] = {
+   {"PRIVMSG",              m_privmsg },
    {"PING",                 m_ping    },
    {"INVITE",               m_invite  },
-   {"001",                  do_perform}
+   {"001",                  m_perform},
 };
 
 /* irc_cycle
@@ -505,6 +510,7 @@ static void irc_read(void)
 
 static void irc_parse(void)
 {
+   struct UserInfo *source_p;
    char *pos;
    int i;
 
@@ -555,12 +561,18 @@ static void irc_parse(void)
       pos++;
    }
 
+   /* Generate a UserInfo struct from the source */
+
+   source_p = userinfo_create(parv[0]);
+
    /* Determine which command this is from the command table 
       and let the handler for that command take control */
 
    for(i = 0; i < (sizeof(COMMAND_TABLE) / sizeof(struct CommandHash)); i++) 
       if(strcasecmp(COMMAND_TABLE[i].command, parv[1]) == 0)
-         COMMAND_TABLE[i].handler();
+         COMMAND_TABLE[i].handler(source_p);
+
+   userinfo_free(source_p);
 }
 
 /*  do_perform
@@ -568,7 +580,7 @@ static void irc_parse(void)
  *     Actions to perform when successfully connected to IRC.
  */
 
-static void do_perform(void)
+static void m_perform(struct UserInfo *notused)
 {
     node_t *node;
     struct ChannelConf *channel;
@@ -664,14 +676,102 @@ static struct ChannelConf *get_channel(const char *channel)
 }
 
 
+/* userinfo_create
+ *
+ *    Parse a nick!user@host into a UserInfo struct
+ *    and return a pointer to the new struct.
+ *
+ * Parameters:
+ *    source: nick!user@host to parse
+ *
+ * Return:
+ *    pointer to new UserInfo struct, or NULL if parsing failed
+ *
+ */
+
+static struct UserInfo *userinfo_create(char *source)
+{
+   struct UserInfo *ret;
+
+   char *nick;
+   char *username;
+   char *hostname;
+   char *tmp;
+
+   int i, len;
+
+   nick = username = hostname = NULL;
+   tmp = DupString(source);
+   len = strlen(tmp);
+
+   nick = tmp;
+
+   for(i = 0; i < len; i++)
+   {
+      if(tmp[i] == '!')
+      {
+         tmp[i] = '\0';
+         username = tmp + i + 1;
+      }
+      if(tmp[i] == '@')
+      {
+         tmp[i] = '\0';
+         hostname = tmp + i + 1;
+      } 
+   }
+  
+   if(nick == NULL || username == NULL || hostname == NULL)
+      return NULL;
+
+   ret = MyMalloc(sizeof(struct UserInfo));
+
+   ret->irc_nick     = DupString(nick);
+   ret->irc_username = DupString(username);
+   ret->irc_hostname = DupString(hostname);
+   ret->ip           = NULL;
+
+   MyFree(tmp);
+
+   return ret;
+};
+
+
+
+
+/* userinfo_free
+ *
+ *    Free a UserInfo struct created with userinfo_create.
+ *
+ * Parameters:
+ *    source: struct to free
+ * 
+ * Return: None
+ *
+ */
+
+static void userinfo_free(struct UserInfo *source_p)
+{
+   if(source_p == NULL)
+      return;
+
+   MyFree(source_p->irc_nick);
+   MyFree(source_p->irc_username);
+   MyFree(source_p->irc_hostname);
+   MyFree(source_p->ip);
+   MyFree(source_p);
+}
+
+
 /* m_ping
  *
  * parv[0]  = source
  * parv[1]  = PING
  * parv[2]  = PING TS/Package
  *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
  */
-static void m_ping()
+static void m_ping(struct UserInfo *source_p)
 {
    if(OPT_DEBUG >= 2)
       log("IRC -> PING? PONG!\n");
@@ -688,9 +788,12 @@ static void m_ping()
  * parv[2]  = target
  * parv[3]  = channel
  *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
+ *
  */
 
-static void m_invite()
+static void m_invite(struct UserInfo *source_p)
 {
 
    struct ChannelConf *channel;
@@ -701,4 +804,28 @@ static void m_invite()
       return;
 
    irc_send("JOIN %s %s", channel->name, channel->key);
+}
+
+
+
+
+/* m_privmsg
+ *
+ * parv[0]  = source
+ * parv[1]  = PRIVMSG
+ * parv[2]  = target (channel or user)
+ * parv[3]  = msg
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
+ *
+ */
+
+static void m_privmsg(struct UserInfo *source_p)
+{
+   struct ChannelConf channel;
+
+   if(source_p == NULL)
+      return;
+
 }
