@@ -1,4 +1,4 @@
-CCFLAGS= -g -Wall -fno-exceptions -fno-rtti -O3
+CCFLAGS= -g -Wall -O3
 CC= gcc
 
 objects = main.o config.o irc.o log.o scan.o
