@@ -87,7 +87,8 @@ bopm_SOURCES = compat.c compat.h config.c config.h dnsbl.c dnsbl.h extern.h \
     stats.h
 
 bopchecker_SOURCES = bopchecker.c bopchecker.h compat.c compat.h config.c \
-    config.h match.c match.h misc.c misc.h scan.c scan.h setup.h
+    config.h inet.c inet.h match.c match.h misc.c misc.h scan.c scan.h \
+    setup.h
 
 
 bopm_LDADD = @LNSL@ @LSOCKET@
@@ -100,7 +101,8 @@ bin_PROGRAMS = bopm$(EXEEXT) bopchecker$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
 am_bopchecker_OBJECTS = bopchecker.$(OBJEXT) compat.$(OBJEXT) \
-	config.$(OBJEXT) match.$(OBJEXT) misc.$(OBJEXT) scan.$(OBJEXT)
+	config.$(OBJEXT) inet.$(OBJEXT) match.$(OBJEXT) misc.$(OBJEXT) \
+	scan.$(OBJEXT)
 bopchecker_OBJECTS = $(am_bopchecker_OBJECTS)
 bopchecker_DEPENDENCIES =
 bopchecker_LDFLAGS =

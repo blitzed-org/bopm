@@ -7,7 +7,8 @@ bopm_SOURCES = compat.c compat.h config.c config.h dnsbl.c dnsbl.h extern.h \
     misc.h opercmd.c opercmd.h options.h scan.c scan.h setup.h stats.c \
     stats.h
 bopchecker_SOURCES = bopchecker.c bopchecker.h compat.c compat.h config.c \
-    config.h match.c match.h misc.c misc.h scan.c scan.h setup.h
+    config.h inet.c inet.h match.c match.h misc.c misc.h scan.c scan.h \
+    setup.h
 
 bopm_LDADD = @LNSL@ @LSOCKET@
 bopchecker_LDADD = @LNSL@ @LSOCKET@
