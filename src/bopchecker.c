@@ -62,6 +62,7 @@ extern struct config_hash hash[];
 
 int OPT_DEBUG = 1;
 char *CONFNAME = DEFAULTNAME;
+char *CONFDIR = BOPM_ETCDIR;
 char *CONFFILE;
 int RC = 0;
 
@@ -98,9 +99,9 @@ int main(int argc, char **argv)
 
 	signal(SIGPIPE, SIG_IGN);
 
-	len = strlen(CONFNAME) + strlen(CONFEXT) + 2;
+	len = strlen(CONFDIR) + strlen(CONFNAME) + strlen(CONFEXT) + 3;
 	CONFFILE = malloc(len * sizeof(*CONFFILE));
-	snprintf(CONFFILE, len, "%s.%s", CONFNAME, CONFEXT);
+	snprintf(CONFFILE, len, "%s/%s.%s", CONFDIR, CONFNAME, CONFEXT);
 
 	/*
 	 * The only things we need in a conf file are SCANIP and

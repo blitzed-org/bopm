@@ -1,0 +1,16 @@
+*.sw[op]
+*.bb*
+*.da
+*.dat
+*.gcov
+gmon.out
+config.log
+config.cache
+config.status
+Makefile
+bopm
+bopchecker
+setup.h
+.deps
+stamp-h
+stamp-h.in
