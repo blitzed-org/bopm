@@ -381,7 +381,7 @@ void irc_parse()
 {
    char *irc_channel; 
 
-   char *token[16];
+   char *token[32];
    int   tokens = 0;
    int   i, h, len;
    time_t present;
@@ -399,13 +399,18 @@ void irc_parse()
 
     token[tokens] = strtok(IRC_RAW, " ");
 
-    while(++tokens < 16 && (token[tokens] = strtok(NULL, " "))); 
+    while(++tokens < 32 && (token[tokens] = strtok(NULL, " "))); 
 
 
    /* Anything with less than 1 token is useless to us */  
 
     if(tokens <= 1)
         return;
+
+    if(OPT_DEBUG >= 2)
+     {
+        log("IRC READ -> Got %d tokens", tokens);
+     }
    
     if(!strcasecmp(token[0], "PING"))
      {
@@ -610,6 +615,8 @@ void irc_parse()
 		  do_hybrid_connect(tokens, token);
 	  else if(tokens >= 9 && !strcmp(token[4], "connecting:"))
 		  do_trircd_connect(tokens, token);
+	  else if(tokens >= 17 && !strcmp(token[9], "connecting"))
+		  do_ultimateircd_connect(tokens, token);
      }
 
 
@@ -772,6 +779,54 @@ void do_trircd_connect(int tokens, char **token)
 	irc_addr = strtok(NULL , ")");
 	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
 }
+
+/*
+ * :CurCuNa.NeT NOTICE AndyBopm :*** Connect/Exit -- from CurCuNa.NeT: Client connecting on port 6667: Misafir (jirc@213.14.40.51) [213.14.40.51] {1} [JPilot jIRC applet User]
+ */
+void do_ultimateircd_connect(int tokens, char **token)
+{
+	char *addr;	/* IP of remote host in connection notices */
+	char *irc_addr;	/* IRC host address of the remote host     */
+	char *irc_user;     
+	char *irc_nick;
+	char conn_notice[MSGLENMAX];
+
+	STAT_NUM_CONNECTS++;
+
+	/* take a copy of the original connect notice now in case we need it
+	 * for evidence later */
+	snprintf(conn_notice, sizeof(conn_notice),
+		 "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
+		 token[0], token[1], token[2], token[3], token[4], token[5],
+		 token[6], token[7], token[8], token[9], token[10],
+		 token[11], token[12], token[13], token[14], token[15],
+		 token[16]);
+
+	/* make sure it is null terminated */
+	conn_notice[MSGLENMAX - 1] = '\0';
+
+	/* Token 16 is the IP of the remote host enclosed in [ ]. We need
+	 * to remove it from [ ] and pass it to the scanner. */
+
+	/* Shift over 1 byte to pass over [ */
+	addr = token[15] + 1;
+        /* Replace ] with a /0 */
+	addr = strtok(addr, "]");
+
+	/* Token 14 is the nickname of the connecting client */
+	irc_nick = token[13];
+
+	/* Token 15 is (user@host), we want to parse the user/host out for
+	 * future reference in case we need to kline the host */
+        /* Shift one byte over to discard '(' */
+	irc_user = token[14] + 1;
+	/* username is everything before the '@' */
+	irc_user = strtok(irc_user, "@");
+	/* irc_addr is everything between '@' and closing ')' */
+	irc_addr = strtok(NULL , ")");
+	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
+}
+
 
 
 /*

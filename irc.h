@@ -21,5 +21,6 @@
 		      char *irc_addr, char *conn_notice);
       void do_hybrid_connect(int tokens, char **token);
       void do_trircd_connect(int tokens, char **token);
+      void do_ultimateircd_connect(int tokens, char **token);
       void do_xnet_connect(int tokens, char **token);
 #endif
