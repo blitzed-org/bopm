@@ -106,7 +106,7 @@ void config_load(char *filename)
      }
     
     /* Clear anything we have already */
-    for(i = 0; i < (sizeof(hash) / sizeof(config_hash)); i++)
+    for(i = 0; i < (sizeof(hash) / sizeof(config_hash) - 1); i++)
       {
          switch(hash[i].type)
           { 
@@ -136,7 +136,7 @@ void config_load(char *filename)
 
             args = clean(args); /* Strip leading and tailing spaces */
 
-            for(i = 0; i < (sizeof(hash) / sizeof(config_hash)); i++)
+            for(i = 0; i < (sizeof(hash) / sizeof(config_hash) - 1); i++)
               if(!strcasecmp(key, hash[i].key))
                 {
                       switch(hash[i].type)
@@ -163,7 +163,7 @@ void config_checkreq()
       int i;
       int errfnd = 0;
 
-      for(i = 0; i < (sizeof(hash) / sizeof(config_hash)); i++)
+      for(i = 0; i < (sizeof(hash) / sizeof(config_hash) - 1); i++)
         if(hash[i].req && !hash[i].reqmet)
          {               
             log("CONFIG -> Parameter [%s] required but not defined in config.", hash[i].key);
