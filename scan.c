@@ -115,7 +115,7 @@ void scan_connect(char *addr, char *irc_addr)
               }
 
             time(&(newconn->create_time));                               /* Log create time of connection for timeouts */
-            newconn->state = STATE_ESTABLISHED;                              /* Connection is just established             */
+            newconn->state = STATE_ESTABLISHED;                          /* Connection is just established             */
             scan_add(newconn);                                           /* Add struct to list of connections          */                                                             
             fcntl(newconn->fd, F_SETFL, O_NONBLOCK);                     /* Set socket non blocking                    */
             connect(newconn->fd, (struct sockaddr *) &(newconn->sockaddr), sizeof(newconn->sockaddr));  /* Connect !   */
