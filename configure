@@ -1890,7 +1890,7 @@ fi;
 # Check whether --with-extra-fascism or --without-extra-fascism was given.
 if test "${with_extra_fascism+set}" = set; then
   withval="$with_extra_fascism"
-  CFLAGS="$CFLAGS -g -ggdb -O0 -W -Wfloat-equal -Wbad-function-cast -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs"
+  CFLAGS="$CFLAGS -g -O0 -W -Wall -Wfloat-equal -Wbad-function-cast -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs"
 fi;
 
 # Check whether --enable-ipv6 or --disable-ipv6 was given.

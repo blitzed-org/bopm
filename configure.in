@@ -16,7 +16,7 @@ AC_ARG_WITH(unreal,
 AC_ARG_WITH(extra-fascism,
     AC_HELP_STRING([--with-extra-fascism],
     [Add extra gcc3-specific warning flags]),
-    [CFLAGS="$CFLAGS -g -ggdb -O0 -W -Wfloat-equal -Wbad-function-cast -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs"])
+    [CFLAGS="$CFLAGS -g -O0 -W -Wall -Wfloat-equal -Wbad-function-cast -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs"])
 
 dnl ipv6?
 AC_ARG_ENABLE(ipv6,
