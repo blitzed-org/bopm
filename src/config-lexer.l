@@ -173,6 +173,16 @@ ROUTER                  {
                            return NUMBER;
                         }
 
+TRUE                     {
+                           yylval.number=1;
+                           return NUMBER;
+                         }
+
+FALSE                    {
+                           yylval.number=0;
+                           return NUMBER;
+                         }
+
 \n.*                    { 
                            strcpy(linebuf, yytext+1); 
                            linenum++; 

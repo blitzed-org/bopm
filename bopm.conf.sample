@@ -327,7 +327,7 @@ OPM {
 	    * For DNSBLs that do not contain just open proxies this must be
 	    * disabled (opm.blitzed.org is just an open proxy blacklist).
 	    */
-	   ban_unknown = 1;
+	   ban_unknown = true;
 	   
 	   /* The actual values returned by the opm.blitzed.org blacklist
 	    * As documented at http://opm.blitzed.org/info
@@ -365,7 +365,7 @@ OPM {
 #	    reply {
 #	       8 = "Open proxy";
 #	    };
-#	    ban_unknown = 0;
+#	    ban_unknown = false;
 #	    kline = "KLINE *@%h :Open proxy found on your host, please visit www.njabl.org/cgi-bin/lookup.cgi?query=%i";
 #	};
 
