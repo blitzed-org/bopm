@@ -189,7 +189,6 @@ scanner {
    protocol = SOCKS5:2425;
 
    protocol = SOCKS4:29992;
-   protocol = SOCKS4:1080;
    protocol = SOCKS4:38884;
    protocol = SOCKS4:18844;
    protocol = SOCKS4:17771;
