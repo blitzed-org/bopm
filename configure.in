@@ -35,6 +35,7 @@ fi
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_LIBTOOL
 
 dnl Checks for libraries.
 
@@ -74,7 +75,8 @@ AC_PROG_YACC
 dnl check for lexx
 AM_PROG_LEX
 
-
+dnl check if we need -lsocket or -lnsl
+ETR_SOCKET_NSL
 
 dnl if they want select() or they don't have poll() then we need to check
 dnl that we actually have select()
@@ -92,10 +94,6 @@ AC_CHECK_FUNCS(gethostbyname gethostbyname2)
 
 dnl AIX fun
 AC_C_BIGENDIAN
-
-dnl Solaris has to be weird doesn't it...
-AC_CHECK_LIB(socket, socket, AC_SUBST(LSOCKET, [-lsocket]))
-AC_CHECK_LIB(nsl, gethostbyname, AC_SUBST(LNSL, [-lnsl]))
 
 dnl teehee - taken from MRTG / Tobias Oetiker
 echo $ECHO_N "checking for POSIX-compliant goat $ECHO_C"

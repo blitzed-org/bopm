@@ -11,4 +11,4 @@ bopm_SOURCES = compat.c compat.h config-parser.y config-lexer.l config.c config.
     opercmd.c opercmd.h options.h scan.c scan.h scanwarn.c scanwarn.h setup.h \
     stats.c stats.h firedns.c firedns.h
 
-bopm_LDADD = libopm/src/.libs/libopm.a @LNSL@ @LSOCKET@ @LIBOBJS@
+bopm_LDADD = libopm/src/.libs/libopm.a @ETR_SOCKET_LIBS@ @LIBOBJS@
