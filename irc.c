@@ -289,6 +289,11 @@ void irc_connect()
 	       }	
 
        /* for debug use only, will be removed later */
+
+#ifdef UNREAL
+       irc_send("PROTOCTL HCN");
+#endif /* UNREAL */
+
        irc_send("NICK %s",CONF_NICK);
        irc_send("USER %s %s %s :Blitzed Open Proxy Monitor", CONF_USER, CONF_USER, CONF_USER);
 

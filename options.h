@@ -15,5 +15,11 @@
 /* Defines time in which bot will timeout * if no data is received
  * (default 15 min) */
 #define NODATA_TIMEOUT 900
+
+/* If defined, BOPM will force an Unreal server to use Hybrid style
+ * +c notices (PROTOCTL HCN)
+ */
+#undef UNREAL
+
                 
-#endif
+#endif /* OPTIONS_H */
