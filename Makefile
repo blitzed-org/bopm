@@ -3,15 +3,17 @@ CC= gcc
 
 ifdef DEBUG_GCOV
 CFLAGS += -fprofile-arcs -ftest-coverage -fbranch-probabilities
+LFLAGS += -fprofile-arcs -ftest-coverage -fbranch-probabilities
 endif
 
 ifdef DEBUG_GDB
 CFLAGS += -ggdb
+LFLAGS += -ggdb
 endif
 
 ifdef DEBUG_GPROF
 CFLAGS += -pg
-LDFLAGS += -pg
+LFLAGS += -pg
 endif
 
 objects = main.o config.o irc.o log.o misc.o scan.o stats.o opercmd.o
@@ -29,7 +31,7 @@ scan.o:    config.h extern.h irc.h log.h        opercmd.h scan.h stats.h
 stats.o:            extern.h irc.h       misc.h                  stats.h
 
 bopm: $(objects)
-	$(CC) -o bopm $(objects)
+	$(CC) $(LFLAGS) -o bopm $(objects)
 
 .PHONY: clean
 clean: 
