@@ -174,14 +174,18 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
 
 #ifdef IPV6
         if (aftype == AF_INET6) {
-            newconn->sockaddr.sas.sa6.sin6_family = AF_INET6;   /* Fill in sockaddr with information about remote host */
-            newconn->sockaddr.sas.sa6.sin6_port = htons(newconn->protocol->port);
-            newconn->sockaddr.sas.sa6.sin6_addr = *((struct in6_addr *) addr);
+		/* Fill in sockaddr with information about remote host */
+		newconn->sockaddr.sas.sa6.sin6_family = AF_INET6;
+		newconn->sockaddr.sas.sa6.sin6_port =
+		    htons(newconn->protocol->port);
+		inetpton(aftype, addr, &newconn->sockaddr.sas.sa6.sin6_addr);
         } else {
 #endif   
-            newconn->sockaddr.sas.sa4.sin_family = AF_INET;   /* Fill in sockaddr with information about remote host */
-            newconn->sockaddr.sas.sa4.sin_port = htons(newconn->protocol->port);
-            newconn->sockaddr.sas.sa4.sin_addr = *((struct in_addr *) addr);
+		/* Fill in sockaddr with information about remote host */
+		newconn->sockaddr.sas.sa4.sin_family = AF_INET;
+		newconn->sockaddr.sas.sa4.sin_port =
+		    htons(newconn->protocol->port);
+		inetpton(aftype, addr, &newconn->sockaddr.sas.sa4.sin_addr);
 #ifdef IPV6
         }
 #endif
