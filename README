@@ -46,8 +46,8 @@ note, earlier versions of Ultimate IRCD are *not* supported
 
 
 
-BOPM is designed for the Bahamut and Hybrid IRCds.   It would be easily
-portable to any other ircd with little modification (connregex in bopm.conf).
+BOPM is designed for the Bahamut and Hybrid IRCds.   It is easily
+suitable for any other ircd with little modification (connregex in bopm.conf).
 However, if an ircd does not send IP's in a connection notice (bahamut sends
 [IP]), BOPM will not be effective because the time it takes to resolve a
 hostname would be a significant factor to BOPM's efficiency.
@@ -75,8 +75,8 @@ Command Line Options
 Operator Channel Commands
 -------------------------
 
-botnick <check> <host>  -- Manually scan host for insecure proxies and output all errors.
-botnick stats           -- Output scan stats, uptime and client connection count.
+botnick <check> <host> [scanner]  -- Manually scan host for insecure proxies and output all errors.
+botnick stats                     -- Output scan stats, uptime and client connection count.
 
 
 Rehashing the Configuration File
@@ -89,7 +89,7 @@ the configuration.
 Support
 -------
 
-BOPM now has a mailing list for general discussion and announcements.  CVS
+BOPM has a mailing list for general discussion and announcements.  CVS
 commit emails are also sent there and that is also the place to mail your
 patches (unless they are massive, in which case just post a URL).  You can
 subscribe to this list from:
@@ -105,9 +105,8 @@ Compatibility Notes
 
 o Unreal Ircd
 
-  For Unreal to work,  patches to fix the HCN connect notices (found at
-  http://www.blitzed.org/files/) must be applied.
-  ./configure --with-unreal should then be used to configure BOPM.
+  For *older* versions of Unreal to work,  patches to fix the HCN connect 
+  notices (found at http://www.blitzed.org/files/) must be applied.
 
   Unreal 3.1.3 seems to require opers to be global if they are to see
   connection notices.
