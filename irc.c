@@ -327,11 +327,11 @@ void irc_parse()
    char *irc_addr;       /* IRC host address of the remote host     */
    char *irc_user;     
    char *irc_nick;
+   char *irc_channel; 
 
    char *token[16];
    int   tokens = 0;
-
-   
+   int   i, h, len;
 
     printf("%s\n", IRC_RAW);
 
@@ -349,20 +349,72 @@ void irc_parse()
         return;
    
     if(!strcasecmp(token[0], "PING"))
-       {
-            irc_send("PONG %s", token[1]);
-	    return;
-       }
+     {
+         irc_send("PONG %s", token[1]);
+	 return;
+     }
 
     /* 001 is sent on initial connect to the IRC host */
 
     if(!strcasecmp(token[1], "001"))
      { 
-       irc_send("OPER %s", CONF_OPER);
-       irc_send("MODE %s +c", CONF_NICK);      
-       do_perform();       
+         irc_send("OPER %s", CONF_OPER);
+         irc_send("MODE %s +c", CONF_NICK);      
+         do_perform();   
+         return;    
      }   
     
+   
+    /* 471, 473, 474, 475 are 'Cannot Join' messages */
+
+    if(!strcasecmp(token[1], "471") ||
+       !strcasecmp(token[1], "473") ||
+       !strcasecmp(token[1], "474") ||
+       !strcasecmp(token[1], "475"))
+
+       { 
+            if(!CONF_CHANSERV_INVITE)            
+                return;
+
+            irc_send(CONF_CHANSERV_INVITE, token[3]); /* 4th token is channel we can't join */             
+            return;
+       }
+
+    /* Handle invites, complicated code ahead is due to a decision
+     * not to use strtok() or strstr() in the following block */
+
+    if(!strcasecmp(token[1], "INVITE"))
+       {
+
+           len = strlen(CONF_CHANNELS);
+           irc_channel = token[3] + 1; /* token 4 is the channel, + 1 to shift past ':' */
+
+           for(i = 0; i < len; i++)
+             {
+                 if(CONF_CHANNELS[i] == '#')
+                    {
+                        for(h = (i + 1); h < len; h++)
+                           {
+                               if(CONF_CHANNELS[h] == ',' || CONF_CHANNELS[h] == ' ' || h == (len - 1))
+                                 {
+                                     if(h == (len - 1))
+                                        h++;
+                                   
+                                     if(strlen(irc_channel) != (h - i))
+                                         break; 
+                                 
+                                     if(!strncasecmp(&(CONF_CHANNELS[i]), irc_channel, strlen(irc_channel)))
+                                       {
+                                           irc_send("JOIN %s", irc_channel);
+                                           return;
+                                       }
+                                 }
+                           }
+                    }
+             }
+                         
+       }
+
 
     /* Search for +c notices */
 

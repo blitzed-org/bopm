@@ -15,7 +15,7 @@
     extern char *CONF_BINDSCAN;
     extern char *CONF_CHANNELS;
     extern char *CONF_NICKSERV_IDENT;
-    extern char *CONF_NICKSERV_INVITE;
+    extern char *CONF_CHANSERV_INVITE;
     extern char *CONF_KLINE_COMMAND;
 
     extern int   CONF_PORT;

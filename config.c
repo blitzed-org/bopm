@@ -40,7 +40,7 @@ char *CONF_BINDIRC         = 0;
 char *CONF_BINDSCAN        = 0;
 char *CONF_CHANNELS        = 0;
 char *CONF_NICKSERV_IDENT  = 0;
-char *CONF_NICKSERV_INVITE = 0;
+char *CONF_CHANSERV_INVITE = 0;
 char *CONF_KLINE_COMMAND   = 0;
 
 int  CONF_SCANPORT         = 0;
@@ -61,7 +61,7 @@ config_hash hash[] = {
        {"BINDSCAN",            TYPE_STRING,     &CONF_BINDSCAN           },
        {"CHANNELS",            TYPE_STRING,     &CONF_CHANNELS           },
        {"NICKSERV_IDENT",      TYPE_STRING,     &CONF_NICKSERV_IDENT     },
-       {"NICKSERV_INVITE",     TYPE_STRING,     &CONF_NICKSERV_INVITE    },
+       {"CHANSERV_INVITE",     TYPE_STRING,     &CONF_CHANSERV_INVITE    },
        {"KLINE_COMMAND",       TYPE_STRING,     &CONF_KLINE_COMMAND      },
 };
 
