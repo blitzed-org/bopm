@@ -1,5 +1,13 @@
-CCFLAGS= -g -Wall -O3
+CFLAGS= -Wall -O3
 CC= gcc
+
+ifdef DEBUG_GCOV
+CFLAGS += -fprofile-arcs -ftest-coverage -fbranch-probabilities
+endif
+
+ifdef DEBUG_GDB
+CFLAGS += -ggdb
+endif
 
 objects = main.o config.o irc.o log.o scan.o
 
