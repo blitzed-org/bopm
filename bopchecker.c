@@ -88,7 +88,8 @@ int main(int argc, char **argv)
 	 * SCANPORT */
 	for (i = 0; hash[i].key; i++) {
 		if (strcasecmp(hash[i].key, "SCANIP") != 0 &&
-		    strcasecmp(hash[i].key, "SCANPORT") != 0) {
+		    strcasecmp(hash[i].key, "SCANPORT") != 0 &&
+		    strcasecmp(hash[i].key, "TARGET_STRING") != 0) {
 			/* nuke the required field */
 			hash[i].req = 0;
 		}
