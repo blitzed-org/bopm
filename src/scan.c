@@ -690,7 +690,7 @@ void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote,
             remote->ip, remote->port, scan_gettype(remote->protocol),
             scs->name, remote->bytes_read);
    }
-
+/*
    if(ss->manual_target != NULL)
    {
       irc_send("PRIVMSG %s :CHECK -> Negotiation failed %s:%d (%s) [%s] "
@@ -698,6 +698,7 @@ void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote,
             remote->port, scan_gettype(remote->protocol), scs->name,
             remote->bytes_read);
    }
+*/
 }
 
 
@@ -736,7 +737,7 @@ static void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused,
             scan_gettype(remote->protocol), scs->name,
             remote->bytes_read);
    }
-
+/*
    if(ss->manual_target != NULL)
    {
       irc_send("PRIVMSG %s :CHECK -> Negotiation timed out %s:%d (%s) [%s] "
@@ -744,6 +745,7 @@ static void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused,
             remote->port, scan_gettype(remote->protocol), scs->name,
             remote->bytes_read);
    }
+*/
 }
 
 
