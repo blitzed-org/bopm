@@ -211,7 +211,7 @@ int main(int argc, char **argv)
 
          /* execute new process */
          if(execve(argv[0], argv, NULL) == -1)
-            log("MAIN RESTART -> Execution of \"%s\" failed. ERROR: %s", strerror(errno));
+            log("MAIN RESTART -> Execution of \"%s\" failed. ERROR: %s", argv[0], strerror(errno));
 
          /* Should only get here if execve failed */
          RESTART = 0;
