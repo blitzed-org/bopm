@@ -28,6 +28,7 @@ along with this program; if not, write to the Free Software
 
 #include "config.h"
 #include "log.h"
+#include "misc.h"
 
 /* Global Configuration Variables */
 
@@ -118,6 +119,9 @@ void config_load(char *filename)
 
             if(!args)
                continue;
+
+
+            args = clean(args); /* Strip leading and tailing spaces */
 
             for(i = 0; i < (sizeof(hash) / sizeof(config_hash)); i++)
               if(!strcasecmp(key, hash[i].key))

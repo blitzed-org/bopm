@@ -22,6 +22,7 @@ along with this program; if not, write to the Free Software
 
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 
 #include "extern.h"
 
@@ -112,4 +113,30 @@ char *dissect_time(time_t time)
 
    return(buf);
 }
-	   
+
+/*  Strip leading/tailing characters from
+ *  null terminated str and return a pointer
+ *  to the new string.
+ */
+
+char *clean(char *str)
+{
+
+    int i;
+    int lastnon;  /* Position of last non space */
+    int firstnon; /* Position of first non space */
+
+    lastnon = 0;
+    firstnon = 0;
+
+    for(i = 0; i < strlen(str);i++)
+     {
+         if(firstnon == 0 && str[i] != ' ')           
+                 firstnon = i;
+         if(str[i] != ' ')
+                 lastnon = i;  
+     }
+    
+    str[lastnon + 1] = 0;    /* Null terminate before the tailing spaces */
+    return (str + firstnon); /* Return pointer to point after leading spaces */
+}	   
