@@ -288,7 +288,7 @@ static void irc_init(void)
 			bsaddr.sas.sa6.sin6_family = AF_INET6;
 			bsaddr.sas.sa6.sin6_port = htons(0);
 			bindret = bind(IRC_FD, (struct sockaddr *) &(bsaddr.sas.sa6),
-				sizeof(struct bopm_sockaddr));
+				sizeof(bsaddr));
         	} else {
 #endif
             		if (!inetpton(AF_INET, CONF_BINDIRC, &(IRC_LOCAL.ins.in4.s_addr))) {
@@ -299,7 +299,7 @@ static void irc_init(void)
                         bsaddr.sas.sa4.sin_family = AF_INET;
                         bsaddr.sas.sa4.sin_port = htons(0);
 			bindret = bind(IRC_FD, (struct sockaddr *) &(bsaddr.sas.sa4),
-                                sizeof(struct bopm_sockaddr));
+                                sizeof(bsaddr));
 #ifdef IPV6
         	}
 #endif
