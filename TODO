@@ -1,5 +1,3 @@
-Manually check host from channel.
 Retain ops with chanserv
-Better connection handling (reconnect when required)
-Config file rehashing (via /kill'ing bopm bot)
 Strip spaces off beginning/end of lines in config file (important for 1 word config params, like binds)
+

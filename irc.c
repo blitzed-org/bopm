@@ -348,7 +348,12 @@ void irc_read()
 	   if(c != '\r' && c != '\n' && c != 0)
                IRC_RAW[IRC_RAW_LEN++] = c;
         }
-      
+       
+       if(len <= 0)
+         {
+              irc_reconnect();
+              return;
+         } 
 }
 
 /* A full line has been read by irc_read();
