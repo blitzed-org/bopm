@@ -140,6 +140,8 @@ int dnsbl_check(const char *addr, const char *irc_nick,
 	    strcat(text_type, "HTTP, ");
 	if(type & DNSBL_TYPE_CISCO)
 	    strcat(text_type, "Cisco, ");
+	if(type & DNSBL_TYPE_HTTPOST)
+	    strcat(text_type, "HTTP Post, ");
 
 	if(text_type[0] != '\0')
 	    *(strrchr(text_type, ',')) = '\0';
