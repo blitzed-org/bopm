@@ -83,8 +83,11 @@ static list_t *MASKS    = NULL;   /* Associative list of masks->scanners */
 
 struct scan_struct *scan_create(char **, char *);
 void scan_free(struct scan_struct *);
+void scan_irckline(struct scan_struct *);
+void scan_positive(struct scan_struct *);
+void scan_negative(struct scan_struct *);
 
-/* Callbacks for LIBOPM */
+/** Callbacks for LIBOPM */
 void scan_open_proxy(OPM_T *, OPM_REMOTE_T *, int, void *);
 void scan_negotiation_failed(OPM_T *, OPM_REMOTE_T *, int, void *);
 void scan_timeout(OPM_T *, OPM_REMOTE_T *, int, void *);
@@ -369,6 +372,8 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
 
    log("SCAN -> Open proxy %s:%d (%s) [%s]", remote->ip, remote->port,
              scan_gettype(remote->protocol), scs->name);   
+
+   scan_positive(ss);
 }
 
 
@@ -454,6 +459,9 @@ void scan_end(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
    ss->scans--;
 }
 
+
+
+
 /* scan_handle_error CALLBACK
  *
  *    Called by libopm when an error occurs with a specific connection. This does not
@@ -517,4 +525,57 @@ char *scan_gettype(int protocol)
          return protocols[i].name;
       
    return undef;
+}
+
+
+
+/* scan_positive
+ *
+ *    Remote host (defined by ss) has been found positive by one or more tests.
+ *
+ * Parameters:
+ *    ss: scan_struct containing information regarding positive host 
+ *
+ * Return: NONE
+ *
+ */
+
+void scan_positive(struct scan_struct *ss)
+{
+   //Format KLINE and send to IRC server
+   scan_irckline(ss);
+}
+
+/* scan_negative
+ *
+ *    Remote host (defined by ss) has passed all tests.
+ *
+ * Parameters:
+ *    ss: scan_struct containing information regarding negative host.
+ *
+ * Return: NONE
+ *
+ */
+
+void scan_negative(struct scan_struct *ss)
+{
+
+}
+
+
+/* scan_irckline
+ *
+ *    ss has been found as a positive host and is to be klined. Format a kline message using IRCItem->kline
+ *    as a format, then pass it to irc_send() to be sent to the remote server.
+ *
+ * Parameters:
+ *    ss: scan_struct containing information regarding host to be klined
+ * 
+ * Return: NONE
+ *
+ */
+
+void scan_irckline(struct scan_struct *ss)
+{
+
 }
