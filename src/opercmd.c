@@ -184,6 +184,8 @@ void command_parse(char *command, char *msg, struct ChannelConf *target, struct 
       *param = '\0';
       param++;
    }
+   else
+      param = "";
 
    log("COMMAND -> parsed [%s] [%s]", command, param);
 
