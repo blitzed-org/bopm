@@ -34,11 +34,12 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %}
 
 %token AWAY
-%token CHANNELS
+%token CHANNEL
 %token IRC
-%token KEYS
+%token KEY
 %token MASK
 %token MODE
+%token NAME
 %token NEGCACHE
 %token NICK
 %token OPER
@@ -103,8 +104,6 @@ irc_items: irc_items irc_item |
            irc_item;
 
 irc_item: irc_away     |
-          irc_channels |
-          irc_keys     |
           irc_nick     |
           irc_mode     |
           irc_oper     |
@@ -114,24 +113,13 @@ irc_item: irc_away     |
           irc_server   |
           irc_username |
           irc_vhost    |
+          channel_entry |
           error;
 
 irc_away: AWAY '=' STRING ';'
 {
    MyFree(IRCItem->away);
    IRCItem->away = DupString($3);
-};
-
-irc_channels: CHANNELS '=' STRING ';'
-{
-   MyFree(IRCItem->channels);
-   IRCItem->channels = DupString($3);
-};
-
-irc_keys: KEYS '=' STRING ';'
-{
-   MyFree(IRCItem->keys);
-   IRCItem->keys = DupString($3);
 };
 
 irc_mode: MODE '=' STRING ';'
@@ -158,7 +146,7 @@ irc_password: PASSWORD '=' STRING ';'
    IRCItem->password = DupString($3);
 };
 
-irc_port: PASSWORD '=' NUMBER ';'
+irc_port: PORT '=' NUMBER ';'
 {
    IRCItem->port = $3;
 };
@@ -188,6 +176,46 @@ irc_vhost: VHOST '=' STRING ';'
 };
 
 
+/************************** CHANNEL BLOCK *************************/
+
+channel_entry: 
+{
+   node_t *node;
+   struct ChannelConf *item;
+
+   item = MyMalloc(sizeof(struct UserConf));
+
+   item->name = DupString("");
+   item->key = DupString("");
+
+   node = node_create(item);
+   list_add(IRCItem->channels, node);
+
+   tmp = (void *) item;
+}
+CHANNEL '{' channel_items '}' ';';
+
+channel_items: channel_items channel_item |
+               channel_item;
+
+channel_item:  channel_name |
+               channel_key;
+
+channel_name: NAME '=' STRING ';'
+{
+   struct ChannelConf *item = tmp;
+
+   MyFree(item->name);
+   item->name = DupString($3);
+};
+
+channel_key: KEY '=' STRING ';'
+{
+   struct ChannelConf *item = tmp;
+
+   MyFree(item->name);
+   item->name = DupString($3);
+};
 
 /*************************** USER BLOCK ***************************/
 

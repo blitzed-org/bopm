@@ -20,13 +20,6 @@ along with this program; if not, write to the Free Software
  
 */
 
-/* The old sockaddr_in or in_addr structures were replaced with
- * bopm based newer structures.
- * Also took inetpton and friends from hybrid7/trircd5 tree
- * Implemented ipv6.
- * -TimeMr14C
- */
-
 #include "setup.h"
 
 #include <stdio.h>
@@ -81,16 +74,12 @@ static void irc_reconnect(void);
 static void irc_read(void);
 static void irc_parse(void);
 static void do_perform(void);
-static void do_connect(char *addr, char *irc_nick, char *irc_user,
-                       char *irc_addr, char *conn_notice);
-static void do_hybrid_connect(int tokens, char **token);
-static void do_trircd_connect(int tokens, char **token);
-static void do_ultimateircd_connect(int tokens, char **token);
-static void do_xnet_connect(int tokens, char **token);
-static char *get_chan_key(const char *channel);
-static char *check_channel(const char *channel);
 
-extern char *CONFFILE;
+static struct ChannelConf *get_channel(const char *channel);
+
+static void m_ping();
+static void m_invite();
+
 extern time_t LAST_REAP_TIME;
 extern struct cnode *nc_head;
 
@@ -99,30 +88,37 @@ extern struct cnode *nc_head;
  * again so global scope is given.
  */
 
-char                IRC_RAW[MSGLENMAX];      /* Buffer to read data into              */
-char                IRC_SENDBUFF[MSGLENMAX]; /* Send buffer                           */
-int                 IRC_RAW_LEN = 0;         /* Position of IRC_RAW                   */
+char                IRC_RAW[MSGLENMAX];         /* Buffer to read data into              */
+char                IRC_SENDBUFF[MSGLENMAX];    /* Send buffer                           */
+int                 IRC_RAW_LEN    = 0;         /* Position of IRC_RAW                   */
 
-int remote_is_ipv6 = 0;
-int bindto_ipv6 = 0;
+int                 remote_is_ipv6 = 0;
+int                 bindto_ipv6    = 0;
 
-int                 IRC_FD = -1;      /* File descriptor for IRC client        */
+int                 IRC_FD         = -1;        /* File descriptor for IRC client        */
 
-struct bopm_sockaddr IRC_SVR;        /* Sock Address Struct for IRC server    */
-struct bopm_ircaddr IRC_LOCAL;      /* Sock Address Struct for Bind          */
+struct bopm_sockaddr IRC_SVR;                   /* Sock Address Struct for IRC server    */
+struct bopm_ircaddr IRC_LOCAL;                  /* Sock Address Struct for Bind          */
 
 unsigned int ssize = -1;
 unsigned int isize = -1;
 
-struct hostent     *IRC_HOST;         /* Hostent struct for IRC server         */
-fd_set              IRC_READ_FDSET;   /* fd_set for IRC (read) data for select()*/
+struct hostent     *IRC_HOST;                   /* Hostent struct for IRC server         */
+fd_set              IRC_READ_FDSET;             /* fd_set for IRC (read) data for select()*/
 
-struct timeval      IRC_TIMEOUT;      /* timeval struct for select() timeout   */
-time_t              IRC_NICKSERV_LAST = 0; /* Last notice from nickserv        */
-time_t              IRC_LAST = 0;     /* Last full line of data from irc server*/
+struct timeval      IRC_TIMEOUT;                /* timeval struct for select() timeout   */
+time_t              IRC_NICKSERV_LAST = 0;      /* Last notice from nickserv             */
+time_t              IRC_LAST = 0;               /* Last full line of data from irc server*/
+
+char                *parv[15];
+int                  parc;
 
 
-
+struct CommandHash COMMAND_TABLE[] = {
+   {"PING",                 m_ping    },
+   {"INVITE",               m_invite  },
+   {"001",                  do_perform}
+};
 
 /* irc_cycle
  *
@@ -140,11 +136,6 @@ void irc_cycle(void)
 {
     if (IRC_FD <= 0)
     {
-        /* No socket open. */
-
-        /* Reload config. */
-        //config_load(CONFFILE);
-
         /* Initialise negative cache. */
         if (OptionsItem->negcache > 0)
            nc_init(&nc_head);
@@ -385,7 +376,9 @@ void irc_send(char *data, ...)
 
     if (send(IRC_FD, tosend, strlen(tosend), 0) == -1)
     {
+
         /* Return of -1 indicates error sending data; we reconnect. */
+        log("IRC -> Error sending data to server\n");
         irc_reconnect();
     }
 }
@@ -444,23 +437,26 @@ static void irc_connect(void)
 #endif /* WITH_UNREAL */
 
     irc_send("NICK %s", IRCItem->nick);
+
     if(strlen(IRCItem->password) > 0)
         irc_send("PASS %s", IRCItem->password);
-    irc_send("USER %s %s %s :%s", IRCItem->username, IRCItem->username, IRCItem->username,
+
+    irc_send("USER %s %s %s :%s", 
+             IRCItem->username, IRCItem->username, IRCItem->username,
              IRCItem->realname);
 }
 
 
 static void irc_reconnect(void)
 {
+
     if(IRC_FD > 0)
         close(IRC_FD);
 
     /* Set IRC_FD 0 for reconnection on next irc_cycle(). */
     IRC_FD = 0;
 
-    log("IRC -> Connection to (%s) lost, rehashing and reconnecting.",
-        IRCItem->server);
+    log("IRC -> Connection to (%s) lost, reconnecting.", IRCItem->server);
 }
 
 /*
@@ -473,21 +469,15 @@ static void irc_read(void)
     int len;
     char c;
 
-    while ((len = read(IRC_FD, &c, 1)))
+    while ((len = read(IRC_FD, &c, 1)) > 0)
     {
-        if (len <= 0)
-        {
-            irc_reconnect();
-            return;
-        }
-
         if (c == '\r')
             continue;
 
         if (c == '\n')
         {
             /* Null string. */
-            IRC_RAW[IRC_RAW_LEN] = 0;
+            IRC_RAW[IRC_RAW_LEN] = '\0';
             /* Parse line. */
             irc_parse();
             /* Reset counter. */
@@ -495,277 +485,94 @@ static void irc_read(void)
             break;
         }
 
-        if (c != '\r' && c != '\n' && c != 0)
+        if (c != '\r' && c != '\n' && c != '\0')
             IRC_RAW[IRC_RAW_LEN++] = c;
     }
 
-    if (len <= 0)
+    if(len == -1 && errno != EAGAIN)
     {
-        irc_reconnect();
-        return;
+       log("IRC -> Read error.");
+       irc_reconnect();
+       IRC_RAW_LEN = 0;
+       return;
     }
 }
 
 /*
- * A full line has been read by irc_read(); this function begins parsing it.
+ * A full line has been read by irc_read(); this function breaks the line
+ * into parv[]. 
  */
 
 static void irc_parse(void)
 {
-    char nick[NICKMAX];
-    char *token[32];
-    time_t present;
-    size_t prefixlen;
-    unsigned int tokens;
-    char *irc_channel, *key, *user, *target, *msg;
+   char *pos;
+   int i;
 
-    tokens = 0;
+   parc = 1;
 
-    /* Update timeout tracking. */
-    time(&IRC_LAST);
+   if(IRC_RAW_LEN <= 0)
+      return;
 
-    if(OPT_DEBUG >= 2)
-        log("IRC READ -> %s", IRC_RAW);
+   if (OPT_DEBUG >= 2)
+      log("IRC READ -> %s", IRC_RAW);
 
-    /*
-     * Tokenize the first 32 words in the incoming data, we really don't
-     * need to worry about anything else and we don't need the original
-     * string for anything.
-     */
+   time(&IRC_LAST);
 
-    token[tokens] = strtok(IRC_RAW, " ");
+   /* parv[0] is always the source */
+   if(IRC_RAW[0] == ':')
+      parv[0] = IRC_RAW + 1;
+   else
+   {
+      parv[0] = IRCItem->server;
+      parv[parc++] = IRC_RAW;
+   }
 
-    while (++tokens < 32 && (token[tokens] = strtok(NULL, " ")))
-        ;
+   pos = IRC_RAW;
+ 
+   while(pos = strchr(pos, ' '))
+   {
 
-    /* Anything with less than 1 token is useless to us. */
+      /* Avoid excessive spaces and end of IRC_RAW */
+      if(*(pos + 1) == ' ' && *(pos + 1) == '\0')
+      {
+         pos++;
+         continue;
+      }
 
-    if (tokens <= 1)
-        return;
+      /* Anything after a : is considered the final string of the
+            message */
+      if(*(pos + 1) == ':')
+      {
+         parv[parc++] = pos + 2;
+         *pos = '\0';
+         break;
+      }
+        
+      /* Set the next parv at this position and replace the space with a 
+         \0 for the previous parv */
+      parv[parc++] = pos + 1;
+      *pos = '\0';
+      pos++;
+   }
 
-    if (!strcasecmp(token[0], "PING"))
-    {
-        irc_send("PONG %s", token[1]);
-        return;
-    }
+   /* Determine which command this is from the command table 
+      and let the handler for that command take control */
 
-    /* 001 is sent on initial connect to the IRC host. */
-
-    if (!strcasecmp(token[1], "001"))
-    {
-        if(IRCItem->away > 0)
-            irc_send("AWAY :%s (/msg %s INFO)", IRCItem->away, IRCItem->nick);
-        irc_send("OPER %s", IRCItem->oper);
-        irc_send("MODE %s %s", IRCItem->nick, IRCItem->mode);
-        do_perform();
-        return;
-    }
-
-    /* 471, 473, 474, 475 are 'Cannot Join' messages. */
-
-    if (!strcasecmp(token[1], "471") ||
-            !strcasecmp(token[1], "473") ||
-            !strcasecmp(token[1], "474") ||
-            !strcasecmp(token[1], "475"))
-    {
-        // FIXME
-        //	if(CONF_CHANSERV_INVITE) {
-        /* 4th token is channel we can't join. */
-        //		irc_send(CONF_CHANSERV_INVITE, token[3]);
-        //	}
-        return;
-    }
-
-    /*
-     * Handle invites, complicated code ahead is due to a decision not to
-     * use strtok() or strstr() in the following block
-     */
-
-    if (!strcasecmp(token[1], "INVITE"))
-    {
-        /* token 4 is the channel, + 1 to shift past ':'. */
-        irc_channel = check_channel(token[3] + 1);
-
-        if (irc_channel)
-        {
-            key = get_chan_key(irc_channel);
-
-            if (key)
-                irc_send("JOIN %s %s", irc_channel, key);
-            else
-                irc_send("JOIN %s", irc_channel);
-
-            return;
-        }
-    }
-
-    /* Handle nickserv identification. */
-    //FIXME
-    //	if (!strcasecmp(token[1], "NOTICE") && strchr(token[0], '@')) {
-    //		if (CONF_NICKSERV_IDENT &&
-    //		    !strcasecmp(strtok(token[0] + 1, "!") , "NICKSERV")) {
-    //			time(&present);
-    /*
-     * If last used notice was greater than/equal to
-     * 10 sec ago
-     */
-    //			if ((present - IRC_NICKSERV_LAST) >= 10) {
-    /* Identify to nickserv. */
-    //				irc_send(CONF_NICKSERV_IDENT);
-    /* Record last ident. */
-    //				time(&IRC_NICKSERV_LAST);
-    //			}
-    //			return;
-    //		}
-    //          }
-
-    /* Handle rejoining when kicked. */
-
-    /* :grifferz!goats@pc-62-30-219-54-pb.blueyonder.co.uk KICK #wg penguinBopm :test */
-    if (!strcasecmp(token[1], "KICK") &&
-            !strcasecmp(token[3], IRCItem->nick))
-    {
-        /*
-         * Someone kicked us from channel token[2] so let's
-         * rejoin.
-         */
-        log("IRC -> Kicked from %s by %s! (%s)", token[2],
-            token[0], token[4]);
-        key = get_chan_key(token[2]);
-
-        if (key)
-            irc_send("JOIN %s %s", token[2], key);
-        else
-            irc_send("JOIN %s", token[2]);
-        return;
-    }
-
-    /* Any messages from users that we need to respond to. */
-    if (!strcasecmp(token[1], "PRIVMSG") && token[0][0] == ':')
-    {
-        /* work out who it was from */
-        strncpy(nick, token[0] + 1, NICKMAX);
-        user = index(nick, '!');
-
-        if(user)
-        {
-            /*
-             * Nick is currently the first 32 chars of a userhost,
-             * so null terminate at !
-             */
-            *user = '\0';
-
-            msg = token[3];
-
-            if (msg && msg[0] == ':')
-                msg++;
-
-            prefixlen = strlen(msg);
-
-            if (token[2][0] == '#' || token[2][0] == '&')
-                target = IRCItem->channels;
-            else
-                target = nick;
-
-            /* CTCP VERSION */
-            if (strncasecmp(msg, "\001VERSION\001", 9) == 0)
-            {
-                irc_send("NOTICE %s :\001VERSION Blitzed "
-                         "Open Proxy Monitor %s\001", nick,
-                         VERSION);
-                return;
-            }
-
-            if (strncasecmp(msg, "INFO", 4) == 0)
-            {
-                irc_send("NOTICE %s :This bot is designed "
-                         "to scan incoming connections for the "
-                         "presence of open SOCKS, HTTP and "
-                         "other similar servers.", nick);
-                irc_send("NOTICE %s :These misconfigured "
-                         "servers allow anyone to abuse them "
-                         "to 'bounce' through, and are "
-                         "frequently used to harass.  As a "
-                         "result, use of such proxies is not "
-                         "permitted on this IRC network.", nick);
-                irc_send("NOTICE %s :If you found this bot "
-                         "because of NukeNabber or other "
-                         "firewall software on your computer, "
-                         "please be aware that this is not "
-                         "a nuke or any other form of abusive "
-                         "activity.", nick);
-                //FIXME
-                //irc_send("NOTICE %s :You can get more "
-                //    "information about this bot and what "
-                //    "it does by contacting %s.", nick,
-                //    CONF_HELP_EMAIL);
-                return;
-            }
-
-            if (strncasecmp(msg, IRCItem->nick,
-                            prefixlen > 3 ? prefixlen : 3) &&
-                    strcasecmp(msg, "!all"))
-            {
-                /*
-                 * Not in the form we accept, ignore this
-                 * message
-                 */
-                return;
-            }
-
-            if (!token[4])
-            {
-                irc_send("PRIVMSG %s :Some form of "
-                         "command would be nice.", target);
-                return;
-            }
-
-            if (strncasecmp(token[4], "STAT", 4) == 0)
-            {
-                //do_stats(target);
-                return;
-            }
-
-            /* Otherwise it might be an oper command. */
-            do_oper_cmd(nick, token[4], token[5], target);
-        }
-    }
-
-    if (!strcasecmp(token[1], "302"))
-    {
-        check_userhost(token[3]);
-        return;
-    }
-
-    /* Search for +c notices. */
-    /* Some ircd (just hybrid/xnet/df?) don't send a server name. */
-    if (tokens >= 11 && strcasecmp(token[0], "NOTICE") == 0 &&
-            strcasecmp(token[6], "connecting:") == 0)
-        do_xnet_connect(tokens, token);
-
-    if (token[0][0] == ':')
-    {
-        /* Toss any notices NOT from a server. */
-
-        if (strchr(token[0], '@'))
-            return;
-
-        if (tokens >= 11 && strcmp(token[7], "connecting:") == 0)
-            do_hybrid_connect(tokens, token);
-        else if (tokens >= 9 && strcmp(token[4], "connecting:") == 0)
-            do_trircd_connect(tokens, token);
-        else if (tokens >= 17 && strcmp(token[8], "Client") == 0 &&
-                 strcmp(token[9], "connecting") == 0)
-            do_ultimateircd_connect(tokens, token);
-    }
+   for(i = 0; i < (sizeof(COMMAND_TABLE) / sizeof(struct CommandHash)); i++) 
+      if(strcasecmp(COMMAND_TABLE[i].command, parv[1]) == 0)
+         COMMAND_TABLE[i].handler();
 }
 
-/*
- * Perform on connect functions.
+/*  do_perform
+ *
+ *     Actions to perform when successfully connected to IRC.
  */
 
 static void do_perform(void)
 {
+    node_t *node;
+    struct ChannelConf *channel;
+
     log("IRC -> Connected to %s:%d", IRCItem->server, IRCItem->port);
 
     //FIXME
@@ -774,11 +581,28 @@ static void do_perform(void)
     //	irc_send(CONF_NICKSERV_IDENT);
     //	}
 
+    /* Oper */
+    irc_send("OPER %s", IRCItem->oper);
+
+    /* Set modes */
+    irc_send("MODE %s %s", IRCItem->nick, IRCItem->mode);
+
+    /* Set Away */   
+    irc_send("AWAY :%s", IRCItem->away);
+ 
     /* Join all listed channels. */
-    if (strlen(IRCItem->keys) > 0)
-        irc_send("JOIN %s %s", IRCItem->channels, IRCItem->keys);
-    else
-        irc_send("JOIN %s", IRCItem->channels);
+    LIST_FOREACH(node, IRCItem->channels->head)
+    {
+       channel = (struct ChannelConf *) node->data;
+      
+       if(strlen(channel->name) == 0)
+          continue;
+
+       if(strlen(channel->key) > 0)
+          irc_send("JOIN %s %s", channel->name, channel->key);
+       else
+          irc_send("JOIN %s", channel->name);
+    }
 }
 
 /*
@@ -796,8 +620,9 @@ void irc_timer(void)
     /* No data in NODATA_TIMEOUT minutes (set in options.h). */
     if (delta >= NODATA_TIMEOUT)
     {
+        log("IRC -> Timeout awaiting data from server.");
         irc_reconnect();
-        /* Make sure we dont do this again for another 5 minutes */
+        /* Make sure we dont do this again for a while */
         time(&IRC_LAST);
     }
     else if (delta >= NODATA_TIMEOUT / 2)
@@ -818,313 +643,62 @@ void irc_timer(void)
     }
 }
 
-static void do_connect(char *addr, char *irc_nick, char *irc_user,
-                       char *irc_addr, char *conn_notice)
-{
-    struct bopm_sockaddr ipaddr;
-    int aftype;
-
-    /*
-     * Check that neither the user's IP nor host matches anything in our
-     * exclude list.
-     */
-    /* FIXME
-    	for (list = ((string_list *) CONF_EXCLUDE)->next; list; list = list->next) {
-    		if (match(list->text, addr) || match(list->text, irc_addr)) {
-    			if (OPT_DEBUG) {
-    				log("SCAN -> excluded user %s!%s@%s",
-    				    irc_nick, irc_user, irc_addr);
-    			}
-    			return;
-    		}
-    	}
-    */
-    /* FIXME: Ipv6 is required here */
-
-    if (strchr(addr, ':'))
-    {
-        aftype = AF_INET6;
-    }
-    else
-    {
-        aftype = AF_INET;
-
-        if (OptionsItem->negcache > 0) 
-        {
-           if (!inetpton(AF_INET, addr, &(ipaddr.sas.sa4.sin_addr))) 
-           {
-              log("Invalid address %s", addr);
-              return;
-           }  
-
-        /* Now check it isn't in our negative cache. */
-           if (check_neg_cache(ipaddr.sas.sa4.sin_addr.s_addr)) 
-           {
-              log("%s is negatively cached, skipping checks", addr);
-              return;
-           }
-        }
-    }
-
-    /*
-     * Enqueue a warning for this person.
-     */
-    //FIXME
-    //	if (CONF_SCAN_WARNING)
-    //  	add_warning(irc_nick);
-
-    //	if (CONF_DNSBL_ZONE &&
-    //	    dnsbl_check(addr, irc_nick, irc_user, irc_addr))
-    //		return;
-
-    //scan_connect(addr, irc_addr, irc_nick, irc_user, 0, AF_INET, conn_notice);
-}
-
-/*
- * :porkscratchings.pa.us.blitzed.org NOTICE grifferz :*** Notice -- Client connecting: griff (goats@pc-62-30-219-54-pb.blueyonder.co.uk) [62.30.219.54] {1}
- */
-static void do_hybrid_connect(int tokens, char **token)
-{
-    char conn_notice[MSGLENMAX];
-    char *addr;	/* IP of remote host in connection notices */
-    char *irc_addr;	/* IRC host address of the remote host     */
-    char *irc_user;
-    char *irc_nick;
-
-    /* Paranoia. */
-    if (tokens < 11)
-        return;
-
-    /*
-     * Take a copy of the original connect notice now in case we need it
-     * for evidence later.
-     */
-    snprintf(conn_notice, sizeof(conn_notice),
-             "%s %s %s %s %s %s %s %s %s %s %s", token[0], token[1],
-             token[2], token[3], token[4], token[5], token[6], token[7],
-             token[8], token[9], token[10]);
-
-    /* Make sure it is null terminated. */
-    conn_notice[MSGLENMAX - 1] = '\0';
-
-    /*
-     * Token 11 is the IP of the remote host enclosed in [ ]. We need
-     * to remove it from [ ] and pass it to the scanner.
-     */
-
-    /* Shift over 1 byte to pass over [. */
-    addr = token[10] + 1;
-    /* Replace ] with a \0. */
-    addr = strtok(addr, "]");
-
-    /* Token 9 is the nickname of the connecting client. */
-    irc_nick = token[8];
-
-    /*
-     * Token 10 is (user@host), we want to parse the user/host out for
-     * future reference in case we need to kline the host.
-     */
-
-    /* Shift one byte over to discard '('. */
-    irc_user = token[9] + 1;
-    /* Username is everything before the '@'. */
-    if(!(irc_user = strtok(irc_user, "@")))
-        return;
-    /* irc_addr is everything between '@' and closing ')'. */
-    if(!(irc_addr = strtok(NULL , ")")))
-        return;
-
-    do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
-}
-
-/*
- * :test.teklan.com.tr NOTICE &CONNECTS :Client connecting: griff (andy@pc-62-30-219-54-pb.blueyonder.co.uk) [62.30.219.54] {1}
- */
-static void do_trircd_connect(int tokens, char **token)
-{
-    char conn_notice[MSGLENMAX];
-    char *addr;	/* IP of remote host in connection notices */
-    char *irc_addr;	/* IRC host address of the remote host     */
-    char *irc_user;
-    char *irc_nick;
-
-    /* Paranoia. */
-    if (tokens < 9)
-        return;
-
-    /*
-     * Take a copy of the original connect notice now in case we need it
-     * for evidence later.
-     */
-    snprintf(conn_notice, sizeof(conn_notice),
-             "%s %s %s %s %s %s %s %s %s", token[0], token[1], token[2],
-             token[3], token[4], token[5], token[6], token[7], token[8]);
-
-    /* Make sure it is null terminated. */
-    conn_notice[MSGLENMAX - 1] = '\0';
-
-    /*
-     * Token 8 is the IP of the remote host enclosed in [ ]. We need
-     * to remove it from [ ] and pass it to the scanner.
-     */
-
-    /* Shift over 1 byte to pass over [. */
-    addr = token[7] + 1;
-    /* Replace ] with a \0. */
-    addr = strtok(addr, "]");
-
-    /* Token 6 is the nickname of the connecting client */
-    irc_nick = token[5];
-
-    /*
-     * Token 7 is (user@host), we want to parse the user/host out for
-     * future reference in case we need to kline the host.
-     */
-
-    /* Shift one byte over to discard '('. */
-    irc_user = token[6] + 1;
-    /* username is everything before the '@' */
-    if(!(irc_user = strtok(irc_user, "@")))
-        return;
-    /* irc_addr is everything between '@' and closing ')' */
-    if(!(irc_addr = strtok(NULL , ")")))
-        return;
-
-    do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
-}
-
-/*
- * :CurCuNa.NeT NOTICE AndyBopm :*** Connect/Exit -- from CurCuNa.NeT: Client connecting on port 6667: Misafir (jirc@213.14.40.51) [213.14.40.51] {1} [JPilot jIRC applet User]
- */
-static void do_ultimateircd_connect(int tokens, char **token)
-{
-    char conn_notice[MSGLENMAX];
-    char *addr;	/* IP of remote host in connection notices */
-    char *irc_addr;	/* IRC host address of the remote host     */
-    char *irc_user;
-    char *irc_nick;
-
-    /* Paranoia. */
-    if (tokens < 17)
-        return;
-
-    /*
-     * Take a copy of the original connect notice now in case we need it
-     * for evidence later.
-     */
-    snprintf(conn_notice, sizeof(conn_notice),
-             "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s", token[0],
-             token[1], token[2], token[3], token[4], token[5], token[6],
-             token[7], token[8], token[9], token[10], token[11], token[12],
-             token[13], token[14], token[15], token[16]);
-
-    /* Make sure it is null terminated. */
-    conn_notice[MSGLENMAX - 1] = '\0';
-
-    /*
-     * Token 16 is the IP of the remote host enclosed in [ ]. We need
-     * to remove it from [ ] and pass it to the scanner.
-     */
-
-    /* Shift over 1 byte to pass over [. */
-    addr = token[15] + 1;
-    /* Replace ] with a \0. */
-    addr = strtok(addr, "]");
-
-    /* Token 14 is the nickname of the connecting client. */
-    irc_nick = token[13];
-
-    /*
-     * Token 15 is (user@host), we want to parse the user/host out for
-     * future reference in case we need to kline the host.
-     */
-
-    /* Shift one byte over to discard '('. */
-    irc_user = token[14] + 1;
-    /* Username is everything before the '@'. */
-    if(!(irc_user = strtok(irc_user, "@")))
-        return;
-    /* irc_addr is everything between '@' and closing ')' */
-    if(!(irc_addr = strtok(NULL , ")")))
-        return;
-
-    do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
-}
-
-
-
-/*
- * NOTICE BopmMirage :*** Notice -- Client connecting: Iain (iain@modem-449.gacked.dialup.pol.co.uk) [62.25.241.193] {1} (6667)
- */
-static void do_xnet_connect(int tokens, char **token)
-{
-    char conn_notice[MSGLENMAX];
-    char *addr;	/* IP of remote host in connection notices */
-    char *irc_addr;	/* IRC host address of the remote host     */
-    char *irc_user;
-    char *irc_nick;
-
-    /* Paranoia. */
-    if (tokens < 11)
-        return;
-
-    /* Take a copy of the original connect notice now in case we need
-     * it for evidence later.
-     */
-    snprintf(conn_notice, sizeof(conn_notice),
-             "%s %s %s %s %s %s %s %s %s %s %s", token[0], token[1],
-             token[2], token[3], token[4], token[5], token[6], token[7],
-             token[8], token[9], token[10]);
-
-    /* Make sure it is null terminated. */
-    conn_notice[MSGLENMAX - 1] = '\0';
-
-    /*
-     * Token 10 is the IP of the remote host enclosed in [ ]. We need to
-     * remove it from [ ] and pass it to the scanner.
-     */
-
-    /* Shift over 1 byte to pass over [. */
-    addr = token[9] + 1;
-    /* Replace ] with a \0. */
-    addr = strtok(addr, "]");
-
-    /* Token 8 is the nickname of the connecting client. */
-    irc_nick = token[7];
-
-    /*
-     * Token 9 is (user@host), we want to parse the user/host out for
-     * future reference in case we need to kline the host.
-     */
-
-    /* Shift one byte over to discard '('. */
-    irc_user = token[8] + 1;
-    /* Username is everything before the '@'. */
-    if(!(irc_user = strtok(irc_user, "@")))
-        return;
-    /* irc_addr is everything between '@' and closing ')'. */
-    if(!(irc_addr = strtok(NULL , ")")))
-        return;
-
-    do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
-}
-
-/*
- * Return a pointer into CONF_KEYS for the given channel, or NULL if there
- * is no key.
- */
-static char *get_chan_key(const char *channel)
-{
-    //FIXME
-    return "FIXME";
-}
-
 /*
  * Check if channel is one of our configured report channels, and return a
  * pointer to it if so, or NULL if not.
  */
-static char *check_channel(const char *channel)
+static struct ChannelConf *get_channel(const char *channel)
 {
-    //FIXME
+    node_t *node;
+    struct ChannelConf *item;
+
+    LIST_FOREACH(node, IRCItem->channels->head)
+    {
+       item = node->data;
+       
+       if(strcasecmp(item->name, channel) == 0)
+          return item;
+    }
+
     return NULL;
+}
+
+
+/* m_ping
+ *
+ * parv[0]  = source
+ * parv[1]  = PING
+ * parv[2]  = PING TS/Package
+ *
+ */
+static void m_ping()
+{
+   if(OPT_DEBUG >= 2)
+      log("IRC -> PING? PONG!\n");
+
+   irc_send("PONG %s", parv[2]);
+}
+
+
+
+/* m_invite
+ *
+ * parv[0]  = source
+ * parv[1]  = INVITE
+ * parv[2]  = target
+ * parv[3]  = channel
+ *
+ */
+
+static void m_invite()
+{
+
+   struct ChannelConf *channel;
+
+   log("IRC -> Invited to %s by %s", parv[3], parv[0]);
+
+   if((channel = get_channel(parv[3])) == NULL)
+      return;
+
+   irc_send("JOIN %s %s", channel->name, channel->key);
 }

@@ -6,10 +6,8 @@
 #define NICKMAX 32
 #define MSGLENMAX 513
 
-extern void irc_send(char *data, ...);
-extern void irc_kline(char *addr, char *ip);
-extern void irc_cycle(void);
-extern void irc_timer(void);
+
+typedef void (*irc_command) (void);
 
 struct bopm_sockaddr
 {
@@ -36,8 +34,30 @@ struct bopm_ircaddr
     } ins;
 };
 
-int remote_is_ipv6;
-int bindto_ipv6;
+
+struct UserInfo 
+{
+   char *irc_nick;
+   char *irc_username;
+   char *irc_hostname;
+ 
+   char *ip;
+};
+
+struct CommandHash
+{
+   char       *command;
+   irc_command handler;
+};
+
+extern int remote_is_ipv6;
+extern int bindto_ipv6;
+
+extern void irc_send(char *data, ...);
+extern void irc_kline(char *addr, char *ip);
+extern void irc_cycle(void);
+extern void irc_timer(void);
+
 
 #define copy_s_addr(a, b)  \
 do { \

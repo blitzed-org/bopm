@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include "config.h"
 #include "malloc.h"
@@ -37,6 +38,7 @@ void config_init()
     /* Init IRC block */
     IRCItem = (struct IRCConf *) MyMalloc(sizeof(struct IRCConf));
     memset(IRCItem, 0, sizeof(struct IRCConf));
+    IRCItem->channels = list_create();
 
     /* Init Options block */
     OptionsItem = (struct OptionsConf *) MyMalloc(sizeof(struct OptionsConf));
@@ -53,8 +55,6 @@ void config_setup()
 
     /* Setup IRC Block Defaults */
     IRCItem->away = DupString("I'm a bot, don't message me");
-    IRCItem->channels = DupString("#bopm");
-    IRCItem->keys = DupString("");
     IRCItem->mode = DupString("+cs");
     IRCItem->nick = DupString("bopm");
     IRCItem->password = DupString("");

@@ -27,12 +27,17 @@ struct IRCConf
 
    char *vhost;
 
-   char *channels;
-   char *keys;
-
    char *oper;
    char *mode;
    char *away;
+
+   list_t *channels;   /* List of ChannelConf */
+};
+
+struct ChannelConf
+{
+   char *name;
+   char *key;         
 };
 
 struct OptionsConf
@@ -43,8 +48,8 @@ struct OptionsConf
 
 struct UserConf
 {
-   list_t *masks;
-   list_t *scanners;
+   list_t *masks;    /* List of char *    */
+   list_t *scanners; /* List of char *    */
 };
 
 struct ScannerConf

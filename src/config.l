@@ -93,11 +93,12 @@ whitespace             [ \t]*
                         }
 
 AWAY                    { return AWAY;     }
-CHANNELS                { return CHANNELS; }
+CHANNEL                 { return CHANNEL;  }
 IRC                     { return IRC;      }
-KEYS                    { return KEYS;     }
+KEY                     { return KEY;      }
 MASK                    { return MASK;     }
 MODE                    { return MODE;     }
+NAME                    { return NAME;     }
 NEGCACHE                { return NEGCACHE; }
 NICK                    { return NICK;     }
 OPER                    { return OPER;     }
