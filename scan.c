@@ -269,7 +269,7 @@ void scan_check()
 				    ss->irc_nick, ss->irc_user,
 				    ss->irc_addr);
                            ss->protocol->stat_numopen++; /* Increase number OPEN (insecure) of this type */
-                           ss->protocol->stat_num++;     /* Increase number attempted negotiated of this type */
+
                            ss->state = STATE_CLOSED;
                            
                            if(!ss->verbose)                     
