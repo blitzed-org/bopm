@@ -59,7 +59,9 @@ int dnsbl_check(const char *addr, const char *irc_nick,
 	struct in_addr in;
 	struct hostent *he;
 	char *buf;
+	char text_type[100];
 	unsigned char a, b, c, d;
+	int type;
   
 	if (!inet_aton(addr, &in)) {
 		log("DNSBL -> Invalid address '%s', ignoring.", addr);
@@ -126,9 +128,26 @@ int dnsbl_check(const char *addr, const char *irc_nick,
 	 * We got an answer, so we need to kline this IP now.
 	 */
 	irc_kline(irc_addr, (char *)addr);
-	log("DNSBL -> %s appears in BL zone %s", addr, CONF_DNSBL_ZONE);
-	irc_send("PRIVMSG %s :DNSBL: %s!%s@%s appears in BL zone %s",
-	    CONF_CHANNELS, irc_nick, irc_user, irc_addr, CONF_DNSBL_ZONE);
+
+	text_type[0] = '\0';
+	type = (int)he->h_addr_list[0][3];
+
+	if(type & DNSBL_TYPE_WG)
+	    strcat(text_type, "Wingate, ");
+	if(type & DNSBL_TYPE_SOCKS)
+	    strcat(text_type, "Socks, ");
+	if(type & DNSBL_TYPE_HTTP)
+	    strcat(text_type, "HTTP, ");
+	if(type & DNSBL_TYPE_CISCO)
+	    strcat(text_type, "Cisco, ");
+
+	*(strrchr(text_type, ',')) = '\0';
+	
+	log("DNSBL -> %s appears in BL zone %s type %s", addr, CONF_DNSBL_ZONE,
+		text_type);
+	irc_send("PRIVMSG %s :DNSBL: %s!%s@%s appears in BL zone %s type %s",
+	    CONF_CHANNELS, irc_nick, irc_user, irc_addr, CONF_DNSBL_ZONE,
+	    text_type);
 
 	STAT_DNSBL_MATCHES++;
 	return(1);
