@@ -881,6 +881,13 @@ void scan_manual(char *param, struct ChannelConf *target)
    node_t *p;
    int ret;
 
+   /* If there were no parameters sent, simply alert the user and return */
+   if(param == NULL)
+   {
+      irc_send("PRIVMSG %s :OPM -> Invalid parameters.", target->name);
+      return;
+   }
+
    /* Try to extract a scanner name from param, otherwise we'll be
       adding to all scanners */
    ip = param;
