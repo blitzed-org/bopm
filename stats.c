@@ -47,34 +47,37 @@ unsigned int STAT_DNSBL_MATCHES;
 extern protocol_hash SCAN_PROTOCOLS[];
 extern size_t SCAN_NUMPROTOCOLS;
 
-void do_stats_init()
+void do_stats_init(void)
 {
-   STAT_START_TIME = time(NULL);
-   STAT_NUM_CONNECTS = 0;
+	STAT_START_TIME = time(NULL);
+	STAT_NUM_CONNECTS = 0;
 }
 
 void do_stats(const char *target)
 {
-   size_t i;
-   time_t now = time(NULL);
-   time_t uptime = now - STAT_START_TIME;
+	time_t now, uptime;
+	size_t i;
+
+	now = time(NULL);
+	uptime = now - STAT_START_TIME;
  
-   irc_send("PRIVMSG %s :Uptime: %s", target,
-	    dissect_time(uptime));
+	irc_send("PRIVMSG %s :Uptime: %s", target, dissect_time(uptime));
 
-   if(CONF_DNSBL_ZONE)
-      irc_send("PRIVMSG %s :DNSBL: %u successful lookup%s from zone %s",
-	       target, STAT_DNSBL_MATCHES,
-	       STAT_DNSBL_MATCHES == 1 ? "" : "s", CONF_DNSBL_ZONE);
+	if (CONF_DNSBL_ZONE) {
+		irc_send("PRIVMSG %s :DNSBL: %u successful lookup%s from "
+		    "zone %s", target, STAT_DNSBL_MATCHES,
+		    STAT_DNSBL_MATCHES == 1 ? "" : "s", CONF_DNSBL_ZONE);
+	}
+	
+	for(i = 0; i < SCAN_NUMPROTOCOLS; i++) {
+		irc_send("PRIVMSG %s :Found %u %s (%d), %u open.", target,
+		    SCAN_PROTOCOLS[i].stat_num, SCAN_PROTOCOLS[i].type,
+		    SCAN_PROTOCOLS[i].port,SCAN_PROTOCOLS[i].stat_numopen);
+	}
 
-   for(i = 0; i < SCAN_NUMPROTOCOLS;i++)
-      irc_send("PRIVMSG %s :Found %u %s (%d), %u open.", target,  
-               SCAN_PROTOCOLS[i].stat_num, SCAN_PROTOCOLS[i].type,
-               SCAN_PROTOCOLS[i].port,SCAN_PROTOCOLS[i].stat_numopen);
-        
-   irc_send("PRIVMSG %s :Number of connects: %u (%.2f/minute)", target,
-	    STAT_NUM_CONNECTS, STAT_NUM_CONNECTS ?
+	irc_send("PRIVMSG %s :Number of connects: %u (%.2f/minute)",
+	    target, STAT_NUM_CONNECTS, STAT_NUM_CONNECTS ?
 	    (float)STAT_NUM_CONNECTS / ((float)uptime / 60.0) : 0.0);
 
-   return;
+	return;
 }
