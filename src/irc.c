@@ -674,7 +674,10 @@ static struct UserInfo *userinfo_create(char *source)
    }
 
    if(nick == NULL || username == NULL || hostname == NULL)
+   {
+      MyFree(tmp); 
       return NULL;
+   }
 
    ret = MyMalloc(sizeof(struct UserInfo));
 

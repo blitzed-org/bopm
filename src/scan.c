@@ -446,6 +446,7 @@ void scan_free(struct scan_struct *ss)
    MyFree(ss->proof);
 
    opm_remote_free(ss->remote);
+   MyFree(ss);
 }
 
 
