@@ -9,7 +9,7 @@
       void irc_reconnect();
       void irc_read();
       void irc_parse();
-      void irc_kline(char *addr);
+      void irc_kline(char *addr, char *ip);
       void irc_timer();
       void irc_send(char *data, ...);       
 

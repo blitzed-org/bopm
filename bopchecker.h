@@ -3,7 +3,7 @@
 
 void usage(char **argv);
 void log(char *data,...);
-void irc_kline(char *addr);
+void irc_kline(char *addr, char *ip);
 void dnsbl_report(struct scan_struct *ss);
 void irc_send(char *data, ...);
 int dnsbl_check(const char *addr, const char *irc_nick,

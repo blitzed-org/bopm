@@ -107,7 +107,7 @@ int dnsbl_check(const char *addr, const char *irc_nick,
    irc_send("PRIVMSG %s :DNSBL: %s!%s@%s appears in BL zone %s",
 	    CONF_CHANNELS, irc_nick, irc_user, irc_addr,
 	    CONF_DNSBL_ZONE);
-   irc_kline(irc_addr);
+   irc_kline(irc_addr, (char *)addr);
    STAT_DNSBL_MATCHES++;
    return(1);
 }

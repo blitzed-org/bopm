@@ -127,7 +127,7 @@ void log(char *data,...)
 	fprintf(stderr, "%s\n", data2);
 }
 
-void irc_kline(char *addr)
+void irc_kline(char *addr, char *ip)
 {
 }
 

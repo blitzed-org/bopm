@@ -249,9 +249,9 @@ void irc_send(char *data,...)
  * 
  */
 
-void irc_kline(char *addr)
+void irc_kline(char *addr, char *ip)
 {
-     irc_send(CONF_KLINE_COMMAND, addr);
+     irc_send(CONF_KLINE_COMMAND, addr, ip);
 }
 
 /* Create socket and connect to IRC server

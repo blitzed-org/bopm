@@ -88,13 +88,15 @@ SCANPORT 6667
 
 
 
-# KLINE_COMMAND <command> : Line used in issuing KLINES. One %s is required
-#                           within the line which will specify the klined host.
+# KLINE_COMMAND <command> : Line used in issuing KLINES. Two %s are required
+#                           within the line which will specify the klined
+#                           host and the IP address which you may find
+#                           useful in a URL.
 #                           Do not add anymore ':' characters after the initial
 #                           : character in the kline (even for a website) as
 #                           the IRCD will reject it.  
 
-KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitzed.org/proxy for more information.
+KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%s for more information.
 
 
 

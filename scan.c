@@ -266,7 +266,7 @@ void scan_check()
                     {
                         if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed and kline*/
                          {
-                           irc_kline(ss->irc_addr);
+                           irc_kline(ss->irc_addr, ss->addr);
 
 			   if(CONF_DNSBL_FROM && CONF_DNSBL_TO &&
 			      CONF_SENDMAIL && !ss->verbose)
