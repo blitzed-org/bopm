@@ -22,6 +22,8 @@ along with this program; if not, write to the Free Software
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +41,7 @@ along with this program; if not, write to the Free Software
 #include "config.h"
 
 extern struct scan_struct *CONNECTIONS;
+extern struct config_hash hash[];
 
 int OPT_DEBUG = 1;
 char *CONFNAME = DEFAULTNAME;
@@ -50,7 +53,7 @@ int main(int argc, char **argv)
 	struct hostent *he;
 	char *ip, *host;
 	struct scan_struct *ss;
-	int len, c;
+	int len, c, i, still_alive = 0;
 
 	while (1) {
 		c = getopt(argc, argv, "+c:");
@@ -79,6 +82,16 @@ int main(int argc, char **argv)
 	len = strlen(CONFNAME) + strlen(CONFEXT) + 2;
 	CONFFILE = (char *) malloc(len * sizeof(char));
 	snprintf(CONFFILE, len, "%s.%s", CONFNAME, CONFEXT);
+
+	/* The only things we need in a conf file are SCANIP and
+	 * SCANPORT */
+	for (i = 0; hash[i].key; i++) {
+		if (strcasecmp(hash[i].key, "SCANIP") != 0 &&
+		    strcasecmp(hash[i].key, "SCANPORT") != 0) {
+			/* nuke the required field */
+			hash[i].req = 0;
+		}
+	}
 
 	config_load(CONFFILE);
 	do_scan_init();
@@ -123,34 +136,43 @@ int main(int argc, char **argv)
 	scan_connect(ip, host, "*", "*", 1, 0);    /* Scan using verbose */
 
 	do {
-		int still_alive = 0;
-		
-		scan_timer();
+		still_alive = 0;
+
 		scan_cycle();
+		/* pause 1s */
+		sleep(1);
 
 		for (ss = CONNECTIONS; ss; ss = ss->next) {
-			if (ss->protocol->stat_numopen) {
-				if (strcasecmp("http", ss->protocol->type) == 0)
-					RC |= PROXY_HTTP;
-				else if (strcasecmp("socks4", ss->protocol->type) == 0)
-					RC |= PROXY_SOCKS4;
-				else if (strcasecmp("socks5", ss->protocol->type) == 0)
-					RC |= PROXY_SOCKS5;
-				else if (strcasecmp("wingate", ss->protocol->type) == 0)
-					RC |= PROXY_WINGATE;
-				else {
-					fprintf(stderr, "Unknown type %s!", ss->protocol->type);
+			if (ss->state != STATE_CLOSED) {
+				time_t now = time(NULL);
+				if ((now - ss->create_time) >= 30) {
+					/* timed out */
+					ss->state = STATE_CLOSED;
+				} else {
+					still_alive = 1;
+					break;
 				}
 			}
-
-			if (ss->state != STATE_CLOSED)
-				still_alive++;
 		}
+	} while (still_alive);
 
-		if (!still_alive) {
-			exit(RC);
+	/* All connections now closed, check what we got */
+	for (ss = CONNECTIONS; ss; ss = ss->next) {
+		if (ss->protocol->stat_numopen) {
+			if (strcasecmp("http", ss->protocol->type) == 0)
+				RC |= PROXY_HTTP;
+			else if (strcasecmp("socks4", ss->protocol->type) == 0)
+				RC |= PROXY_SOCKS4;
+			else if (strcasecmp("socks5", ss->protocol->type) == 0)
+				RC |= PROXY_SOCKS5;
+			else if (strcasecmp("wingate", ss->protocol->type) == 0)
+				RC |= PROXY_WINGATE;
+			else {
+				fprintf(stderr, "Unknown type %s!", ss->protocol->type);
+			}
 		}
-	} while(1);
+	}
+	exit(RC);
 }
 
 void usage(char **argv)

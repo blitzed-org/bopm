@@ -1,10 +1,10 @@
 #ifndef BOPCHECKER_H
 #define BOPCHECKER_H
 
-#define PROXY_HTTP    0x1
-#define PROXY_WINGATE 0x2
-#define PROXY_SOCKS4  0x4
-#define PROXY_SOCKS5  0x8
+#define PROXY_HTTP    0x10
+#define PROXY_WINGATE 0x20
+#define PROXY_SOCKS4  0x40
+#define PROXY_SOCKS5  0x80
 
 void usage(char **argv);
 void log(char *data,...);

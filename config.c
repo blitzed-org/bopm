@@ -80,7 +80,8 @@ config_hash hash[] = {
        {"DNSBL_TO",            TYPE_STRING, 0,0,    &CONF_DNSBL_TO           },
        {"SENDMAIL",            TYPE_STRING, 0,0,    &CONF_SENDMAIL           },
        {"HELP_EMAIL",          TYPE_STRING, 1,0,    &CONF_HELP_EMAIL         },
-       {"AWAY",                TYPE_STRING, 0,0,    &CONF_AWAY               },
+       {"AWAY",                TYPE_STRING, 1,0,    &CONF_AWAY               },
+       {0,                     0,           0,0,    0                        },
 };
 
 
