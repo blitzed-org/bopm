@@ -58,7 +58,7 @@ IRC {
        * can add this access for you.
        */
       invite = "chanserv :invite #wg";
-};
+   };
 
    /* Hybrid / Bahamut / Unreal (in HCN mode) */
    connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
