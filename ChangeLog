@@ -1,1 +1,187 @@
-[Jan 22 2002] 1.0 Initial Release
+2002-01-29 01:21  strtok
+
+	* version.h:
+
+	Version.h: Now 1.1
+	
+2002-01-29 00:23  andy
+
+	* bopchecker.c, bopchecker.h, config.c:
+
+	bopchecker.c:
+		Some reorganisation.
+	
+		"req" field of config hash is now zero'd for all but the parameters
+		we need for bopchecker to operate.
+	
+		Used a sleep(1) to reduce CPU usage.
+	
+	bopchecker.h:
+		Exit values have changed again!  0 and 1 are already in use within
+		bopm, so now 15-255 are reserved for bopchecker.
+	
+		HTTP    =  16
+		WinGate =  32
+		SOCKS4  =  64
+		SOCKS5  = 128
+	
+	config.c:
+		Terminated the config hash with a zero'd entry so that it is easy
+		to tell where it ends.
+	
+2002-01-29 00:15  strtok
+
+	* README, config.c:
+
+	README: Added rehash instructions
+	
+2002-01-28 01:37  andy
+
+	* README:
+
+	README:
+		Credits for PASSWORD option
+	
+2002-01-28 01:33  andy
+
+	* bopm.conf.sample, config.c, extern.h, irc.c:
+
+	config.c, extern.h:
+		Add PASSWORD config option.
+	irc.c:
+		Use PASSWORD if supplied.
+	bopm.conf.sample:
+		Document PASSWORD, fix typo on SERVER
+	
+2002-01-28 00:18  strtok
+
+	* config.c, config.h:
+
+	config.c/config.h: BOPM now exits if 'required' configuration parameters
+	are not set.
+	
+2002-01-27 14:17  andy
+
+	* bopchecker.c, bopchecker.h:
+
+	bopchecker.h:
+		Added bitmasks for the types of proxy.  HTTP is 1, Wingate 2,
+		SOCKS4 is 4 and SOCKS5 8.
+	
+	bopchecker.c:
+		Now returns a bitmask of the types of proxies found back to the
+		shell. THIS MEANS THAT VALUES > 1 MEAN A PROXY WAS FOUND AND 0
+		MEANS NO PROXY WAS FOUND, THIS IS THE EXACT OPPOSITE TO PRIOR
+		VERSIONS OF THIS PROGRAM!
+	
+2002-01-27 04:23  strtok
+
+	* irc.c:
+
+	irc.c: Fixed segfault if nickserv ident isnt defined in conf
+	
+2002-01-26 19:17  strtok
+
+	* config.c:
+
+	config.c: Replace C++ comment with C style comment (oops)
+	
+2002-01-25 22:58  andy
+
+	* bopm.conf.sample:
+
+	bopm.conf.sample:
+		Remove Blitzed address because of people sending us reports without
+	        contacting us.
+	
+2002-01-25 22:02  andy
+
+	* scan.c:
+
+	scan.c: Suggestion from Sotiris Tsimbonis that details go to channels
+	
+2002-01-25 21:14  andy
+
+	* README, bopm.conf.sample, dnsbl.c:
+
+	dnsbl.c: Allow reporting to multiple addresses
+	README: Note about Sotiris Tsimbonis' idea
+	bopm.conf.sample: Note about how to use multiple TO addresses
+	
+2002-01-25 15:27  andy
+
+	* irc.c:
+
+	irc.c: support & channels, bug found by Sotiris Tsimbonis <stsimb@irc.gr>.
+	
+2002-01-24 21:54  strtok
+
+	* INSTALL:
+
+	INSTALL: Updated INSTALL file to include information about options.h
+	
+2002-01-24 21:53  strtok
+
+	* irc.c, options.h:
+
+	irc.c/options.h: Added support for unreal ircds
+	
+2002-01-24 17:40  strtok
+
+	* README:
+
+	README: Added hybrid compatibility to README.
+	
+2002-01-24 10:41  andy
+
+	* bopm.conf.sample, config.c, extern.h, irc.c:
+
+	Added OPER_MODES config option to specify what modes the bopm will set on
+	itself after opering up.
+	
+2002-01-24 06:56  andy
+
+	* bopchecker.c:
+
+	bopchecker needs to time out too, doh.
+	
+2002-01-24 06:18  andy
+
+	* extern.h:
+
+	Remove CONF_PING, a config option that never was.
+	
+2002-01-24 06:07  andy
+
+	* INSTALL, README, bopchecker.c, extern.h, irc.c, main.c,
+	options.h:
+
+	Merged patch from Sotiris Tsimbonis <stsimb@irc.gr> with minor changes.
+	Adds a -c command line argument which tells bopm to use a different name
+	for log, pid and config files.  i.e. ./bopm -c myserver will use
+	myserver.conf, myserver.log, myserver.pid.
+	
+	The patch also makes bopm set umode -h on itself after opering, in order
+	to prevent the bot appearing in /stats p output (shows opers available to
+	help).
+	
+	bopchecker now takes the -c option also, in the same way as bopm.
+	
+2002-01-23 04:58  strtok
+
+	* ChangeLog:
+
+	ChangeLog: It's 2002!
+	
+2002-01-22 21:44  strtok
+
+	* bopm.conf.sample:
+
+	bopm.conf.sample: Fixed typo
+	
+2002-01-22 19:09  strtok
+
+	* ChangeLog:
+
+	ChangeLog: Added changelog
+	
