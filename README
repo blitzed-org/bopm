@@ -20,7 +20,7 @@ Requirements
 o An IRCd which presents connection notices in a format which BOPM
   recognises (see below).
 
-o A host will full connectivity for all the ports you wish to scan.  i.e. is
+o A host with full connectivity for all the ports you wish to scan.  i.e. is
   NOT transparently proxied -- many domestic internet connections have port 80
   transparently proxied and this produces completely unpredictable results,
   sometimes as severe as 100% of clients being K:lined!
