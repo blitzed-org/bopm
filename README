@@ -34,6 +34,14 @@ botnick <check> <host>  -- Manually scan host for insecure proxies and output al
 botnick stats           -- Output scan stats, uptime and client connection count.
 
 
+Rehashing the Configuration File
+--------------------------------
+
+Everytime BOPM reconnects to the IRC server it rereads 
+its configuration file. It is then possible to rehash
+the bot by /kill'ing it.
+
+
 Credits
 -------
 
