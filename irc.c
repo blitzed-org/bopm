@@ -31,6 +31,7 @@ along with this program; if not, write to the Free Software
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <time.h>
+#include <errno.h>
 
 #include "irc.h"
 #include "log.h"
@@ -105,7 +106,29 @@ void irc_connect()
    
        /* Resolve IRC host */
        if(!(IRC_HOST = gethostbyname(CONF_SERVER)))
-            return;    /* Generate ERROR here */
+          {
+               switch(h_errno)
+		{
+
+
+                    case HOST_NOT_FOUND:
+                              log("IRC -> gethostbyname(): The specified host (%s) is unknown", CONF_SERVER);
+			      exit(1);
+	            case NO_ADDRESS:
+			      log("IRC -> gethostbyname(): The specified name (%s) exists, but does not have an IP", CONF_SERVER);
+		              exit(1);
+		    case NO_RECOVERY:
+			      log("IRC -> gethostbyname(): An unrecoverable error occured resolving (%s)", CONF_SERVER);
+			      exit(1);
+                    case TRY_AGAIN:
+			      log("IRC -> gethostbyname(): Temporary error occured with authoritive name server (%s)", CONF_SERVER);
+			      exit(1);
+                    default:
+			      log("IRC -> gethostbyname(): Unknown error resolving (%s)", CONF_SERVER);
+
+		}
+
+          }
 
        IRC_SVR.sin_family      = AF_INET;
        IRC_SVR.sin_port        = htons(CONF_PORT);

@@ -82,11 +82,9 @@ void config_load(char *filename)
               if(!strcasecmp(key, hash[i].key))
                 {
                   if(!(int*) hash[i].function(args))
-                     log("CONFIG -> Bad line: %s",line);
-                  continue;
+                     log("CONFIG -> Bad line: %s",line);               
                 }
-
-            log("CONFIG -> Unknown Parameter: %s",line);   
+   
       }
     
 }

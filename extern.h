@@ -3,6 +3,8 @@
 
     #include "config.h"
 
+    extern int h_errno;
+
     extern char *CONF_SERVER;
     extern char *CONF_USER;
     extern char *CONF_NICK;
