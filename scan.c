@@ -133,7 +133,8 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
             newconn->irc_user = strdup(irc_user);
 	    newconn->verbose = verbose;
             newconn->bytes_read = 0; 
-                 
+            newconn->fd = 0;
+     
 	    if(conn_notice)
 	       newconn->conn_notice = strdup(conn_notice);
 	    else
@@ -372,11 +373,13 @@ void scan_check()
 
              for(ss = CONNECTIONS; ss; ss = ss->next)
               {
-                 if(FD_ISSET(ss->fd, &r_fdset) && (ss->state == STATE_SENT))                    
+
+                 if((ss->state == STATE_ESTABLISHED) && FD_ISSET(ss->fd, &w_fdset))
+                   scan_writeready(ss);
+
+                 if((ss->state == STATE_SENT) && FD_ISSET(ss->fd, &r_fdset))                    
                    scan_readready(ss);     
-                    
-                 if(FD_ISSET(ss->fd, &w_fdset))
-                   scan_writeready(ss);                                         
+                                                   
                }               
 #endif /* HAVE_SYS_POLL_H */
                         
