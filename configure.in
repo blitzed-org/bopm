@@ -23,4 +23,7 @@ AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
 AC_CHECK_FUNCS(select socket strdup strstr)
 
+dnl AIX fun
+AC_C_BIGENDIAN
+
 AC_OUTPUT(Makefile)

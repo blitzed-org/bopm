@@ -73,8 +73,12 @@ int dnsbl_check(const char *addr, const char *irc_nick,
    buflen = 18 + strlen(CONF_DNSBL_ZONE);
    buf = malloc(buflen * sizeof(char));
 
+#ifdef WORDS_BIGENDIAN
+   snprintf(buf, buflen, "%d.%d.%d.%d.%s.", a, b, c, d, CONF_DNSBL_ZONE);
+#else
    snprintf(buf, buflen, "%d.%d.%d.%d.%s.", d, c, b, a, CONF_DNSBL_ZONE);
-  
+#endif
+
    if(OPT_DEBUG)
       log("DNSBL -> Checking %s", buf);
    
