@@ -138,5 +138,5 @@ char *clean(char *str)
      }
     
     str[lastnon + 1] = 0;    /* Null terminate before the tailing spaces */
-    return (str + firstnon); /* Return pointer to point after leading spaces */
+    return (str + (firstnon - 1)); /* Return pointer to point after leading spaces */
 }	   
