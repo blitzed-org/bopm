@@ -149,8 +149,15 @@ void dnsbl_result(struct firedns_result *res)
 
    /* Everything is OK */
    if(res->text[0] == '\0' && fdns_errno == FDNS_ERR_NXDOMAIN)
-      return;
+   {
+      if(ss->manual_target != NULL)
+         irc_send("PRIVMSG %s :CHECK -> DNSBL -> %s does not appear in BL zone %s", 
+                   ss->manual_target->name, ss->ip,
+                   (strlen(ss->ip) < strlen(res->lookup)) ? (res->lookup + strlen(ss->ip) + 1) : res->lookup);
 
+      scan_checkfinished(ss);
+      return;
+   }
    /* Either an error, or a positive lookup */
 
    if(fdns_errno == FDNS_ERR_NONE)

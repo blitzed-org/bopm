@@ -383,6 +383,10 @@ void scan_connect(char **user, char *msg)
          }
       }
    }
+
+   /* All scanners returned !OPM_SUCCESS and there were no dnsbl checks */
+   if(ss->scans == 0)
+      scan_free(ss);
 }
 
 
@@ -871,14 +875,16 @@ void scan_checkfinished(struct scan_struct *ss)
    {
 
       if(ss->manual_target != NULL)
-         irc_send("PRIVMSG %s :All tests on %s completed", ss->manual_target->name, ss->ip);
+         irc_send("PRIVMSG %s :CHECK -> All tests on %s completed.", ss->manual_target->name, ss->ip);
       else
+      {
          if(OPT_DEBUG) /* If there was a manual_target, then irc_nick, etc is NULL */
             log("SCAN -> All tests on %s!%s@%s complete.", ss->irc_nick, ss->irc_username, ss->irc_hostname);
 
-      /* Scan was a negative */
-      if(!ss->positive)
-         scan_negative(ss);
+         /* Scan was a negative */
+         if(!ss->positive)
+            scan_negative(ss);
+      }
 
       scan_free(ss);
    }
@@ -1000,22 +1006,29 @@ void scan_manual(char *param, struct ChannelConf *target)
             case OPM_ERR_NOPROTOCOLS:
                break;
             case OPM_ERR_BADADDR:
-               irc_send("PRIVMSG %s :OPM -> Bad address %s", ss->manual_target->name, ss->ip);
+               irc_send("PRIVMSG %s :OPM -> Bad address %s [%s]", ss->manual_target->name, 
+                         ss->ip, scs->name);
                break;
             default:
-               irc_send("PRIVMSG %s :OPM -> Unknown error %s", ss->manual_target->name, ss->ip);
+               irc_send("PRIVMSG %s :OPM -> Unknown error %s [%s]", ss->manual_target->name, 
+                         ss->ip, scs->name);
                break;
          }
-         scan_free(ss);
-         return;
       }
       else
          ss->scans++; /* Increase scan count only if OPM_SUCCESS */
    }
 
-   if((scannername != NULL) && (ss->scans == 0))
+   /* If all of the scanners gave !OPM_SUCCESS and there were no dnsbl checks, 
+      cleanup here */
+   if(ss->scans == 0)
    {
-      irc_send("PRIVMSG %s :CHECK -> No such scanner '%s'", ss->manual_target->name, scannername);
+      if(scannername != NULL)
+         irc_send("PRIVMSG %s :CHECK -> No such scanner '%s', or '%s' has 0 protocols.", 
+                   ss->manual_target->name, scannername, scannername);
+
+      irc_send("PRIVMSG %s :CHECK -> No scans active on '%s', aborting scan.", 
+                ss->manual_target->name, ss->ip);
       scan_free(ss);
    }
 }
