@@ -58,5 +58,3 @@ along with this program; if not, write to the Free Software
 #include "extern.h"
 #include "options.h"
 #include "negcache.h"
-
-extern unsigned int CONF_NEG_CACHE;

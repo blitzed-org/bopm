@@ -27,8 +27,8 @@
 #include <string.h>
 #include "malloc.h"
 #include "config.h"
-//int yydebug=1; 
 
+//int yydebug=1; 
 void *tmp;        /* Variable to temporarily hold nodes before insertion to list */
 
 %}
@@ -39,8 +39,11 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token KEYS
 %token MASK
 %token MODE
+%token NEGCACHE
 %token NICK
 %token OPER
+%token OPTIONS
+%token PIDFILE
 %token PASSWORD
 %token PORT
 %token REALNAME
@@ -66,8 +69,31 @@ config:     /* empty */
           ;
 
 config_items: irc_entry |
+              options_entry |
               user_entry;
 
+
+/*************************** OPTIONS BLOCK ***********************/
+
+options_entry: OPTIONS '{' options_items '}' ';';
+
+options_items: options_items options_item |
+               options_item;
+
+options_item: options_negcache |
+              options_pidfile |
+              error;
+
+options_negcache: NEGCACHE '=' NUMBER ';'
+{
+   OptionsItem->negcache = $3;
+};
+
+options_pidfile: PIDFILE '=' STRING ';'
+{
+   MyFree(OptionsItem->pidfile);
+   OptionsItem->pidfile = DupString($3);
+};
 
 /*************************** IRC BLOCK ***************************/
 
@@ -76,8 +102,7 @@ irc_entry: IRC '{' irc_items  '}' ';';
 irc_items: irc_items irc_item |
            irc_item;
 
-irc_item:
-          irc_away     |
+irc_item: irc_away     |
           irc_channels |
           irc_keys     |
           irc_nick     |

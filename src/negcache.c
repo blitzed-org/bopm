@@ -60,9 +60,8 @@ along with this program; if not, write to:
 #include "inet.h"
 #include "irc.h"
 #include "negcache.h"
+#include "config.h"
 #include "malloc.h"
-
-#define CONF_NEG_CACHE 512 //FIX ME
 
 extern unsigned int OPT_DEBUG;
 
@@ -184,7 +183,7 @@ struct cnode *check_neg_cache(const unsigned long ip)
     time_t now;
     struct cnode *n;
 
-    if (!CONF_NEG_CACHE)
+    if (!OptionsItem->negcache == 0)
         return(NULL);
 
     n = nc_search(nc_head, ip);
@@ -194,7 +193,7 @@ struct cnode *check_neg_cache(const unsigned long ip)
         /* Check it is recent enough. */
         now = time(NULL);
 
-        if (now - n->seen <= CONF_NEG_CACHE)
+        if (now - n->seen <= OptionsItem->negcache)
             return(n);
     }
 
@@ -266,7 +265,7 @@ static void nc_rebuild(struct cnode *old_head, struct cnode *new_head,
         nc_rebuild(old_head, new_head, n->r, now);
     }
 
-    if ((now - n->seen) < CONF_NEG_CACHE)
+    if ((now - n->seen) < OptionsItem->negcache)
     {
         /*
          * We want to keep this node, so insert it into the new

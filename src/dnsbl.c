@@ -46,7 +46,7 @@ along with this program; if not, write to the Free Software
 #include "log.h"
 
 
-/*
+/* FIXME
  * Check an ip address for presence in a DNS (black|block)list.  All we need
  * to do is reverse the octets, append the BL zone and then do a
  * gethostbyname.  If that gives us an answer, then it is on the BL.
@@ -57,7 +57,7 @@ int dnsbl_check(const char *addr, const char *irc_nick,
     return(0);
 }
 
-/*
+/* FIXME
  * Send an email to report this open proxy.
  */
 /*

@@ -8,6 +8,7 @@ void config_init();
 
 /* Configuration     */
 
+struct OptionsConf *OptionsItem = NULL;
 struct IRCConf *IRCItem = NULL;
 list_t *UserItemList;
 
@@ -37,6 +38,10 @@ void config_init()
     IRCItem = (struct IRCConf *) MyMalloc(sizeof(struct IRCConf));
     memset(IRCItem, 0, sizeof(struct IRCConf));
 
+    /* Init Options block */
+    OptionsItem = (struct OptionsConf *) MyMalloc(sizeof(struct OptionsConf));
+    memset(OptionsItem, 0, sizeof(struct OptionsConf));
+
     /* Init list of User blocks */
     UserItemList = list_create();
 }
@@ -59,11 +64,15 @@ void config_setup()
     IRCItem->server = DupString("myserver.blitzed.org");
     IRCItem->vhost = DupString("");
 
+
+    /* Setup options block defaults */
+    OptionsItem->negcache = 0;   /* 0 disabled negcache */
+    OptionsItem->pidfile = DupString("bopm.pid");
 }
 
 void yyerror(const char *str)
 {
-    log("CONFIG -> %s", str);
-    log("CONFIG -> Line %d: %s", linenum, linebuf);
-    exit(1);
+    log("CONFIG -> %s: line %d", str, linenum);
+
+    exit(EXIT_FAILURE);
 }

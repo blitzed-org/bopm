@@ -48,8 +48,6 @@ along with this program; if not, write to the Free Software
 #include "options.h"
 #include "malloc.h"
 
-#define CONF_PIDFILE "bopm.pid"
-
 extern struct cnode *nc_head;
 
 static RETSIGTYPE do_signal(int signum);
@@ -58,9 +56,6 @@ int ALARMED = 0;
 
 unsigned int OPT_DEBUG = 0;
 char *CONFNAME = DEFAULTNAME;
-
-#define BOPM_ETCDIR "etc"
-#define BOPM_LOGDIR "log"
 
 char *CONFDIR = BOPM_ETCDIR;
 char *LOGDIR = BOPM_LOGDIR;
@@ -155,7 +150,7 @@ int main(int argc, char **argv)
 
     pid = getpid();
 
-    pidout = fopen(CONF_PIDFILE, "w");
+    pidout = fopen(OptionsItem->pidfile, "w");
     snprintf(spid, 16, "%u", pid);
 
     if (pidout)
@@ -165,9 +160,10 @@ int main(int argc, char **argv)
     }
 
     /* Initialise negative cache */
-    //	if (CONF_NEG_CACHE)
-    //		nc_init(&nc_head);
+    if (OptionsItem->negcache > 0)
+       nc_init(&nc_head);
 
+    //FIXME
     //	if (CONF_SCAN_WARNING)
     //		do_scanwarn_init();
 
@@ -192,25 +188,30 @@ int main(int argc, char **argv)
         if (ALARMED)
         {
             irc_timer();
+            //FIXME
             //if (CONF_SCAN_WARNING)
             //	scanwarn_timer();
+
             ALARMED = 0;
 
-            //			if (CONF_NEG_CACHE) {
-            //				if (nc_counter++ >= NEG_CACHE_REBUILD) {
+            if (OptionsItem->negcache > 0) 
+            {
+               if (nc_counter++ >= NEG_CACHE_REBUILD) 
+               {
             /*
              * Time to rebuild the negative
              * cache.
              */
-            //					negcache_rebuild();
-            //					nc_counter = 0;
-            //				}
-            //			}
+                  negcache_rebuild();
+                  nc_counter = 0;
+               }
+            }
         }
     }
 
     if (!OPT_DEBUG)
         log_close();
+
     return(0);
 }
 

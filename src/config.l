@@ -98,9 +98,12 @@ IRC                     { return IRC;      }
 KEYS                    { return KEYS;     }
 MASK                    { return MASK;     }
 MODE                    { return MODE;     }
+NEGCACHE                { return NEGCACHE; }
 NICK                    { return NICK;     }
 OPER                    { return OPER;     }
+OPTIONS                 { return OPTIONS;  }
 PASSWORD                { return PASSWORD; }
+PIDFILE                 { return PIDFILE;  }
 PORT                    { return PORT;     }
 REALNAME                { return REALNAME; }
 SCANNER                 { return SCANNER;  }
@@ -140,23 +143,23 @@ void ccomment(void)
   /* log(L_NOTICE, "got comment"); */
   while (1)
   {
-    while ((c = input()) != '*' && c != EOF)
-      if (c == '\n') ++linenum;
-    if (c == '*')
-    {
-      while ((c = input()) == '*');
-      if (c == '/') break;
-    }
+     while ((c = input()) != '*' && c != EOF)
+        if (c == '\n') ++linenum;
+     if (c == '*')
+     {
+        while ((c = input()) == '*');
+        if (c == '/') break;
+     }
     if (c == EOF)
     {
-      YY_FATAL_ERROR("EOF in comment");
-      /* XXX hack alert this disables
-       * the stupid unused function warning
-       * gcc generates
-       */
-      if(1 == 0)
-                yy_fatal_error("EOF in comment");
-      break;
+       YY_FATAL_ERROR("EOF in comment");
+       /* XXX hack alert this disables
+        * the stupid unused function warning
+        * gcc generates
+        */
+       if(1 == 0)
+          yy_fatal_error("EOF in comment");
+       break;
     }
   }
 }

@@ -146,8 +146,8 @@ void irc_cycle(void)
         //config_load(CONFFILE);
 
         /* Initialise negative cache. */
-        //if (CONF_NEG_CACHE)
-        //	nc_init(&nc_head);
+        if (OptionsItem->negcache > 0)
+           nc_init(&nc_head);
 
         /* Resolve remote host. */
         irc_init();
@@ -233,7 +233,7 @@ static void irc_init(void)
     if (remote_is_ipv6)
     {
         IRC_SVR.sas.sa6.sin6_family = AF_INET6;
-        IRC_SVR.sas.sa6.sin6_port = htons(CONF_PORT);
+        IRC_SVR.sas.sa6.sin6_port = htons(IRCItems->port);
         IRC_SVR.sas.sa6.sin6_addr = *((struct in6_addr *) IRC_HOST->h>addr_list[0]);
 
         if (IN6_ARE_ADDR_EQUAL(&(IRC_SVR.sas.sa6.sin6_addr) & in6addr_any))
@@ -401,7 +401,7 @@ void irc_kline(char *addr, char *ip)
 
 /*
  * Create socket and connect to IRC server specificied in config file
- * (CONF_SERVER) with port CONF_PORT.
+ * (IRCItem->server) with port (IRCItem->port).
  */
 
 static void irc_connect(void)
@@ -568,6 +568,7 @@ static void irc_parse(void)
             !strcasecmp(token[1], "474") ||
             !strcasecmp(token[1], "475"))
     {
+        // FIXME
         //	if(CONF_CHANSERV_INVITE) {
         /* 4th token is channel we can't join. */
         //		irc_send(CONF_CHANSERV_INVITE, token[3]);
@@ -599,7 +600,7 @@ static void irc_parse(void)
     }
 
     /* Handle nickserv identification. */
-
+    //FIXME
     //	if (!strcasecmp(token[1], "NOTICE") && strchr(token[0], '@')) {
     //		if (CONF_NICKSERV_IDENT &&
     //		    !strcasecmp(strtok(token[0] + 1, "!") , "NICKSERV")) {
@@ -693,6 +694,7 @@ static void irc_parse(void)
                          "please be aware that this is not "
                          "a nuke or any other form of abusive "
                          "activity.", nick);
+                //FIXME
                 //irc_send("NOTICE %s :You can get more "
                 //    "information about this bot and what "
                 //    "it does by contacting %s.", nick,
@@ -766,6 +768,7 @@ static void do_perform(void)
 {
     log("IRC -> Connected to %s:%d", IRCItem->server, IRCItem->port);
 
+    //FIXME
     //if (CONF_NICKSERV_IDENT) {
     /* Identify to nickserv. */
     //	irc_send(CONF_NICKSERV_IDENT);
@@ -825,7 +828,7 @@ static void do_connect(char *addr, char *irc_nick, char *irc_user,
      * Check that neither the user's IP nor host matches anything in our
      * exclude list.
      */
-    /*
+    /* FIXME
     	for (list = ((string_list *) CONF_EXCLUDE)->next; list; list = list->next) {
     		if (match(list->text, addr) || match(list->text, irc_addr)) {
     			if (OPT_DEBUG) {
@@ -846,26 +849,29 @@ static void do_connect(char *addr, char *irc_nick, char *irc_user,
     {
         aftype = AF_INET;
 
-        //	if (CONF_NEG_CACHE) {
-        //		if (!inetpton(AF_INET, addr, &(ipaddr.sas.sa4.sin_addr))) {
-        //			log("Invalid address %s", addr);
-        //			return;
-        //		}
+        if (OptionsItem->negcache > 0) 
+        {
+           if (!inetpton(AF_INET, addr, &(ipaddr.sas.sa4.sin_addr))) 
+           {
+              log("Invalid address %s", addr);
+              return;
+           }  
 
         /* Now check it isn't in our negative cache. */
-        //		if (check_neg_cache(ipaddr.sas.sa4.sin_addr.s_addr)) {
-        //			log("%s is negatively cached, skipping "
-        //			    "checks", addr);
-        //			return;
-        //		}
-        //		}
+           if (check_neg_cache(ipaddr.sas.sa4.sin_addr.s_addr)) 
+           {
+              log("%s is negatively cached, skipping checks", addr);
+              return;
+           }
+        }
     }
 
     /*
      * Enqueue a warning for this person.
      */
+    //FIXME
     //	if (CONF_SCAN_WARNING)
-    //		add_warning(irc_nick);
+    //  	add_warning(irc_nick);
 
     //	if (CONF_DNSBL_ZONE &&
     //	    dnsbl_check(addr, irc_nick, irc_user, irc_addr))
@@ -1109,6 +1115,7 @@ static void do_xnet_connect(int tokens, char **token)
  */
 static char *get_chan_key(const char *channel)
 {
+    //FIXME
     return "FIXME";
 }
 
@@ -1118,5 +1125,6 @@ static char *get_chan_key(const char *channel)
  */
 static char *check_channel(const char *channel)
 {
+    //FIXME
     return NULL;
 }

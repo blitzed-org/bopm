@@ -17,47 +17,53 @@ extern void config_load(const char *);
 
 struct IRCConf
 {
-    char *nick;
-    char *username;
-    char *realname;
+   char *nick;
+   char *username;
+   char *realname;
 
-    char *server;
-    int   port;
-    char *password;
+   char *server;
+   int   port;
+   char *password;
 
-    char *vhost;
+   char *vhost;
 
-    char *channels;
-    char *keys;
+   char *channels;
+   char *keys;
 
-    char *oper;
-    char *mode;
+   char *oper;
+   char *mode;
+   char *away;
+};
 
-    char *away;
+struct OptionsConf
+{
+   int negcache;
+   char *pidfile;
 };
 
 struct UserConf
 {
-    list_t *masks;
-    list_t *scanners;
+   list_t *masks;
+   list_t *scanners;
 };
 
 struct ScannerConf
 {
-    char   *name;
+   char   *name;
 
-    list_t *protocols;
-    char   *vhost;
+   list_t *protocols;
+   char   *vhost;
 
-    int     fd;
+   int     fd;
 
-    char   *target_ip;
-    int    *target_port;
-    char   *target_string;
+   char   *target_ip;
+   int    *target_port;
+   char   *target_string;
 };
 
 /* Extern to actual config data declared in config.c */
 extern struct IRCConf *IRCItem;
+extern struct OptionsConf *OptionsItem;
 extern list_t *UserItemList;
 
 #endif /* CONFIG_H */
