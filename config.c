@@ -48,17 +48,17 @@ int  CONF_PORT             = 0;
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
 
 config_hash hash[] = {
-       {"SERVER",   &(param_server)   },
-       {"PORT",     &(param_port)     },
-       {"USER",     &(param_user)     },
-       {"NICK",     &(param_nick)     },
-       {"OPER",     &(param_oper)     },
-       {"REASON",   &(param_reason)   },
-       {"SCANIP",   &(param_scanip)   },
-       {"SCANPORT", &(param_scanport) },
-       {"BINDIRC",  &(param_bindirc)  },
-       {"BINDSCAN", &(param_bindscan) },
-       {"CHANNELS", &(param_channels) }
+       {"SERVER",         TYPE_STRING,     &CONF_SERVER      },
+       {"PORT",           TYPE_INT   ,     &CONF_PORT        },
+       {"USER",           TYPE_STRING,     &CONF_USER        },
+       {"NICK",           TYPE_STRING,     &CONF_NICK        },
+       {"OPER",           TYPE_STRING,     &CONF_OPER        },
+       {"REASON",         TYPE_STRING,     &CONF_REASON      },
+       {"SCANIP",         TYPE_STRING,     &CONF_SCANIP      },
+       {"SCANPORT",       TYPE_INT   ,     &CONF_SCANPORT    },
+       {"BINDIRC",        TYPE_STRING,     &CONF_BINDIRC     },
+       {"BINDSCAN",       TYPE_STRING,     &CONF_BINDSCAN    },
+       {"CHANNELS",       TYPE_STRING,     &CONF_CHANNELS    },
 };
 
 
@@ -94,8 +94,18 @@ void config_load(char *filename)
             for(i = 0; i < (sizeof(hash) / sizeof(config_hash)); i++)
               if(!strcasecmp(key, hash[i].key))
                 {
-                  if(!(int*) hash[i].function(args))
-                     log("CONFIG -> Bad line: %s",line);               
+                      switch(hash[i].type)
+                        {
+                            case TYPE_STRING:
+                                 if(( *(char**) hash[i].var))
+                                    free(*(char**)hash[i].var);
+                                 *(char**) hash[i].var = strdup(args);
+                                 break;
+                            case TYPE_INT:
+                                 *(int *) hash[i].var = atoi(args);
+                                 break;
+                        }
+                                     
                 }
    
       }
@@ -113,148 +123,3 @@ void config_memfail()
 }
 
 
-/* Parameter Handlers */
-
-/* I wrote these all seperately (some duplicated)
- * because there are not that many configuration items
- * to begin with and it will make for easier control
- * over the individual items.
- */
-
-int param_server(char *args)
-{
-	if(CONF_SERVER)
-	   free(CONF_SERVER);
-	
-        CONF_SERVER = strdup(args);
-
-        if(!CONF_SERVER)
-            config_memfail();
-            	  	
-        return 1;
-}
-
-
-int param_channels(char *args)
-{
-        if(CONF_CHANNELS)
-           free(CONF_CHANNELS);
-   
-        CONF_CHANNELS = strdup(args);
-
-        if(!CONF_CHANNELS)
-              config_memfail();
- 
-        return 1;
-}
-
-int param_port(char *args)
-{
-	CONF_PORT = atoi(args);
-
-        if(CONF_PORT < 1024 || CONF_PORT > 65535)
-	       CONF_PORT = 6667;
-	return 1;
-}
-
-int param_scanport(char *args)
-{
-        CONF_SCANPORT = atoi(args);
-
-        if(CONF_SCANPORT < 1024 || CONF_SCANPORT > 65535)
-                CONF_PORT = 6667;
-        return 1;
-}
-
-int param_user(char *args)
-{	
-	if(CONF_USER)
-	    free(CONF_USER);
-
-	CONF_USER = strdup(args);
-
-        if(!CONF_USER)
-	     config_memfail();
-	
-	return 1;
-}
-
-int param_bindirc(char *args)
-{
-        if(CONF_BINDIRC)
-            free(CONF_BINDIRC);
-
-        CONF_USER = strdup(args);
-
-        if(!CONF_BINDIRC)
-             config_memfail();
-
-        return 1;
-}
-
-
-int param_bindscan(char *args)
-{
-        if(CONF_BINDSCAN)
-            free(CONF_BINDSCAN);
-
-        CONF_BINDSCAN = strdup(args);
-
-        if(!CONF_BINDSCAN)
-             config_memfail();
-
-        return 1;
-}
-
-int param_nick(char *args)
-{
-	if(CONF_NICK)
-	    free(CONF_NICK);
-
-	CONF_NICK = strdup(args);
-
-        if(!CONF_NICK)
-           config_memfail();
-	
-	return 1;
-}
-
-int param_oper(char *args)
-{
-
-         if(CONF_OPER)
-             free(CONF_OPER);
-     
-         CONF_OPER = strdup(args);
-
-         if(!CONF_OPER)
-            config_memfail();
-
-         return 1;
-}
-
-int param_reason(char *args)
-{
-          if(CONF_REASON)
-              free(CONF_REASON);
-     
-          CONF_REASON = strdup(args);
-
-          if(!CONF_REASON)
-             config_memfail();
-
-          return 1;
-}
-
-int param_scanip(char *args)
-{
-          if(CONF_SCANIP)
-              free(CONF_SCANIP);
-
-          CONF_SCANIP = strdup(args);
-
-          if(!CONF_SCANIP)
-             config_memfail();
-
-          return 1;
-}
