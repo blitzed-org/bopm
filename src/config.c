@@ -79,6 +79,7 @@ unsigned int CONF_SCANPORT	= 0;
 unsigned int CONF_PORT		= 0;
 unsigned int CONF_FDLIMIT	= 0;
 unsigned int CONF_TIMEOUT	= 0;
+unsigned int CONF_NEG_CACHE	= 0;
 
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
 /*      NAME                  , TYPE   , REQ, REQMET, PTR TO VAR        */
@@ -115,6 +116,7 @@ config_hash hash[] = {
        {"TIMEOUT",             TYPE_INT,      1,0, &CONF_TIMEOUT         },
        {"PIDFILE",             TYPE_STRING,   1,0, &CONF_PIDFILE         },
        {"SCAN_WARNING",        TYPE_LIST,     0,0, &CONF_SCAN_WARNING    },
+       {"NEG_CACHE",           TYPE_INT,      0,0, &CONF_NEG_CACHE       },
        {0,                     0,             0,0, 0                     },
 };
 
