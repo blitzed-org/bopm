@@ -53,9 +53,6 @@ static int i6;
 static struct in6_addr servers6[FDNS_MAX];
 #endif
 
-static int wantclose = 0;
-static int lastcreate = -1;
-
 int fdns_errno = FDNS_ERR_NONE;
 int fdns_fdinuse = 0;
 
@@ -108,17 +105,6 @@ struct s_header
    unsigned short arcount;
    unsigned char payload[512]; /* DNS question, populated by firedns_build_query_payload() */
 };
-
-static void firedns_close(int fd)
-{ /* close query */
-   if (fd == lastcreate)
-   {
-      wantclose = 1;
-      return;
-   }
-   close(fd);
-   return;
-}
 
 void firedns_init()
 {
@@ -296,12 +282,6 @@ static int firedns_send_requests(struct s_header *h, struct s_connection *s, int
 
    }
 #endif
-   if (wantclose == 1)
-   {
-      close(lastcreate);
-      wantclose = 0;
-   }
-   lastcreate = s->fd;
 
    time(&s->start);
    fdns_fdinuse++;
@@ -497,7 +477,7 @@ struct firedns_result *firedns_getresult(const int fd)
    node_free(node);
 
    l = recv(c->fd,&h,sizeof(struct s_header),0);
-   firedns_close(c->fd);
+   close(c->fd);
    fdns_fdinuse--;
    result.info = (void *) c->info;
    strncpy(result.lookup, c->lookup, 256);
@@ -723,7 +703,7 @@ void firedns_cycle(void)
          new_result.info = p->info;
          strncpy(new_result.lookup, p->lookup, 256);
 
-         firedns_close(p->fd);
+         close(p->fd);
          fdns_fdinuse--;
          MyFree(p);
 
