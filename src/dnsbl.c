@@ -1,7 +1,7 @@
 /* vim: set shiftwidth=3 softtabstop=3 expandtab: */
 
 /*
-Copyright (C) 2002  Erik Fears
+Copyright (C) 2002-2003  Erik Fears
  
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -49,6 +49,7 @@ along with this program; if not, write to the Free Software
 #include "irc.h"
 #include "stats.h"
 
+RCSID("$Id$");
 
 /*
  * Work out the DNSBL zones and send the dns query
@@ -148,19 +149,24 @@ static void dnsbl_positive(struct scan_struct *ss, struct BlacklistConf *bl,
       return;
    }
 
-   /* Only report it if no other scans have found positives yet. */
-   if(ss->manual_target == NULL && !ss->positive)
+   if(ss->manual_target)
    {
-      scan_positive(ss, (bl->kline[0] ? bl->kline : IRCItem->kline), text_type);
-
-      log_printf("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick, ss->irc_username,
-          ss->irc_hostname, bl->name, text_type);
-      irc_send_channels("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick,
-                        ss->irc_username, ss->irc_hostname, bl->name, text_type);
-   }
-   else /* Manual scan */
       irc_send("PRIVMSG %s :CHECK -> DNSBL -> %s appears in BL zone %s (%s)",
-               ss->manual_target->name, ss->ip, bl->name, text_type);
+            ss->manual_target->name, ss->ip, bl->name, text_type);
+   }
+   else
+   {
+      /* Only report it if no other scans have found positives yet. */
+      if(!ss->positive)
+      {
+         scan_positive(ss, (bl->kline[0] ? bl->kline : IRCItem->kline),
+               text_type);
+
+         log_printf("DNSBL -> %s!%s@%s appears in BL zone %s (%s)",
+               ss->irc_nick, ss->irc_username, ss->irc_hostname, bl->name,
+               text_type);
+      }
+   }
 
    /* record stat */
    stats_dnsblrecv(bl);
