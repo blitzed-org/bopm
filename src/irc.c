@@ -118,18 +118,18 @@ time_t               IRC_LAST = 0;               /* Last full line of data from 
    commands at the top of the list. */
 
 static struct CommandHash COMMAND_TABLE[] = {
-           {"NOTICE",               m_notice  },
-           {"PRIVMSG",              m_privmsg },
-           {"PING",                 m_ping    },
-           {"INVITE",               m_invite  },
-           {"001",                  m_perform },
-           {"002",                  m_versioncheck },
-           {"302",                  m_userhost},
-           {"471",                  m_cannot_join},
-           {"473",                  m_cannot_join},
-           {"474",                  m_cannot_join},
-           {"475",                  m_cannot_join},
-};
+         {"NOTICE",               m_notice         },
+         {"PRIVMSG",              m_privmsg        },
+         {"PING",                 m_ping           },
+         {"INVITE",               m_invite         },
+         {"001",                  m_perform        },
+         {"002",                  m_versioncheck   },
+         {"302",                  m_userhost       },
+         {"471",                  m_cannot_join    },
+         {"473",                  m_cannot_join    },
+         {"474",                  m_cannot_join    },
+         {"475",                  m_cannot_join    },
+      };
 
 /* irc_cycle
  *
@@ -167,16 +167,16 @@ void irc_cycle(void)
 
    switch (select((IRC_FD + 1), &IRC_READ_FDSET, 0, 0, &IRC_TIMEOUT))
    {
-   case -1:
-      return;
-      break;
-   case 0:
-      break;
-   default:
-      /* Check if IRC data is available. */
-      if (FD_ISSET(IRC_FD, &IRC_READ_FDSET))
-         irc_read();
-      break;
+      case -1:
+         return;
+         break;
+      case 0:
+         break;
+      default:
+         /* Check if IRC data is available. */
+         if (FD_ISSET(IRC_FD, &IRC_READ_FDSET))
+            irc_read();
+         break;
    }
 }
 
@@ -214,19 +214,19 @@ static void irc_init(void)
    {
       switch(h_errno)
       {
-      case NO_ADDRESS:
-      case HOST_NOT_FOUND:
-         log("IRC -> bopm_gethostbyname(): The specified host (%s) is unknown", IRCItem->server);
-         break;
-      case NO_RECOVERY:
-         log("IRC -> bopm_gethostbyname(): An unrecoverable error occured resolving (%s)", IRCItem->server);
-         break;
-      case TRY_AGAIN:
-         log("IRC -> bopm_gethostbyname(): Error occured with authoritive name server (%s)", IRCItem->server);
-         break;
-      default:
-         log("IRC -> bopm_gethostbyname(): Unknown error resolving (%s)", IRCItem->server);
-         break;
+         case NO_ADDRESS:
+         case HOST_NOT_FOUND:
+            log("IRC -> bopm_gethostbyname(): The specified host (%s) is unknown", IRCItem->server);
+            break;
+         case NO_RECOVERY:
+            log("IRC -> bopm_gethostbyname(): An unrecoverable error occured resolving (%s)", IRCItem->server);
+            break;
+         case TRY_AGAIN:
+            log("IRC -> bopm_gethostbyname(): Error occured with authoritive name server (%s)", IRCItem->server);
+            break;
+         default:
+            log("IRC -> bopm_gethostbyname(): Unknown error resolving (%s)", IRCItem->server);
+            break;
       }
       exit(EXIT_FAILURE);
    }
@@ -250,31 +250,31 @@ static void irc_init(void)
    {
       switch(errno)
       {
-      case EINVAL:
-      case EPROTONOSUPPORT:
-         log("IRC -> socket(): SOCK_STREAM is not "
-             "supported on this domain");
-         break;
-      case ENFILE:
-         log("IRC -> socket(): Not enough free file "
-             "descriptors to allocate IRC socket");
-         break;
-      case EMFILE:
-         log("IRC -> socket(): Process table overflow when "
-             "requesting file descriptor");
-         break;
-      case EACCES:
-         log("IRC -> socket(): Permission denied to create "
-             "socket of type SOCK_STREAM");
-         break;
-      case ENOMEM:
-         log("IRC -> socket(): Insufficient memory to "
-             "allocate socket");
-         break;
-      default:
-         log("IRC -> socket(): Unknown error allocating "
-             "socket");
-         break;
+         case EINVAL:
+         case EPROTONOSUPPORT:
+            log("IRC -> socket(): SOCK_STREAM is not "
+                "supported on this domain");
+            break;
+         case ENFILE:
+            log("IRC -> socket(): Not enough free file "
+                "descriptors to allocate IRC socket");
+            break;
+         case EMFILE:
+            log("IRC -> socket(): Process table overflow when "
+                "requesting file descriptor");
+            break;
+         case EACCES:
+            log("IRC -> socket(): Permission denied to create "
+                "socket of type SOCK_STREAM");
+            break;
+         case ENOMEM:
+            log("IRC -> socket(): Insufficient memory to "
+                "allocate socket");
+            break;
+         default:
+            log("IRC -> socket(): Unknown error allocating "
+                "socket");
+            break;
       }
       exit(EXIT_FAILURE);
    }
@@ -298,14 +298,14 @@ static void irc_init(void)
       {
          switch(errno)
          {
-         case EACCES:
-            log("IRC -> bind(): No access to bind to %s",
-                IRCItem->vhost);
-            break;
-         default:
-            log("IRC -> bind(): Error binding to %s (%d)",
-                IRCItem->vhost, errno);
-            break;
+            case EACCES:
+               log("IRC -> bind(): No access to bind to %s",
+                   IRCItem->vhost);
+               break;
+            default:
+               log("IRC -> bind(): Error binding to %s (%d)",
+                   IRCItem->vhost, errno);
+               break;
          }
          exit(EXIT_FAILURE);
       }
@@ -389,29 +389,29 @@ static void irc_connect(void)
    {
       switch(errno)
       {
-      case EISCONN:
-         /* Already connected */
-         return;
-      case ECONNREFUSED:
-         log("IRC -> connect(): Connection refused by (%s)",
-             IRCItem->server);
-         break;
-      case ETIMEDOUT:
-         log("IRC -> connect(): Timed out connecting to (%s)",
-             IRCItem->server);
-         break;
-      case ENETUNREACH:
-         log("IRC -> connect(): Network unreachable");
-         break;
-      case EALREADY:
-         /* Previous attempt not complete */
-         return;
-      default:
-         log("IRC -> connect(): Unknown error connecting to (%s)",
-             IRCItem->server);
+         case EISCONN:
+            /* Already connected */
+            return;
+         case ECONNREFUSED:
+            log("IRC -> connect(): Connection refused by (%s)",
+                IRCItem->server);
+            break;
+         case ETIMEDOUT:
+            log("IRC -> connect(): Timed out connecting to (%s)",
+                IRCItem->server);
+            break;
+         case ENETUNREACH:
+            log("IRC -> connect(): Network unreachable");
+            break;
+         case EALREADY:
+            /* Previous attempt not complete */
+            return;
+         default:
+            log("IRC -> connect(): Unknown error connecting to (%s)",
+                IRCItem->server);
 
-         if (OPT_DEBUG >= 1)
-            log(strerror(errno));
+            if (OPT_DEBUG >= 1)
+               log(strerror(errno));
       }
       exit(EXIT_FAILURE);
    }
@@ -675,7 +675,7 @@ static struct UserInfo *userinfo_create(char *source)
 
    if(nick == NULL || username == NULL || hostname == NULL)
    {
-      MyFree(tmp); 
+      MyFree(tmp);
       return NULL;
    }
 
@@ -731,7 +731,7 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
    /* Identify to nickserv if needed */
    if(strlen(IRCItem->nickserv))
       irc_send("%s", IRCItem->nickserv);
-   
+
    /* Oper */
    irc_send("OPER %s", IRCItem->oper);
 
@@ -743,7 +743,7 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
 
    /* Perform */
    LIST_FOREACH(node, IRCItem->performs->head)
-      irc_send("%s", (char *) node->data);
+   irc_send("%s", (char *) node->data);
 
    /* Join all listed channels. */
    LIST_FOREACH(node, IRCItem->channels->head)
@@ -854,7 +854,7 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
 
    /* CTCP */
    if(parv[3][0] == '\001');
-      m_ctcp(parv, parc, msg, source_p);
+   m_ctcp(parv, parc, msg, source_p);
 
    /* Only interested in privmsg to channels */
    if(parv[2][0] != '#' && parv[2][0] != '&')
@@ -862,14 +862,14 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
 
    /* Get a target */
    if((channel = get_channel(parv[2])) == NULL)
-      return; 
+      return;
 
    /* message is a command */
-   if(strncasecmp(parv[3], IRCItem->nick, 3) == 0  || 
-      strcasecmp(msg, "!all") == 0) 
+   if(strncasecmp(parv[3], IRCItem->nick, 3) == 0  ||
+         strcasecmp(msg, "!all") == 0)
    {
       /* XXX command_parse will alter parv[3]. */
-      command_parse(parv[3], msg, channel, source_p); 
+      command_parse(parv[3], msg, channel, source_p);
    }
 }
 
@@ -890,8 +890,8 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
 
 static void m_ctcp(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
-   if(strncasecmp(parv[3], "\001VERSION\001", 9) == 0) 
-       irc_send("NOTICE %s :\001VERSION Blitzed Open Proxy Monitor %s\001", source_p->irc_nick, VERSION);
+   if(strncasecmp(parv[3], "\001VERSION\001", 9) == 0)
+      irc_send("NOTICE %s :\001VERSION Blitzed Open Proxy Monitor %s\001", source_p->irc_nick, VERSION);
 }
 
 
@@ -1032,7 +1032,7 @@ void m_cannot_join(char **parv, unsigned int parc, char *msg, struct UserInfo *s
    channel = get_channel(parv[3]);
 
    if(strlen(channel->invite) == 0)
-       return;
+      return;
 
    irc_send("%s", channel->invite);
 }

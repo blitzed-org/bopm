@@ -130,7 +130,7 @@ void firedns_init()
 #endif
 
    i4 = 0;
-   
+
    CONNECTIONS = list_create(); /* Initialize connections list */
 
    srand((unsigned int) time(NULL));
@@ -475,7 +475,7 @@ struct firedns_result *firedns_getresult(const int fd)
 
    /* Find query in list of open proxies */
    LIST_FOREACH(node, CONNECTIONS->head)
-   { 
+   {
       c = (struct s_connection *) node->data;
       if(c->fd == fd)
          break;
@@ -703,7 +703,7 @@ void firedns_cycle(void)
       if(size >= OptionsItem->dns_fdlimit)
          break;
 
-      p = (struct s_connection *) node->data; 
+      p = (struct s_connection *) node->data;
 
       if(p->fd < 0)
          continue;

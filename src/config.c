@@ -66,6 +66,7 @@ void config_load(const char *filename)
    scan_init();       /* Initialize the scanners once we have the configuration */
    command_init();    /* Initialize the command queue */
    stats_init();      /* Initialize stats (UPTIME) */
+   firedns_init();    /* Initialize adns */
 }
 
 /* Malloc and initialize configuration data to NULL */

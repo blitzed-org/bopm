@@ -53,17 +53,17 @@ static void command_free(struct Command *);
 static void cmd_check(char *, char *, struct ChannelConf *);
 static void cmd_stat(char *, char *, struct ChannelConf *);
 
-static struct OperCommandHash COMMAND_TABLE[] = 
-{
-   {"CHECK",  cmd_check},
-   {"SCAN", cmd_check},
-   {"STAT", cmd_stat},
-   {"STATS", cmd_stat}
-};
+static struct OperCommandHash COMMAND_TABLE[] =
+   {
+      {"CHECK",  cmd_check},
+      {"SCAN", cmd_check},
+      {"STAT", cmd_stat},
+      {"STATS", cmd_stat}
+   };
 
 
 
-/* command_init 
+/* command_init
  * 
  *    Do command initialization
  *
@@ -140,61 +140,61 @@ void command_timer()
 
 void command_parse(char *command, char *msg, struct ChannelConf *target, struct UserInfo *source_p)
 {
-    int i;
-    char *param; /* Parsed parameters */
+   int i;
+   char *param; /* Parsed parameters */
 
-    struct Command *cs;
-    node_t *node;
+   struct Command *cs;
+   node_t *node;
 
-    if(OPT_DEBUG)
+   if(OPT_DEBUG)
       log("COMMAND -> Parsing command (%s) from %s [%s]", command, source_p->irc_nick, target->name);
 
-    /* Only allow COMMANDMAX commands in the queue */
-    if(LIST_SIZE(COMMANDS) >= COMMANDMAX)
-       return;
+   /* Only allow COMMANDMAX commands in the queue */
+   if(LIST_SIZE(COMMANDS) >= COMMANDMAX)
+      return;
 
-    /* Parameter is the first character in command after the first space.
-       param will be NULL if:
-       1. There was no space
-       2. There was a space but it was the last character in command, in which case
-          param = '\0'
-    */
- 
-    /* Skip past the botname/!all */
-    command = strchr(command, ' ');
-    
-    /* There is no command OR
-       there is at least nothing
-       past that first space.  */
-    if(command == NULL || 
-       command++ == NULL)
-       return;
+   /* Parameter is the first character in command after the first space.
+      param will be NULL if:
+      1. There was no space
+      2. There was a space but it was the last character in command, in which case
+         param = '\0'
+   */
+
+   /* Skip past the botname/!all */
+   command = strchr(command, ' ');
+
+   /* There is no command OR
+      there is at least nothing
+      past that first space.  */
+   if(command == NULL ||
+         command++ == NULL)
+      return;
 
 
-    /* Find the parameters */
-    param = strchr(command, ' ');
-   
-    if(param != NULL)
-    {
-       *param = '\0';
-        param++;
-    }
+   /* Find the parameters */
+   param = strchr(command, ' ');
 
-    log("COMMAND -> parsed [%s] [%s]", command, param);
+   if(param != NULL)
+   {
+      *param = '\0';
+      param++;
+   }
 
-    /* Lookup the command in the table */
-    for(i = 0; i < sizeof(COMMAND_TABLE) / sizeof(struct OperCommandHash); i++)
-    {
-       if(strcasecmp(command, COMMAND_TABLE[i].command) == 0)
-       {
-          /* Queue this command */
-          cs = command_create(i, param, source_p->irc_nick, target);
-          node = node_create(cs); 
-          list_add(COMMANDS, node);
+   log("COMMAND -> parsed [%s] [%s]", command, param);
+
+   /* Lookup the command in the table */
+   for(i = 0; i < sizeof(COMMAND_TABLE) / sizeof(struct OperCommandHash); i++)
+   {
+      if(strcasecmp(command, COMMAND_TABLE[i].command) == 0)
+      {
+         /* Queue this command */
+         cs = command_create(i, param, source_p->irc_nick, target);
+         node = node_create(cs);
+         list_add(COMMANDS, node);
       }
-    }
+   }
 
-    irc_send("USERHOST %s", source_p->irc_nick);
+   irc_send("USERHOST %s", source_p->irc_nick);
 }
 
 
@@ -283,11 +283,11 @@ void command_userhost(char *reply)
    tmp = strchr(reply, '=');
 
    /* They quit, ignore it */
-   if (!tmp) 
+   if (!tmp)
       return;
 
    /* Operators have a * flag in a USERHOST reply */
-   if (*(tmp - 1) == '*') 
+   if (*(tmp - 1) == '*')
       oper = 1;
 
    /* Null terminate it so tmp = the oper's nick */
@@ -308,7 +308,7 @@ void command_userhost(char *reply)
          list_remove(COMMANDS, node);
          node_free(node);
       }
-   } 
+   }
 }
 
 

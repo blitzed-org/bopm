@@ -296,22 +296,22 @@ const char *inetntop(int af, const void *src, char *dst, unsigned int size)
 {
    switch (af)
    {
-   case AF_INET:
-      return (inet_ntop4(src, dst, size));
+      case AF_INET:
+         return (inet_ntop4(src, dst, size));
 #ifdef IPV6
 
-   case AF_INET6:
-      if (IN6_IS_ADDR_V4MAPPED((const struct in6_addr *) src) ||
-            IN6_IS_ADDR_V4COMPAT((const struct in6_addr *) src))
-         return (inet_ntop4
-                 ((unsigned char *) &((struct in6_addr *) src)->s6_addr[12], dst, size));
-      else
-         return (inet_ntop6(src, dst, size));
+      case AF_INET6:
+         if (IN6_IS_ADDR_V4MAPPED((const struct in6_addr *) src) ||
+               IN6_IS_ADDR_V4COMPAT((const struct in6_addr *) src))
+            return (inet_ntop4
+                    ((unsigned char *) &((struct in6_addr *) src)->s6_addr[12], dst, size));
+         else
+            return (inet_ntop6(src, dst, size));
 
 #endif
 
-   default:
-      return (NULL);
+      default:
+         return (NULL);
    }
    /* NOTREACHED */
 }
@@ -512,24 +512,24 @@ void *dst;
 {
    switch (af)
    {
-   case AF_INET:
-      return (inet_pton4(src, dst));
+      case AF_INET:
+         return (inet_pton4(src, dst));
 #ifdef IPV6
 
-   case AF_INET6:
-      /* Somebody might have passed as an IPv4 address this is sick but it works */
-      if (inet_pton4(src, dst))
-      {
-         char tmp[HOSTIPLEN];
-         sprintf(tmp, "::ffff:%s", src);
-         return (inet_pton6(tmp, dst));
-      }
-      else
-         return (inet_pton6(src, dst));
+      case AF_INET6:
+         /* Somebody might have passed as an IPv4 address this is sick but it works */
+         if (inet_pton4(src, dst))
+         {
+            char tmp[HOSTIPLEN];
+            sprintf(tmp, "::ffff:%s", src);
+            return (inet_pton6(tmp, dst));
+         }
+         else
+            return (inet_pton6(src, dst));
 #endif	/* IPv6 */
 
-   default:
-      return (-1);
+      default:
+         return (-1);
    }
    /* NOTREACHED */
 }

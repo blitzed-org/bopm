@@ -46,15 +46,15 @@ static unsigned int STATS_CONNECTIONS;
 static unsigned int STATS_DNSBLRECV;
 static unsigned int STATS_DNSBLSENT;
 
-static struct StatsHash STATS_PROXIES[] = 
-{
-     {OPM_TYPE_HTTP,     0, "HTTP"     },
-     {OPM_TYPE_HTTPPOST, 0, "HTTPPOST" },
-     {OPM_TYPE_SOCKS4,   0, "SOCKS4"   },
-     {OPM_TYPE_SOCKS5,   0, "SOCKS5"   },
-     {OPM_TYPE_ROUTER,   0, "ROUTER"   },
-     {OPM_TYPE_WINGATE,  0, "WINGATE"  }
-};
+static struct StatsHash STATS_PROXIES[] =
+   {
+      {OPM_TYPE_HTTP,     0, "HTTP"     },
+      {OPM_TYPE_HTTPPOST, 0, "HTTPPOST" },
+      {OPM_TYPE_SOCKS4,   0, "SOCKS4"   },
+      {OPM_TYPE_SOCKS5,   0, "SOCKS5"   },
+      {OPM_TYPE_ROUTER,   0, "ROUTER"   },
+      {OPM_TYPE_WINGATE,  0, "WINGATE"  }
+   };
 
 
 /* stats_init
@@ -166,7 +166,7 @@ void stats_output(char *target)
    time(&present);
    uptime = present - STATS_UPTIME;
 
-   irc_send("PRIVMSG %s :Uptime: %s", target, dissect_time(uptime));    
+   irc_send("PRIVMSG %s :Uptime: %s", target, dissect_time(uptime));
 
    if(STATS_DNSBLRECV > 0)
       irc_send("PRIVMSG %s :DNSBL: %u successful lookups from blacklists", target, STATS_DNSBLRECV);
@@ -179,8 +179,8 @@ void stats_output(char *target)
          irc_send("PRIVMSG %s :Found %u (%s) open.", target, STATS_PROXIES[i].count, STATS_PROXIES[i].name);
 
    irc_send("PRIVMSG %s :Number of connects: %u (%.2f/minute)",
-             target, STATS_CONNECTIONS, STATS_CONNECTIONS ?
-             (float)STATS_CONNECTIONS / ((float)uptime / 60.0) : 0.0);
+            target, STATS_CONNECTIONS, STATS_CONNECTIONS ?
+            (float)STATS_CONNECTIONS / ((float)uptime / 60.0) : 0.0);
 
 
 }

@@ -49,15 +49,12 @@ along with this program; if not, write to the Free Software
 #include "malloc.h"
 #include "firedns.h"
 
-extern struct cnode *nc_head;
-
 static RETSIGTYPE do_signal(int signum);
 
 int ALARMED = 0;
-
 unsigned int OPT_DEBUG = 0;
-char *CONFNAME = DEFAULTNAME;
 
+char *CONFNAME = DEFAULTNAME;
 char *CONFDIR = BOPM_ETCDIR;
 char *LOGDIR = BOPM_LOGDIR;
 char *CONFFILE, *LOGFILE;
@@ -84,16 +81,16 @@ int main(int argc, char **argv)
 
       switch (c)
       {
-      case 'c':
-         CONFNAME = strdup(optarg);
-         break;
-      case 'd':
-         OPT_DEBUG++;
-         break;
-      case '?':
-      default:
-         /* Unknown arg, guess we'll just do nothing for now. */
-         break;
+         case 'c':
+            CONFNAME = strdup(optarg);
+            break;
+         case 'd':
+            OPT_DEBUG++;
+            break;
+         case '?':
+         default:
+            /* Unknown arg, guess we'll just do nothing for now. */
+            break;
       }
    }
 
@@ -109,7 +106,7 @@ int main(int argc, char **argv)
 
    /* Fork off. */
 
-   if (!OPT_DEBUG)
+   if (OPT_DEBUG <= 0)
    {
       if ((pid = fork()) < 0)
       {
@@ -140,9 +137,8 @@ int main(int argc, char **argv)
       log_open(LOGFILE);
    }
    else
-   {
       log("MAIN -> Debug level %d", OPT_DEBUG);
-   }
+
 
    log("MAIN -> BOPM %s started.", VERSION);
    log("MAIN -> Reading configuration file...");
@@ -159,8 +155,6 @@ int main(int argc, char **argv)
       fwrite(spid, sizeof(char), strlen(spid), pidout);
       fclose(pidout);
    }
-
-   firedns_init();
 
    /* Setup alarm & int handlers. */
 
@@ -201,13 +195,13 @@ static void do_signal(int signum)
 {
    switch (signum)
    {
-   case SIGALRM:
-      ALARMED = 1;
-      alarm(1);
-      break;
-   case SIGINT:
-      log("MAIN -> Caught SIGINT, bye!");
-      exit(0);
-      break;
+      case SIGALRM:
+         ALARMED = 1;
+         alarm(1);
+         break;
+      case SIGINT:
+         log("MAIN -> Caught SIGINT, bye!");
+         exit(0);
+         break;
    }
 }
