@@ -241,7 +241,7 @@ void config_checkreq()
                       break;
                  case TYPE_LIST:
                       for(list = *(string_list**) (hash[i].var); list; list = list->next)
-                         log("CONFIG-> Set [%s]: %s", hash[i].key, list->text);
+                         log("CONFIG -> Set [%s]: %s", hash[i].key, list->text);
                       break;
              }
          }
