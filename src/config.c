@@ -63,6 +63,7 @@ void config_load(const char *filename)
    yyparse();
 
    scan_init();       /* Initialize the scanners once we have the configuration */
+   command_init();    /* Initialize the command queue */
 }
 
 /* Malloc and initialize configuration data to NULL */

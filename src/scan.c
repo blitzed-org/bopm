@@ -299,6 +299,7 @@ void scan_connect(char **user, char *msg)
    struct scan_struct *ss;
    struct scanner_struct *scs;
    struct mask_struct *ms;
+   int ret;
 
    /* Have to use MSGLENMAX here because it is unknown what the max size of username/hostname can be.
       Some ircds use really mad values for these */
@@ -346,8 +347,23 @@ void scan_connect(char **user, char *msg)
          if(OPT_DEBUG)
             log("SCAN -> Passing %s to scanner [%s]", mask, scs->name);
 
-         ss->scans++;  /* Increase scan count */
-         opm_scan(scs->scanner, ss->remote);
+         if((ret = opm_scan(scs->scanner, ss->remote)) != OPM_SUCCESS)
+         {
+            switch(ret)
+            {
+               case OPM_ERR_NOPROTOCOLS:
+                  continue;
+                  break;
+               case OPM_ERR_BADADDR:
+                  log("OPM -> Bad address %s.", ss->manual_target->name, ss->ip);
+                  break;
+               default:
+                  log("OPM -> Unknown error %s.", ss->manual_target->name, ss->ip);
+                  break;
+            }
+         }
+         else
+            ss->scans++; /* Increase scan count only if OPM_SUCCESS */
       }
    }
 }
@@ -387,6 +403,8 @@ struct scan_struct *scan_create(char **user, char *msg)
    ss->remote = opm_remote_create(ss->ip);
    ss->scans = 0;
    ss->positive = 0;
+
+   ss->manual_target = NULL;
 
    assert(ss->remote);
    return ss;
@@ -442,7 +460,12 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
    scs = (struct scanner_struct *) data;
    ss = (struct scan_struct *) remote->data;
 
-   scan_positive(ss);
+   if(ss->manual_target == NULL)
+   {
+      scan_positive(ss);
+      /* Report to blacklist */
+      dnsbl_report(ss);
+   }  
 
    log("SCAN -> Open proxy %s:%d (%s) [%s]", remote->ip, remote->port,
        scan_gettype(remote->protocol), scs->name);
@@ -478,6 +501,11 @@ void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, 
    if(OPT_DEBUG)
       log("SCAN -> Negotiation failed %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
           scan_gettype(remote->protocol), scs->name, remote->bytes_read);
+
+   if(ss->manual_target != NULL)
+      irc_send("PRIVMSG %s :Negotiation failed %s:%d (%s) [%s] (%d bytes read)", ss->manual_target->name, 
+                remote->ip, remote->port, scan_gettype(remote->protocol), scs->name, remote->bytes_read);
+   
 }
 
 
@@ -503,8 +531,13 @@ void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
    ss = (struct scan_struct *) remote->data;
 
    if(OPT_DEBUG)
-      log("SCAN -> Negotiation timed out %s:%d (%s) [%s]", remote->ip, remote->port,
-          scan_gettype(remote->protocol), scs->name);
+      log("SCAN -> Negotiation timed out %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
+          scan_gettype(remote->protocol), scs->name, remote->bytes_read);
+
+   if(ss->manual_target != NULL)
+      irc_send("PRIVMSG %s :Negotiation timed out %s:%d (%s) [%s] (%d bytes read)", ss->manual_target->name,
+                remote->ip, remote->port, scan_gettype(remote->protocol), scs->name, remote->bytes_read);
+
 }
 
 
@@ -530,7 +563,10 @@ void scan_end(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
    ss = (struct scan_struct *) remote->data;
 
    if(OPT_DEBUG)
-      log("SCAN -> Scan completed %s [%s]", remote->ip, scs->name);
+      log("SCAN -> Scan %s [%s] completed", remote->ip, scs->name);
+
+   if(ss->manual_target != NULL)
+      irc_send("PRIVMSG %s :Scan %s [%s] completed", ss->manual_target->name, remote->ip, scs->name);
 
    ss->scans--;
 
@@ -569,6 +605,10 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
       if(OPT_DEBUG >= 2)
          log("SCAN -> Max read on %s:%d (%s) [%s] (%d bytes read)", remote->ip, remote->port,
              scan_gettype(remote->protocol), scs->name, remote->bytes_read);
+
+      if(ss->manual_target != NULL)
+         irc_send("PRIVMSG %s :Negotiation failed %s:%d (%s) [%s] (%d bytes read)", ss->manual_target->name,
+                   remote->ip, remote->port, scan_gettype(remote->protocol), scs->name, remote->bytes_read);
       break;
    case OPM_ERR_BIND:
       if(OPT_DEBUG >= 2)
@@ -673,7 +713,7 @@ void scan_positive(struct scan_struct *ss)
 
 void scan_negative(struct scan_struct *ss)
 {
-   //insert IP in negcache
+   /* Insert IP in negcache */
    if(OptionsItem->negcache > 0)
    {
       if(OPT_DEBUG >= 2)
@@ -788,13 +828,102 @@ void scan_checkfinished(struct scan_struct *ss)
 {
    if(ss->scans <= 0)
    {
-      if(OPT_DEBUG)
-         log("SCAN -> All tests on %s!%s@%s complete.", ss->irc_nick, ss->irc_username, ss->irc_hostname);
 
-      //Scan was a negative
+      if(ss->manual_target != NULL)
+         irc_send("PRIVMSG %s :All tests on %s completed", ss->manual_target->name, ss->ip);
+      else  
+         if(OPT_DEBUG) /* If there was a manual_target, then irc_nick, etc is NULL */
+            log("SCAN -> All tests on %s!%s@%s complete.", ss->irc_nick, ss->irc_username, ss->irc_hostname);
+      
+      /* Scan was a negative */
       if(!ss->positive)
          scan_negative(ss);
 
       scan_free(ss);     
+   }
+}
+
+
+
+/* scan_manual
+ *
+ *    Create a manual scan. A manual scan is a scan where the
+ *    scan_struct contains a manual_target pointer.
+ */
+void scan_manual(char *param, struct ChannelConf *target)
+{
+   struct scan_struct *ss;
+   struct scanner_struct *scs;
+   
+   char *ip;
+   char *scannername;
+
+   node_t *p;
+   int ret;
+
+   /* Try to extract a scanner name from param, otherwise we'll be
+      adding to all scanners */
+   ip = param;
+  
+   if((scannername = strchr(param, ' ')) != NULL)
+   {
+      *scannername = '\0';
+      scannername++;
+   }
+  
+   ss = (struct scan_struct *) MyMalloc(sizeof(struct scan_struct));
+
+   /* These don't exist in a manual scan */
+   ss->irc_nick     = NULL;
+   ss->irc_username = NULL;
+   ss->irc_hostname = NULL;
+   ss->proof        = NULL;
+
+   ss->ip = DupString(param);
+
+   ss->remote = opm_remote_create(ss->ip);
+   ss->remote->data = ss;
+   ss->scans = 0;
+   ss->positive = 0;
+
+   ss->manual_target = target;
+
+   assert(ss->remote);
+
+   if(LIST_SIZE(OpmItem->blacklists) > 0)
+      dnsbl_add(ss);
+
+   /* Add ss->remote to all scanners */
+   LIST_FOREACH(p, SCANNERS->head)
+   {
+      scs = (struct scanner_struct *) p->data;
+
+      /* If we have a scannername, only allow that scanner
+         to be used */
+      if(scannername != NULL)
+         if(strcasecmp(scannername, scs->name))
+            continue;      
+
+      if(OPT_DEBUG)
+         log("SCAN -> Passing %s to scanner [%s] (MANUAL SCAN)", ip, scs->name);
+
+      if((ret = opm_scan(scs->scanner, ss->remote)) != OPM_SUCCESS) 
+      {
+         switch(ret)
+         {
+            case OPM_ERR_NOPROTOCOLS:
+               break;
+            case OPM_ERR_BADADDR:
+               irc_send("PRIVMSG %s :OPM -> Bad address %s", ss->manual_target->name, ss->ip);
+               break;
+            default:
+               irc_send("PRIVMSG %s :OPM -> Unknown error %s", ss->manual_target->name, ss->ip);
+               break;
+         } 
+         scan_free(ss);
+         return;  
+      } 
+      else
+         ss->scans++; /* Increase scan count only if OPM_SUCCESS */
    }
 }

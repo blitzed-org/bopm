@@ -6,13 +6,17 @@ BOPM sample configuration
 
 options {
 	pidfile = "bopm.pid";
+
+        /* Maximum amount of nodes in the negative cache */
 	negcache = 3600;
-	dns_fdlimit = 50;
+
+        /* Amount of file descriptors to allocate to asynchronous DNS */
+	dns_fdlimit = 5;
 };
 
 
 IRC {
-        /* Ip to bind to */
+        /* Ip to bind to (THIS MUST BE AN IP!) */
         #vhost = "0.0.0.0";
 
 	nick = "MyBopm";
@@ -24,8 +28,11 @@ IRC {
         port = 6667;
 
         oper = "bopm operpass";
+
+ 
         mode = "+cs";
-       
+        /* Bahamut +F */
+        #mode = "+Fcs";      
 
         away = "I'm a bot, don't message me.";
 
@@ -33,11 +40,28 @@ IRC {
            name = "#bopm";
            #key = "somekey";
         };
+
+        /*
+        channel {
+           name = "#other channel";
+        }; */
        
-        /* Hybrid */
+        /* 
+           connregex is a POSIX regular expression used to parse connection (+c) 
+           notices from the ircd. The complexity of the expression should be kept
+           to a minimum.
+           
+           Items in order MUST be:
+           nick user host IP
+
+           BOPM will not work with ircds which do not send an IP in the connection
+           notice
+        */
+
+        /* Hybrid / Bahamut */
         connregex = "\\*\\*\\* Notice -- Client connecting: ([^ ]+) \\(([^@]+)@([^\\)]+)\\) \\[([0-9\\.]+)\\].*";
 
-        /* Kline format 
+        /* Kline format
 
            %n     Users nick
            %u     Users username
@@ -49,11 +73,15 @@ IRC {
         kline = "KLINE *@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
 };
 
+
 OPM {
+       /* Blacklist zones to check IPs against */
 	blacklist = "opm.blitzed.org";
-	#dnsbl_from = "";
-	#dnsbl_to = "";
-	#sendmail = "";
+        #blacklist = "opm.myhost.org";
+
+	#dnsbl_from = "mybopm@myserver.org";
+	#dnsbl_to = "reports@somehost.org";
+	#sendmail = "/path/to/sendmail";
 };
 
 

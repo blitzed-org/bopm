@@ -7,7 +7,7 @@
 extern void dnsbl_add(struct scan_struct *);
 extern void dnsbl_result(struct firedns_result *);
 extern void dnsbl_cycle(void);
-//extern void dnsbl_report(struct scan_struct *ss);
+extern void dnsbl_report(struct scan_struct *ss);
 
 /* Bitmasks used in final octet of IP address */
 #define DNSBL_TYPE_WG 1

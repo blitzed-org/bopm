@@ -16,6 +16,7 @@ struct scan_struct
    unsigned short scans;
    unsigned short positive;
 
+   struct ChannelConf *manual_target;
 };
 
 
@@ -42,6 +43,7 @@ extern char *scan_gettype(int);
 extern void scan_cycle();
 extern void scan_connect(char **, char *);
 extern void scan_checkfinished(struct scan_struct *);
+extern void scan_manual(char *, struct ChannelConf *);
 
 struct kline_format_assoc
 {

@@ -87,6 +87,7 @@ static void m_privmsg(char **, unsigned int, char *, struct UserInfo *);
 static void m_notice(char **, unsigned int, char *, struct UserInfo *);
 static void m_perform(char **, unsigned int, char *, struct UserInfo *);
 static void m_versioncheck(char **, unsigned int, char *, struct UserInfo *);
+static void m_userhost(char **, unsigned int, char *, struct UserInfo *);
 
 extern struct cnode *nc_head;
 
@@ -114,14 +115,15 @@ time_t               IRC_LAST = 0;               /* Last full line of data from 
 /* Table should be ordered with most occuring (or priority)
    commands at the top of the list. */
 
-struct CommandHash COMMAND_TABLE[] = {
-                                        {"NOTICE",               m_notice  },
-                                        {"PRIVMSG",              m_privmsg },
-                                        {"PING",                 m_ping    },
-                                        {"INVITE",               m_invite  },
-                                        {"001",                  m_perform },
-                                        {"002",                  m_versioncheck },
-                                     };
+static struct CommandHash COMMAND_TABLE[] = {
+           {"NOTICE",               m_notice  },
+           {"PRIVMSG",              m_privmsg },
+           {"PING",                 m_ping    },
+           {"INVITE",               m_invite  },
+           {"001",                  m_perform },
+           {"002",                  m_versioncheck },
+           {"302",                  m_userhost},
+};
 
 /* irc_cycle
  *
@@ -849,6 +851,7 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
    if(strncasecmp(parv[3], IRCItem->nick, 3) == 0  || 
       strcasecmp(msg, "!all") == 0) 
    {
+      /* XXX command_parse will alter parv[3]. */
       command_parse(parv[3], msg, channel, source_p); 
    }
 }
@@ -942,4 +945,25 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
 
    /* Pass this information off to scan.c */
    scan_connect(user, msg);
+}
+
+/* m_userhost
+ *
+ * parv[0]  = source
+ * parv[1]  = USERHOST
+ * parv[2]  = target (bopm)
+ * parv[3]  = :nick=(flags)user@host
+ *
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
+ *
+ */
+
+void m_userhost(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+{
+   if(parc < 4)
+      return;
+
+   command_userhost(parv[3]);
 }

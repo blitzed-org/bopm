@@ -3,23 +3,24 @@
 
 #include "config.h"
 
-struct command
+struct Command
 {
-   /* Types defined below. */
-   /* THIS MUST BE CMD_NONE FOR AN EMPTY COMMAND! */
-   unsigned int type;
+   /* Index of command in COMMAND_TABLE in opercmd.c */
+   unsigned short type;
 
    /* Command parameter.
     * <erik> but i cant think of any commands bopm will ever have that is
     *   multiple parameters
+    *
+    *         I still havn't  -Erik 12/11/02
     */
    char *param;
 
    /* Who ordered it. */
-   char nick[NICKMAX];
+   char *irc_nick;
 
    /* Where the reply is to be sent. */
-   char *target;
+   struct ChannelConf *target;
 
    /*
     * When it was added, because we might need to remove it if it does
@@ -28,15 +29,8 @@ struct command
    time_t added;
 };
 
-/* Allow 5 outstanding commands. */
-#define MAXCMD 5
 
-/* One for each oper command we support. */
-#define CMD_NONE  0
-#define CMD_CHECK 1
-
-
-typedef void (*oper_command) (char **, unsigned int, char *, const struct ChannelConf *, const struct UserInfo *);
+typedef void (*oper_command) (char *, char*, struct ChannelConf *);
 
 struct OperCommandHash
 {
@@ -44,10 +38,6 @@ struct OperCommandHash
    oper_command handler;
 };
 
-extern void command_parse(char *, char *,  const struct ChannelConf *, struct UserInfo *);
-extern void do_oper_cmd(const char *nick, const char *cmd,
-                           const char *param, const char *target);
-extern void check_userhost(const char *userhost);
-extern void reap_commands(time_t present);
-
+extern void command_init();
+extern void command_userhost(char *);
 #endif

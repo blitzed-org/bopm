@@ -162,10 +162,6 @@ int main(int argc, char **argv)
 
    firedns_init();
 
-   //FIXME
-   //	if (CONF_SCAN_WARNING)
-   //		do_scanwarn_init();
-
    /* Setup alarm & int handlers. */
 
    ALARMACTION.sa_handler = &(do_signal);
@@ -189,9 +185,6 @@ int main(int argc, char **argv)
       {
          irc_timer();
          scan_timer();
-         //FIXME
-         //if (CONF_SCAN_WARNING)
-         //	scanwarn_timer();
 
          ALARMED = 0;
       }

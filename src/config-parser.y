@@ -28,7 +28,7 @@
 #include "malloc.h"
 #include "config.h"
 
-//int yydebug=1; 
+int yydebug=0; 
 void *tmp;        /* Variable to temporarily hold nodes before insertion to list */
 
 %}
