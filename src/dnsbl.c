@@ -203,9 +203,10 @@ void dnsbl_report(struct scan_struct *ss)
             "From: %s <%s>\n"
             "To: %s\n"
             "Subject: BOPM Report\n\n"
-            "%s: %s\n\n"
+            "%s: %s:%d\n\n"
             "%s\n", IRCItem->nick, OpmItem->dnsbl_from, OpmItem->dnsbl_to,
-            scan_gettype(ss->remote->protocol), ss->ip, ss->proof);
+            scan_gettype(ss->remote->protocol), ss->ip, ss->remote->port,
+	    ss->proof);
 
    if(OPT_DEBUG >= 3)
       log("DNSBL -> Sending following email:\n%s\n", buf);
