@@ -12,10 +12,9 @@
  
     struct protocol_hash
      {
-          char *type;               /* Plaintext name of protocol to scan   */
-          int port;                 /* Port to scan protocol on             */
+          char *type;                 /* Plaintext name of protocol to scan   */
+          int port;                   /* Port to scan protocol on             */
           scan_function w_handler;    /* Function to handle specific protocol */
-          scan_function r_handler;
           unsigned int stat_num;
           unsigned int stat_numopen;
      };
@@ -56,17 +55,10 @@
      void scan_negfail(scan_struct *conn);
      void scan_openproxy(scan_struct *conn);
      
-     int scan_w_squid(scan_struct *ss);
-     int scan_r_squid(scan_struct *ss);
-     
-     int scan_w_socks4(scan_struct *ss);
-     int scan_r_socks4(scan_struct *ss);
-
-     int scan_w_socks5(scan_struct *ss);
-     int scan_r_socks5(scan_struct *ss);
-
-     int scan_w_wingate(scan_struct *ss);
-     int scan_r_wingate(scan_struct *ss);
+     int scan_w_squid(scan_struct *conn);     
+     int scan_w_socks4(scan_struct *conn);
+     int scan_w_socks5(scan_struct *conn);
+     int scan_w_wingate(scan_struct *conn);
 
      void do_manual_check(struct command *c);
 #endif 

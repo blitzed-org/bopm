@@ -48,7 +48,6 @@ along with this program; if not, write to the Free Software
 struct scan_struct *CONNECTIONS = 0;  /* Linked list head for connections */
 
 char SENDBUFF[513];
-char RECVBUFF[513];
 
 unsigned int FD_USE = 0;                 /* Keep track of numbers of open FD's, for use with FDLIMIT */
 
@@ -57,12 +56,12 @@ unsigned int FD_USE = 0;                 /* Keep track of numbers of open FD's, 
 
 protocol_hash SCAN_PROTOCOLS[] = {
 
-       {"HTTP"      , 8080, &(scan_w_squid),  &(scan_r_squid)   ,0 ,0 },
-       {"HTTP"      , 3128, &(scan_w_squid),  &(scan_r_squid)   ,0 ,0 },
-       {"HTTP"      ,   80, &(scan_w_squid),  &(scan_r_squid)   ,0 ,0 },
-       {"Socks4"    , 1080, &(scan_w_socks4), &(scan_r_socks4)  ,0 ,0 },
-       {"Socks5"    , 1080, &(scan_w_socks5), &(scan_r_socks5)  ,0 ,0 },
-       {"Wingate"   ,   23, &(scan_w_wingate),&(scan_r_wingate) ,0 ,0 }
+       {"HTTP"      , 8080, &(scan_w_squid),    0 ,0 },
+       {"HTTP"      , 3128, &(scan_w_squid),    0 ,0 },
+       {"HTTP"      ,   80, &(scan_w_squid),    0 ,0 },
+       {"Socks4"    , 1080, &(scan_w_socks4),   0 ,0 },
+       {"Socks5"    , 1080, &(scan_w_socks5),   0 ,0 },
+       {"Wingate"   ,   23, &(scan_w_wingate),  0 ,0 }
 
 };
 
@@ -627,71 +626,20 @@ void scan_timer()
 
 
 
-/* Functions for handling open http data 
+/* Function for handling open http data 
  *
  *  Return 1 on success.
  *
  */
 
-int scan_w_squid(struct scan_struct *ss)
+int scan_w_squid(struct scan_struct *conn)
 {
    
     snprintf(SENDBUFF, 128, "CONNECT %s:%d HTTP/1.0\r\n\r\n", CONF_SCANIP, CONF_SCANPORT);
-    send(ss->fd, SENDBUFF, strlen(SENDBUFF), 0);
+    send(conn->fd, SENDBUFF, strlen(SENDBUFF), 0);
 
     return 1;
 }
-
-int scan_r_squid(struct scan_struct *ss)
-{
-
-  int len;
-  char *newline;
-
-  len = recv(ss->fd, RECVBUFF, 512, 0);
-
-  if(len <= 0)
-    return 0;
-
-  RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
- 	
-  
-  if(!strncasecmp(RECVBUFF, "HTTP/1.0 200", 12) ||
-     !strncasecmp(RECVBUFF, "HTTP/1.1 200", 12))
-       {
-           newline = strchr(RECVBUFF, '\n');
-
-           if(!newline)
-                return 1;
-
-           newline++;  /* Increase sizeof(char) to bring us 1 char after /n */
-
-           if((newline - RECVBUFF) >= strlen(RECVBUFF)) 
-                return 1;
-
-          if(newline[0] != ':' &&                              /* ircd message */
-	     newline[0] != '\r' &&                             /* another newline */
-             strncasecmp(newline, "NOTICE",6) != 0 &&          /* hybrid ircd */
-             strncasecmp(newline, "Proxy-Type:",11) != 0) {    /* some open proxies */
-	       if (OPT_DEBUG)
-	        {
-	          log("SCAN -> Found a proxy/httpd which replied, but "
-		      "don't think it is open, got:\n%s\n", newline);
-		}
-               return 0;
-          }
-
-           return 1;      /* Open Proxy */
-       }
-        
-  return 0;
-}
-
-
-/*  Functions for handling open socks4 data
- *
- *  Return 1 on success.
- */
 
 
 /*  CONNECT request byte order for socks4
@@ -705,7 +653,7 @@ int scan_r_squid(struct scan_struct *ss)
  *
  */
 
-int scan_w_socks4(struct scan_struct *ss)
+int scan_w_socks4(struct scan_struct *conn)
 {
 
      struct in_addr addr;
@@ -728,57 +676,9 @@ int scan_w_socks4(struct scan_struct *ss)
                                         (char) laddr & 0xFF,                   
                                         0); 
 
-     send(ss->fd, SENDBUFF, len, 0);
+     send(conn->fd, SENDBUFF, len, 0);
      return 1;
 }
-
-/*  REPLY byte order for socks4 
- *
- * 		+----+----+----+----+----+----+----+----+
- * 		| VN | CD | DSTPORT |      DSTIP        |
- * 		+----+----+----+----+----+----+----+----+
- * # of bytes:	   1    1      2              4
- * 
- * 
- * VN is the version of the reply code and should be 0. CD is the result
- * code with one of the following values:
- *
- * 	90: request granted
- *      91: request rejected or failed
- *      92: request rejected becasue SOCKS server cannot connect to
- *          identd on the client
- *      93: request rejected because the client program and identd
- *          report different user-ids
- *
- * 				    		     						 
- *
- */
-
-int scan_r_socks4(struct scan_struct *ss)
-{
-
-   int len;
-
-   len = recv(ss->fd, RECVBUFF, 512, 0);
-
-   if(len < 8)
-       return 0;
-
-   RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
-   
-  
-   if(RECVBUFF[0] == 0 && RECVBUFF[1] == 90)
-       return 1; 
-
-   return 0;
-}
-
-
-/*
- *   Functions for handling socks5 data
- *
- */
-
 
 /*  Send version authentication selection message to socks5
  *
@@ -793,85 +693,30 @@ int scan_r_socks4(struct scan_struct *ss)
  *  
  */
 
-int scan_w_socks5(struct scan_struct *ss)
+int scan_w_socks5(struct scan_struct *conn)
 {
    int len;
 
                               /* Version 5, 1 number of methods, 0 method (no auth) */
    len = snprintf(SENDBUFF, 512, "%c%c%c", 5, 1, 0);
-   send(ss->fd, SENDBUFF, len, 0);
+   send(conn->fd, SENDBUFF, len, 0);
 
    return 1;
 }
 
-/*  Authentication selection reply message.
- *       +----+--------+
- *       |VER | METHOD |
- *       +----+--------+
- *       | 1  |   1    |
- *       +----+--------+
- *                                                                                                                              
- *   Version should always be 5, method should
- *   return back method selected by server for  
- *   authentication. Method 0 indicates no authentication
- *   which indicates an open proxy.
- */
 
-int scan_r_socks5(struct scan_struct *ss)
-{
-
-   int len;
-
-   len = recv(ss->fd, RECVBUFF, 512, 0);
-
-   if(len <= 0)
-      return 0;
-
-   RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
-
-   /* Version is 5 and method is 0 (no auth) */
-   if(RECVBUFF[0] == 5 && RECVBUFF[1] == 0)
-      return 1;
-
-   return 0;
-}
-
-
-
-/*
- *  Functions to handle wingates
- *
- *
- */
 
 /*  Open wingates require no authentication, they
  *  will send a prompt when connect. No need to
  *  send any data.
  */
 
-int scan_w_wingate(struct scan_struct *ss)
+int scan_w_wingate(struct scan_struct *conn)
 {
     return 1;
 }
 
 
-int scan_r_wingate(struct scan_struct *ss)
-{
-   int len;
-
-   len = recv(ss->fd, RECVBUFF, 512, 0);
-
-   if(len <= 0)
-      return 0;
-
-   RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
-   
-   if(!strncasecmp(RECVBUFF, "WinGate>", 8) ||
-      !strncasecmp(RECVBUFF, "Too many connected users - try again later", 42))
-          return 1;
-
-   return 0;
-}
 
 /* manually check a host for proxies */
 void do_manual_check(struct command *c)
