@@ -242,9 +242,9 @@ void stats_output(char *target)
 
 void fdstats_output(char *target)
 {
-   unsigned total_fd_use;
    struct rlimit rlim;
-   unsigned int i, newfd;
+   unsigned total_fd_use, i;
+   int newfd;
 
    /* Get file descriptor ceiling */
    if(getrlimit(RLIMIT_NOFILE, &rlim) == -1)
