@@ -84,6 +84,7 @@ static void userinfo_free(struct UserInfo *source);
 static void m_ping(char **, unsigned int, char *, struct UserInfo *);
 static void m_invite(char **, unsigned int, char *, struct UserInfo *);
 static void m_privmsg(char **, unsigned int, char *, struct UserInfo *);
+static void m_ctcp(char **, unsigned int, char *, struct UserInfo *);
 static void m_notice(char **, unsigned int, char *, struct UserInfo *);
 static void m_perform(char **, unsigned int, char *, struct UserInfo *);
 static void m_versioncheck(char **, unsigned int, char *, struct UserInfo *);
@@ -848,8 +849,12 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
    if(parc < 4)
       return;
 
+   /* CTCP */
+   if(parv[3][0] == '\001');
+      m_ctcp(parv, parc, msg, source_p);
+
    /* Only interested in privmsg to channels */
-   if(parv[2][0] != '#')
+   if(parv[2][0] != '#' && parv[2][0] != '&')
       return;
 
    /* Get a target */
@@ -864,6 +869,30 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
       command_parse(parv[3], msg, channel, source_p); 
    }
 }
+
+
+
+
+
+/* m_ctcp
+ * parv[0]  = source
+ * parv[1]  = PRIVMSG
+ * parv[2]  = target (channel or user)
+ * parv[3]  = message
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
+ *
+ */
+
+static void m_ctcp(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+{
+   if(strncasecmp(parv[3], "\001VERSION\001", 9) == 0) 
+       irc_send("NOTICE %s :\001VERSION Blitzed Open Proxy Monitor %s\001", source_p->irc_nick, VERSION);
+}
+
+
+
 
 
 /* m_notice

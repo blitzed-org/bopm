@@ -74,6 +74,11 @@ IRC {
 	*/
 
 	kline = "KLINE *@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
+
+        /* Text to send on connection, these can be stacked and will be sent in this order */
+        /* Unreal users will need PROTOCTL HCN to force hybrid connect notices */
+        #perform = "PROTOCTL HCN";
+
 };
 
 
@@ -176,8 +181,7 @@ user {
 	scanner = "extended";
 };
 
-/*
 exempt {
 	mask = "*!*@localhost";
 	mask = "*!*@127.0.0.1";
-}; */
+};
