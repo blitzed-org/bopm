@@ -78,6 +78,9 @@ botnick stats                   -- Output scan stats, uptime and client connecti
 
 botnick fdstat                  -- Output some into about file descriptors in use.
 
+Also if several BOPMs are present in one channel they will all respond to !all,
+for example !all stats (fixed in BOPM 3.0.4).
+
 
 Rehashing BOPM 
 --------------------------------
