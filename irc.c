@@ -518,7 +518,7 @@ void irc_parse()
 
 	       prefixlen = strlen(msg);
 
-	       if(token[2][0] == '#')
+	       if(token[2][0] == '#' || token[2][0] == '&')
 		   target = CONF_CHANNELS;
 	       else
 		   target = nick;
