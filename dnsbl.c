@@ -64,10 +64,10 @@ int dnsbl_check(const char *addr, const char *irc_nick,
    a = (int) in.s_addr & 0xFF;
 
    /* enough for a reversed IP and the zone */
-   buflen = 17 + strlen(CONF_DNSBL_ZONE);
+   buflen = 18 + strlen(CONF_DNSBL_ZONE);
    buf = malloc(buflen * sizeof(char));
 
-   snprintf(buf, buflen, "%d.%d.%d.%d.%s", d, c, b, a, CONF_DNSBL_ZONE);
+   snprintf(buf, buflen, "%d.%d.%d.%d.%s.", d, c, b, a, CONF_DNSBL_ZONE);
   
    if(OPT_DEBUG)
       log("DNSBL -> Checking %s", buf);

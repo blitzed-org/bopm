@@ -144,8 +144,9 @@ KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitze
 #                     against.  For example, Blitzed uses opm.blitzed.org (and
 #                     you can too, if you like).  If you don't understand what
 #                     a DNSBL is, you can try looking at
-#                     http://www.blitzed.org/opm.  If you leave this variable
-#                     commented, no check will be done.
+#                     http://www.blitzed.org/opm.  This zone should NOT have a
+#                     dot at the end.  If you leave this variable commented, no
+#                     check will be done.
 
 DNSBL_ZONE opm.blitzed.org
 
