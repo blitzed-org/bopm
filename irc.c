@@ -334,8 +334,7 @@ void irc_parse()
    int   i, h, len;
    time_t present;
 
-    printf("%s\n", IRC_RAW);
-
+ 
     /* Tokenize the first 16 words in the incoming data, we really don't need to worry
       about anything else and we don't need the original string for anything. */
 

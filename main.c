@@ -44,6 +44,27 @@ struct sigaction ALARMACTION;
 int main()
 {
 
+   FILE *pidout;
+   int pid;
+   char spid[16];
+ 
+
+   /* Fork off */
+
+   if((pid = fork()))
+    {
+       pidout = fopen("bopm.pid", "w");
+       snprintf(spid, 16, "%d", pid);
+
+       if(pidout)         
+            fwrite(spid, sizeof(char), strlen(spid), pidout);   
+         
+       fclose(pidout);
+
+       exit(0);
+    }
+
+
     log_open("bopm.log"); 
 
     log("MAIN -> BOPM started.");
