@@ -54,23 +54,27 @@ void log_close()
 void log(char *data, ...)
 {
         time_t present;
+	struct tm *tm_present;
         va_list arglist;
  
         char data2[513];
+	char buf_present[25];
 	
         if(!OPT_DEBUG && !logfile)
             return;
 
         time(&present);
+	tm_present = gmtime(&present);
+	strftime(buf_present, sizeof(buf_present), "%b %d %H:%M:%S %Y", tm_present);
  
         va_start(arglist, data);
         vsnprintf(data2, 512, data, arglist);
         va_end(arglist);
 
 	if(OPT_DEBUG)
-	    fprintf(stderr, "[%d] %s\n", (int) present, data2);
+	    fprintf(stderr, "[%s] %s\n", buf_present, data2);
 	else {
-            fprintf(logfile, "[%d] %s\n", (int) present, data2);
+            fprintf(logfile, "[%s] %s\n", buf_present, data2);
             fflush(logfile);
 	 }
 }
