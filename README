@@ -34,5 +34,5 @@ Credits
          Developed operator interface, interface to DNSbl, makefile trickery, debugging.
  
    David Leadbeater <dg@blitzed.org> 
-         Developer perl script for testing BOPM's support for scanning many clients
+         Developed perl script for testing BOPM's support for scanning many clients
          at once
