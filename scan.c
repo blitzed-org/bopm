@@ -195,8 +195,8 @@ void scan_check()
                       if((*ss->protocol->r_handler)(ss)) /* If read returns true, flag socket for closed */
                            ss->state = STATE_CLOSED;
                   if(FD_ISSET(ss->fd, &w_fdset))                                                             
-                      (*ss->protocol->w_handler)(ss);  
-                        
+                      if((*ss->protocol->w_handler)(ss)) /* If write returns true, flag STATE_SENT */  
+                           ss->state = STATE_SENT;
              
                         
                }
@@ -321,7 +321,6 @@ int scan_w_squid(struct scan_struct *ss)
     snprintf(SENDBUFF, 128, "CONNECT %s:%d HTTP/1.0\n\n", CONF_SERVER, CONF_PORT);
     send(ss->fd, SENDBUFF, strlen(SENDBUFF), 0);
 
-    ss->state = STATE_SENT;
     return 1;
 }
 
@@ -336,14 +335,13 @@ int scan_r_squid(struct scan_struct *ss)
   if(len <= 0)
        return 0;
 
-  printf("In data port %d: %s\n\n", ss->protocol->port, RECVBUFF);
- 
+ /*
   if(!strncasecmp(RECVBUFF, "HTTP/1.0", 8))
    { 
        irc_kline(ss->irc_addr, CONF_REASON);
        return 1;
    }
-
+*/
   return 0;
 }
 
@@ -369,20 +367,24 @@ int scan_w_socks4(struct scan_struct *ss)
 {
 
      struct in_addr addr;
-     short int shortport;
-     char dstip[5];
-     char dstport[3];
+     unsigned long laddr;
+     int len;
+ 
+     inet_aton("216.175.103.145", &addr);
+     laddr = htonl(addr.s_addr);
+ 
+     len = snprintf(SENDBUFF, 512, "%c%c%c%c%c%c%c%cBOPM%c",  
+                                        4,
+                                        1,
+                                        (((unsigned short) CONF_PORT) >> 8) & 0xFF,
+                                        (((unsigned short) CONF_PORT) & 0xff),
+                                        (char) (laddr >> 24) & 0xFF,
+                                        (char) (laddr >> 16) & 0xFF,
+                                        (char) (laddr >> 8) & 0xFF,
+                                        (char) laddr & 0xFF,                   
+                                        0); 
 
-     inet_aton(ss->addr, &addr);
-     shortport = (short int) CONF_PORT;
-
-     memcpy(dstip, &(addr.s_addr), 4);
-     memcpy(dstport, &shortport, 2);
-
-     dstip[4] = dstport[2] = 0;  /* Null terminate */ 
-
-     snprintf(SENDBUFF, 512, "%c%c%s%sBOPM%c",4,1,dstport,dstip,0);  /* Form Socks4 packet */
-     send(ss->fd, SENDBUFF, strlen(SENDBUFF), 0);
+     send(ss->fd, SENDBUFF, len, 0);
      return 1;
 }
 
@@ -392,10 +394,30 @@ int scan_w_socks4(struct scan_struct *ss)
  * 		| VN | CD | DSTPORT |      DSTIP        |
  * 		+----+----+----+----+----+----+----+----+
  * # of bytes:	   1    1      2              4
- * 						 
+ * 
+ * 
+ * VN is the version of the reply code and should be 0. CD is the result
+ * code with one of the following values:
+ *
+ * 	90: request granted
+ *      91: request rejected or failed
+ *      92: request rejected becasue SOCKS server cannot connect to
+ *          identd on the client
+ *      93: request rejected because the client program and identd
+ *          report different user-ids
+ *
+ * 				    		     						 
  *
  */
 
 int scan_r_socks4(struct scan_struct *ss)
 {
+
+   int len;
+
+   len = recv(ss->fd, RECVBUFF, 512, 0);
+   RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
+   printf("Received Socks4 (%d): %s\n",strlen(RECVBUFF), RECVBUFF);
+   printf("VERSION: %d COMMAND: %d\n", (int) RECVBUFF[0], (int) RECVBUFF[1]); 
+   return 0;
 }
