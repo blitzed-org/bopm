@@ -137,39 +137,6 @@ void irc_init()
                               exit(1);
                 }
 
-       if(CONF_BINDIRC)
-         {
-                if(!inet_aton(CONF_BINDIRC, &(IRC_LOCAL.sin_addr)))
-                   {
-                       log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
-                       exit(1);
-                   }
-
-                IRC_LOCAL.sin_family = AF_INET;
-                IRC_LOCAL.sin_port = 0;                                        
-                            
-                if(bind(IRC_FD, (struct sockaddr *)&IRC_LOCAL, sizeof(struct sockaddr_in)) == -1)
-                  {      
-              
-                      switch(errno)
-                        {
-                               case EACCES:
-                                 log("IRC -> bind(): No access to bind to %s", CONF_BINDIRC);
-                                 exit(1);
-                               
-                               default:
-                                 log("IRC -> bind(): Error binding to %s (%d)", CONF_BINDIRC, errno);
-                                 exit(1);
-    
-                        }
-
-
-                  }
-      
-         }
-
-
-
        IRC_SVR.sin_family      = AF_INET;
        IRC_SVR.sin_port        = htons(CONF_PORT);
        IRC_SVR.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
@@ -209,6 +176,37 @@ void irc_init()
                                exit(1);
 
                 }
+
+       if(CONF_BINDIRC)
+         {
+                if(!inet_aton(CONF_BINDIRC, &(IRC_LOCAL.sin_addr)))
+                   {
+                       log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
+                       exit(1);
+                   }
+
+                IRC_LOCAL.sin_family = AF_INET;
+                IRC_LOCAL.sin_port = 0;
+
+                if(bind(IRC_FD, (struct sockaddr *)&IRC_LOCAL, sizeof(struct sockaddr_in)) == -1)
+                  {
+
+                      switch(errno)
+                        {
+                               case EACCES:
+                                 log("IRC -> bind(): No access to bind to %s", CONF_BINDIRC);
+                                 exit(1);
+
+                               default:
+                                 log("IRC -> bind(): Error binding to %s (%d)", CONF_BINDIRC, errno);
+                                 exit(1);
+
+                        }
+
+
+                  }
+
+         }
 
 
 }
