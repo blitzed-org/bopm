@@ -31,8 +31,11 @@ along with this program; if not, write to the Free Software
 #include <netdb.h>
 #include <signal.h>
 #include <unistd.h>
+
+#ifdef STDC_HEADERS
 #include <stdlib.h>
 #include <string.h>
+#endif
 
 #include "config.h"
 #include "extern.h"

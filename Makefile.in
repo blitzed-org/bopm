@@ -46,3 +46,7 @@ bopchecker: $(checker_obj)
 clean: 
 	rm -f *.o *.da bopm bopchecker
 
+.PHONY: distclean
+distclean: clean
+	rm -f config.cache config.log config.status configure setup.h Makefile
+

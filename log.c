@@ -20,10 +20,15 @@ along with this program; if not, write to the Free Software
 
 */
 
-#include <stdlib.h>
+#include "setup.h"
+
 #include <stdio.h>
+
+#ifdef STDC_HEADERS
+#include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#endif
 
 #include <time.h>
 

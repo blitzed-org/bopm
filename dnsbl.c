@@ -20,8 +20,14 @@ along with this program; if not, write to the Free Software
 
 */
 
+#include "setup.h"
+
 #include <stdio.h>
+
+#ifdef STDC_HEADERS
 #include <stdlib.h>
+#endif
+
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
