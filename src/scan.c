@@ -468,10 +468,10 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
    }  
 
    log("SCAN -> Open proxy %s:%d (%s) [%s]", remote->ip, remote->port,
-       scan_gettype(remote->protocol), scs->name);
+        scan_gettype(remote->protocol), scs->name);
 
-   irc_send_channels("OPEN PROXY -> %s:%d (%s) [%s]", remote->ip, remote->port,
-                     scan_gettype(remote->protocol), scs->name);
+   irc_send_channels("OPEN PROXY -> %s!%s@%s %s:%d (%s) [%s]", ss->irc_nick, ss->irc_username, ss->irc_hostname,
+                      remote->ip, remote->port, scan_gettype(remote->protocol), scs->name);
 
 }
 
