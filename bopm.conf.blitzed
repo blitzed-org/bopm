@@ -139,7 +139,7 @@ scanner {
    protocol = HTTPPOST:80;
    protocol = HTTP:808;
    protocol = HTTPPOST:8080;
-   protocol = WG:23;
+   protocol = WINGATE:23;
 
    /*
     * If your ircd is running from a machine with more than one interface,
@@ -171,7 +171,7 @@ scanner {
     */
    name = "extra";
 
-   protocol = WG:1181;
+   protocol = WINGATE:1181;
    protocol = SOCKS5:1180;
    protocol = HTTPPOST:3128;
    protocol = HTTP:3128;
