@@ -57,28 +57,28 @@ int  CONF_PORT             = 0;
 
 
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
-
+/*      NAME                  , TYPE   , REQ, REQMET, PTR TO VAR        */
 config_hash hash[] = {
-       {"SERVER",              TYPE_STRING,     &CONF_SERVER             },
-       {"PORT",                TYPE_INT   ,     &CONF_PORT               },
-       {"USER",                TYPE_STRING,     &CONF_USER               },
-       {"NICK",                TYPE_STRING,     &CONF_NICK               },
-       {"OPER",                TYPE_STRING,     &CONF_OPER               },
-       {"OPER_MODES",          TYPE_STRING,     &CONF_OPER_MODES         },
-       {"SCANIP",              TYPE_STRING,     &CONF_SCANIP             },
-       {"SCANPORT",            TYPE_INT   ,     &CONF_SCANPORT           },
-       {"BINDIRC",             TYPE_STRING,     &CONF_BINDIRC            },
-       {"BINDSCAN",            TYPE_STRING,     &CONF_BINDSCAN           },
-       {"CHANNELS",            TYPE_STRING,     &CONF_CHANNELS           },
-       {"NICKSERV_IDENT",      TYPE_STRING,     &CONF_NICKSERV_IDENT     },
-       {"CHANSERV_INVITE",     TYPE_STRING,     &CONF_CHANSERV_INVITE    },
-       {"KLINE_COMMAND",       TYPE_STRING,     &CONF_KLINE_COMMAND      },
-       {"DNSBL_ZONE",          TYPE_STRING,     &CONF_DNSBL_ZONE         },
-       {"DNSBL_FROM",          TYPE_STRING,     &CONF_DNSBL_FROM         },
-       {"DNSBL_TO",            TYPE_STRING,     &CONF_DNSBL_TO           },
-       {"SENDMAIL",            TYPE_STRING,     &CONF_SENDMAIL           },
-       {"HELP_EMAIL",          TYPE_STRING,     &CONF_HELP_EMAIL         },
-       {"AWAY",                TYPE_STRING,     &CONF_AWAY               },
+       {"SERVER",              TYPE_STRING, 1,0,    &CONF_SERVER             },
+       {"PORT",                TYPE_INT   , 1,0,    &CONF_PORT               },
+       {"USER",                TYPE_STRING, 1,0,    &CONF_USER               },
+       {"NICK",                TYPE_STRING, 1,0,    &CONF_NICK               },
+       {"OPER",                TYPE_STRING, 1,0,    &CONF_OPER               },
+       {"OPER_MODES",          TYPE_STRING, 1,0,    &CONF_OPER_MODES         },
+       {"SCANIP",              TYPE_STRING, 1,0,    &CONF_SCANIP             },
+       {"SCANPORT",            TYPE_INT   , 1,0,    &CONF_SCANPORT           },
+       {"BINDIRC",             TYPE_STRING, 0,0,    &CONF_BINDIRC            },
+       {"BINDSCAN",            TYPE_STRING, 0,0,    &CONF_BINDSCAN           },
+       {"CHANNELS",            TYPE_STRING, 1,0,    &CONF_CHANNELS           },
+       {"NICKSERV_IDENT",      TYPE_STRING, 0,0,    &CONF_NICKSERV_IDENT     },
+       {"CHANSERV_INVITE",     TYPE_STRING, 0,0,    &CONF_CHANSERV_INVITE    },
+       {"KLINE_COMMAND",       TYPE_STRING, 1,0,    &CONF_KLINE_COMMAND      },
+       {"DNSBL_ZONE",          TYPE_STRING, 0,0,    &CONF_DNSBL_ZONE         },
+       {"DNSBL_FROM",          TYPE_STRING, 0,0,    &CONF_DNSBL_FROM         },
+       {"DNSBL_TO",            TYPE_STRING, 0,0,    &CONF_DNSBL_TO           },
+       {"SENDMAIL",            TYPE_STRING, 0,0,    &CONF_SENDMAIL           },
+       {"HELP_EMAIL",          TYPE_STRING, 1,0,    &CONF_HELP_EMAIL         },
+       {"AWAY",                TYPE_STRING, 1,0,    &CONF_AWAY               },
 };
 
 
@@ -115,6 +115,7 @@ void config_load(char *filename)
               case TYPE_INT:
                   *(int *) hash[i].var = 0;
           }
+         hash[i].reqmet = 0;
       }
 
     while(fgets(line,1023, in))  
@@ -144,11 +145,33 @@ void config_load(char *filename)
                                  *(int *) hash[i].var = atoi(args);
                                  break;
                         }
- 
+                       hash[i].reqmet = 1;
                 }
 
       }
 
+
+  fclose(in);
+  config_checkreq(); /* Check required parameters */
+}
+
+void config_checkreq()
+{
+      int i;
+      int errfnd = 0;
+
+      for(i = 0; i < (sizeof(hash) / sizeof(config_hash)); i++)
+        if(hash[i].req && !hash[i].reqmet)
+         {               
+            log("CONFIG -> Parameter [%s] required but not defined in config.", hash[i].key);
+            errfnd++;
+         }
+
+      if(errfnd)
+       {
+          log("CONFIG -> %d parameters missing from config file, aborting.", errfnd);
+          exit(1);
+       }
 }
 
 /*  Called when memory allocation somewhere returns

@@ -10,11 +10,14 @@
        {
            char *key;
            int type;
+           int req;     /* Item is required */
+           int reqmet;  /* Req met          */
            void *var;
        };
 
        /* Config Functions */
 
        void config_load(char *filename);
+       void config_checkreq();
 
 #endif
