@@ -190,6 +190,14 @@ TARGET_STRING *** Looking up your hostname...
 #
 #                           If you don't like the rather Blitzed-like pages
 #                           then you can use this command instead:
+# 
+#     !!!! IMPORTANT !!!!   If you change the description on the line below
+#                           WE WILL NOT SUPPORT YOU. It is very important that
+#                           users banned are able to visit the DNSBL and remove 
+#                           themselves; if not, they will be permanantly banned 
+#                           from your network (as they will not knowledge to remove
+#                           themselves from the DNSBL).
+
 # KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitzed.org/opm/index2.phtml?ip=%s for more information
 
 KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%s for more information.
