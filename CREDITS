@@ -1,5 +1,5 @@
 
-BOPM 3.0:
+BOPM 3.0.x:
 
   Erik Fears <strtok@blitzed.org>
          - Main layout/functionality
@@ -20,6 +20,9 @@ BOPM 3.0:
   The Hybrid Team
          - IRC match code
          - Whitespace/String parsing in config-parser.y
+
+  Joshua Kwan
+         - Minor fixed and cleanups for Debian/gcc3
 
 
 
