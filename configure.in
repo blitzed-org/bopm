@@ -55,7 +55,7 @@ dnl AIX fun
 AC_C_BIGENDIAN
 
 dnl teehee - taken from MRTG / Tobias Oetiker
-echo $ECHO_N "checking for POSIX-compliant goat$ac_c"
+echo $ECHO_N "checking for POSIX-compliant goat $ECHO_C"
 for bleh in 1 2 3; do
  echo $ECHO_N "."        
  sleep 1

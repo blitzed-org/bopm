@@ -3461,7 +3461,7 @@ presetting ac_cv_c_bigendian=no (or yes) will help" >&2;}
    { (exit 1); exit 1; }; } ;;
 esac
 
-echo $ECHO_N "checking for POSIX-compliant goat$ac_c"
+echo $ECHO_N "checking for POSIX-compliant goat $ECHO_C"
 for bleh in 1 2 3; do
  echo $ECHO_N "."
  sleep 1
