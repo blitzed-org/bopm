@@ -325,6 +325,7 @@ struct scan_struct *scan_create(char **user, char *msg)
 
    ss->remote = opm_remote_create(ss->ip);
    ss->scans = 0;
+   ss->positive = 0;
 
    assert(ss->remote);
    return ss;
@@ -471,6 +472,8 @@ void scan_end(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
       log("SCAN -> Scan completed %s [%s]", remote->ip, scs->name);
 
    ss->scans--;
+
+   scan_checkfinished(ss);
 }
 
 
@@ -575,8 +578,22 @@ char *scan_gettype(int protocol)
 
 void scan_positive(struct scan_struct *ss)
 {
-   //Format KLINE and send to IRC server
+   node_t *node;
+   OPM_T *scanner;
+
+   /* Format KLINE and send to IRC server */
    scan_irckline(ss);
+
+   /* Speed up the cleanup procedure */
+   /* Close all scans prematurely */
+   LIST_FOREACH(node, SCANNERS->head)
+   {
+      scanner = (OPM_T *) node->data;
+      opm_endscan(scanner, ss->remote);
+   }
+  
+   /* Set it as a positive (to avoid a scan_negative call later on */
+   ss->positive = 1;
 }
 
 
@@ -594,7 +611,7 @@ void scan_positive(struct scan_struct *ss)
 
 void scan_negative(struct scan_struct *ss)
 {
-
+   //FIXME put IP in negcache!
 }
 
 
@@ -689,4 +706,24 @@ void scan_irckline(struct scan_struct *ss)
       pos++;
    }
    irc_send(message);
+}
+
+
+/* scan_checkfinished
+ *
+ *   Check if a scan is complete (ss->scans <= 0)
+ *   and free it if need be.
+ *
+ */
+
+void scan_checkfinished(struct scan_struct *ss)
+{
+   if(ss->scans <= 0)
+   {
+      //Scan was a negative
+      if(!ss->positive)
+         scan_negative(ss);
+
+      scan_free(ss);     
+   }
 }

@@ -77,12 +77,12 @@ void dnsbl_add(struct scan_struct *ss)
 #endif
 
       if(OPT_DEBUG)
-         log("Passed '%s' to firedns", lookup);
+         log("DNSBL -> Passed '%s' to firedns", lookup);
 
       res = firedns_getip4(lookup, (void *) ss);
 
       if(res == -1)
-         log("Error sending dns lookup '%s'", lookup);
+         log("DNSBL -> Error sending dns lookup '%s'", lookup);
       else
 	  ss->scans++; /* Increase scan count - one for each blacklist */
    }
@@ -93,6 +93,7 @@ void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type
     char text_type[100];
 
     text_type[0] = '\0';
+
     if(type & DNSBL_TYPE_WG)
 	strcat(text_type, "Wingate, ");
     if(type & DNSBL_TYPE_SOCKS)
@@ -111,7 +112,9 @@ void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type
 	lookup += strlen(ss->ip) + 1;
     }
 
-    log("DNSBL -> %s!%s@%s appears in BL zone %s type %s", ss->irc_nick, ss->irc_username, ss->irc_hostname, lookup, text_type);
+    log("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick, ss->irc_username, ss->irc_hostname, lookup, text_type);
+
+    irc_send_channels("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick, ss->irc_username, ss->irc_hostname, lookup, text_type);
 }
 
 void dnsbl_result(struct firedns_result *res)
@@ -121,7 +124,7 @@ void dnsbl_result(struct firedns_result *res)
    ss = (struct scan_struct *) res->info;
    ss->scans--; /* We will have finished with this when we return */
 
-   if(OPT_DEBUG)
+   if(OPT_DEBUG >= 2)
       log("DNSBL -> Lookup result: %d.%d.%d.%d (%d)",
           (unsigned char)res->text[0],
           (unsigned char)res->text[1],
@@ -136,13 +139,21 @@ void dnsbl_result(struct firedns_result *res)
 
    if(fdns_errno == FDNS_ERR_NONE)
    {
-      scan_irckline(ss);
-      dnsbl_log_positive(ss, res->lookup, (unsigned char)res->text[3]);
-   }else
+      /* Only report it if no other scans have found positives yet */
+      if(!ss->positive)
+      {
+         scan_positive(ss);
+         dnsbl_log_positive(ss, res->lookup, (unsigned char)res->text[3]);
+      }
+   }
+   else
    {
        // XXX: old bopm sometimes reports failures on these..
       log("DNSBL -> Weird error! fdns_errno = %d", fdns_errno);
    }
+   
+   /* Check if ss has any remaining scans */
+   scan_checkfinished(ss);
 }
 
 void dnsbl_cycle(void)

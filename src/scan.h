@@ -14,6 +14,8 @@ struct scan_struct
    OPM_REMOTE_T *remote;
 
    unsigned short scans;
+   unsigned short positive;
+
 };
 
 
@@ -38,8 +40,8 @@ struct protocol_assoc
 extern void scan_init();
 extern char *scan_gettype(int);
 extern void scan_cycle();
-void scan_connect(char **user, char *msg);
-
+extern void scan_connect(char **, char *);
+extern void scan_checkfinished(struct scan_struct *);
 
 struct kline_format_assoc
 {
