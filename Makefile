@@ -19,7 +19,9 @@ endif
 objects = config.o dnsbl.o irc.o log.o main.o misc.o opercmd.o scan.o \
           stats.o
 
-all: bopm
+checker_obj = bopchecker.o config.o misc.o scan.o
+
+all: bopm bopchecker
 	rm -f *.da
 
 config.o:  config.h                        log.h
@@ -32,10 +34,15 @@ opercmd.o:                  extern.h irc.h log.h misc.h opercmd.h scan.h
 scan.o:    config.h dnsbl.h extern.h irc.h log.h        opercmd.h scan.h stats.h
 stats.o:                    extern.h irc.h       misc.h                  stats.h
 
+bopchecker.o: bopchecker.h config.h irc.h options.h scan.h
+
 bopm: $(objects)
 	$(CC) $(LFLAGS) -o bopm $(objects)
 
+bopchecker: $(checker_obj)
+	$(CC) $(LFLAGS) -o bopchecker $(checker_obj)
+
 .PHONY: clean
 clean: 
-	rm -f *.o *.da bopm
+	rm -f *.o *.da bopm bopchecker
 
