@@ -22,8 +22,6 @@
  
 use strict;
 use Socket;
-use IO::Select;
-
 
 #Options
 my %BOPM    = (
@@ -63,8 +61,6 @@ my %IRC_FUNCTIONS = (
                      'NICK'    => \&m_nick,
                     );
 
-my $SELECT = new IO::Select; 
-
 my $IRC_SOCKET;
 my $IRC_DATA;
 
@@ -73,7 +69,7 @@ main();
 
 # main
 #
-# Main initializes the main listening socket
+# Main connects to the IRC server
 # and handles the main daemon loop.
 
 sub main #()
@@ -83,11 +79,13 @@ sub main #()
    irc_init();
    irc_connect();
 
-   while(true)
-   {
-      irc_cycle();
+   while(1) {
+      if($IRC_SOCKET)
+      {
+         irc_read();
+      }
+      irc_reconnect();
    }
-
 }
 
 
@@ -114,50 +112,8 @@ sub irc_init #()
       do_log(sprintf('IRC -> Error initializing IRC socket: %s', $!));
       die;
    }
-
-   $SELECT->add($$IRC_SOCKET);
 }
 
-
-# irc_cycle
-#
-# Run select() on the IRC client and bopm connections to
-# check for new data. Reconnect if needed.
-
-sub irc_cycle #()
-{
-   my $handle;
-   my $dcc;
-   my @ready;
-   my @errored;
-
-   #do error events
-   @errored = $SELECT->has_error(0);
-   
-   foreach $handle (@errored)
-   {
-      if($handle == $$IRC_SOCKET)
-      {
-         do_log('IRC -> IRC socket has_error');
-         irc_reconnect();
-         next;
-      }
-   }
-
-
-   #do read events
-   @ready = $SELECT->can_read(.1);
-  
-   foreach $handle (@ready)
-   {
-      #Data from IRC server
-      if($handle == $$IRC_SOCKET)
-      {
-         irc_read();
-         next;
-      }
-   }
-}
 
 # irc_connect
 #
@@ -166,9 +122,10 @@ sub irc_cycle #()
 
 sub irc_connect #()
 {
-   if(!connect($$IRC_SOCKET, sockaddr_in($IRC{PORT}, inet_aton($IRC{HOST}))))
+   if(!connect($IRC_SOCKET, sockaddr_in($IRC{PORT}, inet_aton($IRC{HOST}))))
    {
       do_log(sprintf('IRC -> Error connecting to IRC host: %s', $!));
+      return;
    }
 
    irc_send(sprintf('PASS %s', $IRC{PASS}));
@@ -186,10 +143,9 @@ sub irc_connect #()
 sub irc_reconnect #()
 {
 
-   do_log('IRC -> Reconnecting to server');
+   do_log('IRC -> Reconnecting to server in 30 seconds..');
 
-   close($$IRC_SOCKET);
-   $SELECT->remove($$IRC_SOCKET);
+   close($IRC_SOCKET);
 
    sleep(30);
 
@@ -219,7 +175,7 @@ sub irc_send #($data)
 
    $data .= "\n\n";
 
-   if(!send($$IRC_SOCKET, $data, 0))
+   if(!send($IRC_SOCKET, $data, 0))
    {
       do_log(sprintf('IRC -> send() error: %s', $!));
       irc_reconnect();
@@ -234,26 +190,11 @@ sub irc_send #($data)
 
 sub irc_read #()
 {
-   my $data;
-   my $pos;
-   my $line;
-
-   if(sysread($$IRC_SOCKET, $data, 512) == 0)
+   while(<$IRC_SOCKET>)
    {
-      do_log('IRC -> Read error from server');
-      irc_reconnect();
-      return;
+      chomp;
+      irc_parse($_);
    }
-
-   $data = $IRC_DATA . $data;
-
-   while(($pos = index($data, "\n")) != -1)
-   {
-      $line = substr($data, 0, $pos + 1, "");
-      chomp $line;
-      irc_parse($line);
-   }
-   $IRC_DATA = $data;
 }
 
 
