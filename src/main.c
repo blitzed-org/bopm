@@ -59,6 +59,7 @@ static RETSIGTYPE do_signal(int signum);
 
 int RESTART = 0;             /* Flagged to restart on next cycle */
 int ALARMED = 0;             /* Flagged to call timer functions on next cycle */
+int REOPEN  = 0;             /* Flagged to reopen log files on next cycle */
 unsigned int OPT_DEBUG = 0;  /* Debug level */
 
 char *CONFNAME = DEFAULTNAME;
@@ -68,6 +69,7 @@ char *CONFFILE, *LOGFILE;
 
 struct sigaction ALARMACTION;
 struct sigaction INTACTION;
+struct sigaction USR1ACTION;
 
 int main(int argc, char **argv)
 {
@@ -179,9 +181,11 @@ int main(int argc, char **argv)
    ALARMACTION.sa_handler = &(do_signal);
    ALARMACTION.sa_flags = SA_RESTART;
    INTACTION.sa_handler = &(do_signal);
+   USR1ACTION.sa_handler = &(do_signal);
 
    sigaction(SIGALRM, &ALARMACTION, 0);
    sigaction(SIGINT, &INTACTION, 0);
+   sigaction(SIGUSR1, &USR1ACTION, 0);
 
    /* Ignore SIGPIPE. */
    signal(SIGPIPE, SIG_IGN);
@@ -225,6 +229,23 @@ int main(int argc, char **argv)
          RESTART = 0;
       }
 
+      /* Check for log reopen */
+      if(REOPEN)
+      {
+         log_printf("MAIN -> Caught SIGUSR1, reopening logfiles");
+         log_close();
+         log_open(LOGFILE);
+
+         if(OptionsItem->scanlog)
+         {
+            scanlog_close();
+            scanlog_open(OptionsItem->scanlog);
+         }
+
+         log_printf("MAIN -> reopened logfiles");
+
+         REOPEN = 0;
+      }
 
       /* Call 1 second timers */
       if(ALARMED)
@@ -259,6 +280,9 @@ static void do_signal(int signum)
       case SIGINT:
          log_printf("MAIN -> Caught SIGINT, bye!");
          exit(0);
+         break;
+      case SIGUSR1:
+         REOPEN = 1;
          break;
    }
 }

@@ -9,3 +9,5 @@ config.cache
 config.status
 Makefile
 autom4te-*.cache
+autom4te.cache
+bopm.pid
