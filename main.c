@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 	do_scan_init();
 
 	while (1) {
-		c = getopt(argc, argv, "dcv:");
+		c = getopt(argc, argv, "dc:v:");
 
 		if (c == -1)
 			break;
