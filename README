@@ -48,6 +48,11 @@ New in v2.31 is support for Solaris.  This has not been extensively tested,
 please contact us if you are successfully running bopm on Solaris (or if
 you use Solaris and bopm does not work).
 
+New in 2.40 is support for scanning IPv6 clients and connecting BOPM to IPv6
+server addresses.  This has not been extensively tested, and features must be
+enabled with using the --enable-ipv6 configure option.  There is currently no
+DNSBL support for IPv6 addresses.
+
 
 Command Line Options
 --------------------
@@ -100,6 +105,15 @@ o Unreal Ircd
   Unreal 3.1.3 seems to require opers to be global if they are to see
   connection notices.
     -- prince@avalon.zirc.org
+
+  Later versions of Unreal require different user modes to be set on BOPM for
+  it to see connection notices.  You will need to use
+
+      OPER_MODES +s +c
+
+  in your bopm.conf.  Also later versions of Unreal no longer require patching
+  as described above.
+   -- prince@avalon.zirc.org
 
 o IRCu
 
@@ -173,3 +187,6 @@ Credits
 
    Harald Skoglund <harald@hekta.stud.iet.hist.no>
          - Option to configure directory for logfile, config, etc.
+
+   Yusuf Iskenderoglu <uhc0@stud.uni-karlsruhe.de>
+         - IPv6 support.
