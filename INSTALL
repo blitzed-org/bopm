@@ -26,10 +26,6 @@ Make
                         kept.  By default this is $PREFIX/var. (see
 			--prefix, above)
 
-    --with-unreal       You need this if you are using Unreal ircd (any
-                        version).  At this stage Unreal also requires
-                        patching, you can get that patch from our web site.
-
     configure has many other options, see ./configure --help for more
     details.
 
