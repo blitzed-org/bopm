@@ -16,19 +16,20 @@ CFLAGS += -pg
 LFLAGS += -pg
 endif
 
-objects = config.o dnsbl.o irc.o log.o main.o misc.o opercmd.o scan.o \
-          stats.o
+objects = config.o dnsbl.o irc.o log.o main.o match.o misc.o opercmd.o \
+	  scan.o stats.o
 
-checker_obj = bopchecker.o config.o misc.o scan.o
+checker_obj = bopchecker.o config.o match.o misc.o scan.o
 
 all: bopm bopchecker
 	rm -f *.da
 
-config.o:  setup.h config.h log.h
+config.o:  setup.h config.h log.h match.h
 dnsbl.o:   setup.h dnsbl.h extern.h irc.h log.h opercmd.h scan.h
-irc.o:     setup.h config.h dnsbl.h extern.h irc.h log.h opercmd.h options.h scan.h
+irc.o:     setup.h config.h dnsbl.h extern.h irc.h log.h match.h opercmd.h options.h scan.h
 log.o:     setup.h extern.h log.h
 main.o:    setup.h extern.h irc.h log.h opercmd.h scan.h stats.h
+match.o:   setup.h match.h
 misc.o:    setup.h extern.h misc.h
 opercmd.o: setup.h extern.h irc.h log.h misc.h opercmd.h scan.h
 scan.o:    setup.h config.h dnsbl.h extern.h irc.h log.h opercmd.h scan.h stats.h

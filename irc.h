@@ -14,8 +14,9 @@
       void irc_timer();
       void irc_send(char *data, ...);       
 
-      
       void do_invite();
       void do_privmsg();
       void do_perform();
+      void do_connect(char *addr, char *irc_nick, char *irc_user,
+		      char *irc_addr, char *conn_notice);
 #endif

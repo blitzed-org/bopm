@@ -60,6 +60,7 @@ along with this program; if not, write to the Free Software
 #include "extern.h"
 #include "options.h"
 #include "version.h"
+#include "match.h"
 
 extern char *CONFFILE;
 
@@ -634,10 +635,8 @@ void irc_parse()
           irc_user = strtok(irc_user, "@"); /* username is everything before the '@' */
 
           irc_addr = strtok(NULL , ")");    /* irc_addr is everything between '@' and closing ')' */
-          if(CONF_DNSBL_ZONE && dnsbl_check(addr, irc_nick,
-                                            irc_user, irc_addr))
-             return;
-          scan_connect(addr, irc_addr, irc_nick, irc_user, 0, conn_notice);
+
+          do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
      } 
     
     if(token[0][0] == ':')
@@ -688,10 +687,7 @@ void irc_parse()
                   irc_user = strtok(irc_user, "@"); /* username is everything before the '@' */
                      
                   irc_addr = strtok(NULL , ")");    /* irc_addr is everything between '@' and closing ')' */
-                  if(CONF_DNSBL_ZONE && dnsbl_check(addr, irc_nick,
-					            irc_user, irc_addr))
-	             return;
-                  scan_connect(addr, irc_addr, irc_nick, irc_user, 0, conn_notice);
+		  do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
             }
      }
 
@@ -739,4 +735,29 @@ void irc_timer()
 	 reap_commands(present);
 	 time(&LAST_REAP_TIME);
      } 
+}
+
+void do_connect(char *addr, char *irc_nick, char *irc_user, char *irc_addr,
+		char *conn_notice)
+{
+   string_list *list;
+
+   /* check that neither the user's IP nor host matches anything in our
+    * exclude list
+    */
+   for(list = (string_list *) CONF_EXCLUDE; list; list = list->next)
+    {
+      if(match(list->text, addr) || match(list->text, irc_addr))
+       {
+         if(OPT_DEBUG)
+	    log("SCAN -> excluded user %s!%s@%s", irc_nick, irc_user, irc_addr);
+
+         return;
+       }
+    }
+   
+   if(CONF_DNSBL_ZONE && dnsbl_check(addr, irc_nick, irc_user, irc_addr))
+      return;
+
+   scan_connect(addr, irc_addr, irc_nick, irc_user, 0, conn_notice);
 }

@@ -34,6 +34,7 @@ along with this program; if not, write to the Free Software
 #include "log.h"
 #include "misc.h"
 #include "extern.h"
+#include "match.h"
 
 /* Global Configuration Variables */
 
@@ -57,6 +58,7 @@ char *CONF_SENDMAIL        = 0;
 char *CONF_HELP_EMAIL      = 0;
 char *CONF_AWAY            = 0;
 char *CONF_TARGET_STRING   = 0;
+string_list *CONF_EXCLUDE  = 0;
 
 int  CONF_SCANPORT         = 0;
 int  CONF_PORT             = 0;
@@ -88,6 +90,7 @@ config_hash hash[] = {
        {"HELP_EMAIL",          TYPE_STRING, 1,0,    &CONF_HELP_EMAIL         },
        {"AWAY",                TYPE_STRING, 1,0,    &CONF_AWAY               },
        {"TARGET_STRING",       TYPE_STRING, 1,0,    &CONF_TARGET_STRING      },
+       {"EXCLUDE",             TYPE_LIST,   0,0,    &CONF_EXCLUDE            },
        {0,                     0,           0,0,    0                        },
 };
 
@@ -102,7 +105,9 @@ void config_load(char *filename)
     char line[1024];  /* 1k buffer for reading the file */
 
     char *key;
-    char *args;   
+    char *args;
+
+    string_list *list, *oldlist;
 
     int i;
 
@@ -124,6 +129,7 @@ void config_load(char *filename)
                   break;
               case TYPE_INT:
                   *(int *) hash[i].var = 0;
+		  break;
           }
          hash[i].reqmet = 0;
       }
@@ -154,12 +160,46 @@ void config_load(char *filename)
                             case TYPE_INT:
                                  *(int *) hash[i].var = atoi(args);
                                  break;
+			    case TYPE_LIST:
+				 list = malloc(sizeof(string_list));
+		                 if(!list)
+				    config_memfail();
+				 list->next = NULL;
+				 list->text = strdup(args);
+				 if(!list->text)
+				    config_memfail();
+				 collapse(list->text);
+				 oldlist = * (string_list **) (hash[i].var);
+				 if(oldlist)
+				  {
+				    while(oldlist)
+				     {
+				       if(strcasecmp(args, oldlist->text))
+					{
+					  if(oldlist->next)
+					     oldlist = oldlist->next;
+					  else
+					   {
+					     oldlist->next = list;
+					     oldlist = NULL;
+					   }
+					}
+				       else
+					{
+					  free(list);
+					  oldlist = NULL;
+					}
+				     }
+				  }
+				 else
+				  {
+				    * (string_list **) (hash[i].var) = list;
+				  }
+				break;
                         }
                        hash[i].reqmet = 1;
                 }
-
       }
-
 
   fclose(in);
   config_checkreq(); /* Check required parameters */

@@ -174,7 +174,6 @@ void scan_establish(scan_struct *conn)
     /* Setup SCAN_LOCAL for local bind() */
     if(CONF_BINDSCAN)
      {
-
            if(!inet_aton(CONF_BINDSCAN, &(SCAN_LOCAL.sin_addr)))
             {
                  log("SCAN -> bind(): %s is an invalid address", CONF_BINDSCAN);
