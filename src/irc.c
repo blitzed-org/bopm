@@ -53,6 +53,7 @@ along with this program; if not, write to the Free Software
 
 #include <errno.h>
 #include <stdarg.h>
+#include <regex.h>
 
 #include "config.h"
 #include "irc.h"
@@ -518,19 +519,21 @@ static void irc_read(void)
 
 static void irc_parse(void)
 {
-   char msg[MSGLENMAX];       /* Temporarily stores IRC msg to pass to handlers */
    struct UserInfo *source_p;
    char *pos;
    int i;
 
-   /* parv stores the parsed token, parc is the count of the parsed 
+   /* 
+      parv stores the parsed token, parc is the count of the parsed 
       tokens
      
       parv[0] is ALWAYS the source, and is the server name of the source
-      did not exist */
+      did not exist 
+   */
 
    static char            *parv[15];
    static unsigned int     parc;
+   static char             msg[MSGLENMAX];    /* Temporarily stores IRC msg to pass to handlers */
 
    parc = 1;
 
@@ -591,52 +594,14 @@ static void irc_parse(void)
 
    for(i = 0; i < (sizeof(COMMAND_TABLE) / sizeof(struct CommandHash)); i++) 
       if(strcasecmp(COMMAND_TABLE[i].command, parv[1]) == 0)
-         COMMAND_TABLE[i].handler(parv, parc, msg, source_p);
+      {
+         (*COMMAND_TABLE[i].handler)(parv, parc, msg, source_p);
+         break;
+      }
 
    userinfo_free(source_p);
 }
 
-/*  do_perform
- *
- *     Actions to perform when successfully connected to IRC.
- */
-
-static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo *notused)
-{
-    node_t *node;
-    struct ChannelConf *channel;
-
-    log("IRC -> Connected to %s:%d", IRCItem->server, IRCItem->port);
-
-    //FIXME
-    //if (CONF_NICKSERV_IDENT) {
-    /* Identify to nickserv. */
-    //	irc_send(CONF_NICKSERV_IDENT);
-    //	}
-
-    /* Oper */
-    irc_send("OPER %s", IRCItem->oper);
-
-    /* Set modes */
-    irc_send("MODE %s %s", IRCItem->nick, IRCItem->mode);
-
-    /* Set Away */   
-    irc_send("AWAY :%s", IRCItem->away);
- 
-    /* Join all listed channels. */
-    LIST_FOREACH(node, IRCItem->channels->head)
-    {
-       channel = (struct ChannelConf *) node->data;
-      
-       if(strlen(channel->name) == 0)
-          continue;
-
-       if(strlen(channel->key) > 0)
-          irc_send("JOIN %s %s", channel->name, channel->key);
-       else
-          irc_send("JOIN %s", channel->name);
-    }
-}
 
 /*
  * Functions we need to perform ~1 seconds.
@@ -781,6 +746,53 @@ static void userinfo_free(struct UserInfo *source_p)
 }
 
 
+/*  do_perform
+ *
+ *     Actions to perform when successfully connected to IRC.
+ */
+
+static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo *notused)
+{
+    node_t *node;
+    struct ChannelConf *channel;
+
+    log("IRC -> Connected to %s:%d", IRCItem->server, IRCItem->port);
+
+    //FIXME
+    //if (CONF_NICKSERV_IDENT) {
+    /* Identify to nickserv. */
+    //  irc_send(CONF_NICKSERV_IDENT);
+    //  }
+
+    /* Oper */
+    irc_send("OPER %s", IRCItem->oper);
+
+    /* Set modes */
+    irc_send("MODE %s %s", IRCItem->nick, IRCItem->mode);
+
+    /* Set Away */
+    irc_send("AWAY :%s", IRCItem->away);
+
+    /* Join all listed channels. */
+    LIST_FOREACH(node, IRCItem->channels->head)
+    {
+       channel = (struct ChannelConf *) node->data;
+
+       if(strlen(channel->name) == 0)
+          continue;
+
+       if(strlen(channel->key) > 0)
+          continue;
+
+       if(strlen(channel->key) > 0)
+          irc_send("JOIN %s %s", channel->name, channel->key);
+       else
+          irc_send("JOIN %s", channel->name);
+    }
+}
+
+
+
 /* m_ping
  *
  * parv[0]  = source
@@ -792,6 +804,9 @@ static void userinfo_free(struct UserInfo *source_p)
  */
 static void m_ping(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
+   if(parc < 3)
+      return;
+
    if(OPT_DEBUG >= 2)
       log("IRC -> PING? PONG!\n");
 
@@ -814,8 +829,10 @@ static void m_ping(char **parv, unsigned int parc, char *msg, struct UserInfo *s
 
 static void m_invite(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
-
    struct ChannelConf *channel;
+
+   if(parc < 4)
+      return;
 
    log("IRC -> Invited to %s by %s", parv[3], parv[0]);
 
@@ -857,23 +874,79 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
  * parv[2]  = target
  * parv[3]  = message
  *
+ *
  * source_p: UserInfo struct of the source user, or NULL if
  * the source (parv[0]) is a server.
  *
  */
 
-
 static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
+   static regex_t *preg = NULL;
+   regmatch_t pmatch[5];
+
+   static char errmsg[256];
+   int errnum, i;
+
+   char *item[4];
+
+   if(parc < 4)
+      return;
 
    /* Not interested in notices from users */
    if(source_p != NULL)
       return;
+  
+   /* Compile the regular expression if it has not been already */
+   if(preg == NULL)
+   {
+      preg = MyMalloc(sizeof(regex_t));
 
+      if((errnum = regcomp(preg, IRCItem->connregex, REG_ICASE | REG_EXTENDED)) != 0)
+      {
 
-   /* FIXME This needs to match against CURRENT nick, not the config nick! */
-   /* Check that target is BOPM */
-   if(strcasecmp(IRCItem->nick, parv[2]) != 0)
+         regerror(errnum, preg, errmsg, 256);
+         log("IRC REGEX -> Error when compiling regular expression");
+         log("IRC REGEX -> %s", errmsg);
+         preg = NULL;
+
+         return;
+      }
+   }
+
+   /* Match the expression against the possible connection notice */
+   if(regexec(preg, parv[3], 5, pmatch, 0) != 0)
       return;
 
+   if(OPT_DEBUG > 0)
+      log("IRC REGEX -> Regular expression caught connection notice. Parsing.");
+ 
+   if(pmatch[4].rm_so == -1)
+   {
+      log("IRC REGEX -> pmatch[4].rm_so is -1 while parsing??? Aborting.");
+      return;
+   }
+
+   /*
+       Offsets for data in the connection notice:
+
+       NICKNAME: pmatch[1].rm_so  TO  pmatch[1].rm_eo 
+       USERNAME: pmatch[2].rm_so  TO  pmatch[2].rm_eo
+       HOSTNAME: pmatch[3].rm_so  TO  pmatch[3].rm_eo
+       IP      : pmatch[4].rm_so  TO  pmatch[4].rm_eo
+
+    */ 
+
+   for(i = 0; i < 4; i++)
+   {
+      item[i] = (parv[3] + pmatch[i + 1].rm_so);
+      *(parv[3] + pmatch[i + 1].rm_eo) = '\0';
+   }
+
+   if(OPT_DEBUG > 0)
+      log("IRC REGEX -> Parsed %s!%s@%s [%s] from connection notice.", 
+               item[0], item[1], item[2], item[3]);
+ 
+   //FIXME (reminder) In the case of any rehash to the regex, preg MUST be freed first. 
+   //regfree(preg);
 }

@@ -31,6 +31,8 @@ struct IRCConf
    char *mode;
    char *away;
 
+   char *connregex;
+
    list_t *channels;   /* List of ChannelConf */
 };
 

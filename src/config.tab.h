@@ -12,26 +12,27 @@ typedef union
 #endif
 # define	AWAY	257
 # define	CHANNEL	258
-# define	IRC	259
-# define	KEY	260
-# define	MASK	261
-# define	MODE	262
-# define	NAME	263
-# define	NEGCACHE	264
-# define	NICK	265
-# define	OPER	266
-# define	OPTIONS	267
-# define	PIDFILE	268
-# define	PASSWORD	269
-# define	PORT	270
-# define	REALNAME	271
-# define	SCANNER	272
-# define	SERVER	273
-# define	USERNAME	274
-# define	USER	275
-# define	VHOST	276
-# define	NUMBER	277
-# define	STRING	278
+# define	CONNREGEX	259
+# define	IRC	260
+# define	KEY	261
+# define	MASK	262
+# define	MODE	263
+# define	NAME	264
+# define	NEGCACHE	265
+# define	NICK	266
+# define	OPER	267
+# define	OPTIONS	268
+# define	PIDFILE	269
+# define	PASSWORD	270
+# define	PORT	271
+# define	REALNAME	272
+# define	SCANNER	273
+# define	SERVER	274
+# define	USERNAME	275
+# define	USER	276
+# define	VHOST	277
+# define	NUMBER	278
+# define	STRING	279
 
 
 extern YYSTYPE yylval;

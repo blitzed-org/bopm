@@ -94,6 +94,7 @@ whitespace             [ \t]*
 
 AWAY                    { return AWAY;     }
 CHANNEL                 { return CHANNEL;  }
+CONNREGEX               { return CONNREGEX;}
 IRC                     { return IRC;      }
 KEY                     { return KEY;      }
 MASK                    { return MASK;     }

@@ -35,6 +35,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 
 %token AWAY
 %token CHANNEL
+%token CONNREGEX
 %token IRC
 %token KEY
 %token MASK
@@ -103,16 +104,17 @@ irc_entry: IRC '{' irc_items  '}' ';';
 irc_items: irc_items irc_item |
            irc_item;
 
-irc_item: irc_away     |
-          irc_nick     |
-          irc_mode     |
-          irc_oper     |
-          irc_password |
-          irc_port     | 
-          irc_realname |
-          irc_server   |
-          irc_username |
-          irc_vhost    |
+irc_item: irc_away      |
+          irc_nick      |
+          irc_mode      |
+          irc_oper      |
+          irc_password  |
+          irc_port      | 
+          irc_realname  |
+          irc_server    |
+          irc_username  |
+          irc_vhost     |
+          irc_connregex |
           channel_entry |
           error;
 
@@ -173,6 +175,12 @@ irc_vhost: VHOST '=' STRING ';'
 {
    MyFree(IRCItem->vhost);
    IRCItem->vhost = DupString($3);
+};
+
+irc_connregex: CONNREGEX '=' STRING ';'
+{
+   MyFree(IRCItem->connregex);
+   IRCItem->connregex = DupString($3);
 };
 
 

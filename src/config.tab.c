@@ -5,26 +5,27 @@
 
 # define	AWAY	257
 # define	CHANNEL	258
-# define	IRC	259
-# define	KEY	260
-# define	MASK	261
-# define	MODE	262
-# define	NAME	263
-# define	NEGCACHE	264
-# define	NICK	265
-# define	OPER	266
-# define	OPTIONS	267
-# define	PIDFILE	268
-# define	PASSWORD	269
-# define	PORT	270
-# define	REALNAME	271
-# define	SCANNER	272
-# define	SERVER	273
-# define	USERNAME	274
-# define	USER	275
-# define	VHOST	276
-# define	NUMBER	277
-# define	STRING	278
+# define	CONNREGEX	259
+# define	IRC	260
+# define	KEY	261
+# define	MASK	262
+# define	MODE	263
+# define	NAME	264
+# define	NEGCACHE	265
+# define	NICK	266
+# define	OPER	267
+# define	OPTIONS	268
+# define	PIDFILE	269
+# define	PASSWORD	270
+# define	PORT	271
+# define	REALNAME	272
+# define	SCANNER	273
+# define	SERVER	274
+# define	USERNAME	275
+# define	USER	276
+# define	VHOST	277
+# define	NUMBER	278
+# define	STRING	279
 
 #line 25 "config.y"
 
@@ -37,7 +38,7 @@
 void *tmp;        /* Variable to temporarily hold nodes before insertion to list */
 
 
-#line 57 "config.y"
+#line 58 "config.y"
 #ifndef YYSTYPE
 typedef union 
 {
@@ -48,17 +49,17 @@ typedef union
 # define YYSTYPE_IS_TRIVIAL 1
 #endif
 #ifndef YYDEBUG
-# define YYDEBUG 1
+# define YYDEBUG 0
 #endif
 
 
 
-#define	YYFINAL		121
+#define	YYFINAL		126
 #define	YYFLAG		-32768
-#define	YYNTBASE	29
+#define	YYNTBASE	30
 
 /* YYTRANSLATE(YYLEX) -- Bison token number corresponding to YYLEX. */
-#define YYTRANSLATE(x) ((unsigned)(x) <= 278 ? yytranslate[x] : 61)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 279 ? yytranslate[x] : 63)
 
 /* YYTRANSLATE[YYLEX] -- Bison token number corresponding to YYLEX. */
 static const char yytranslate[] =
@@ -68,14 +69,14 @@ static const char yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,    27,
-       2,    28,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,    28,
+       2,    29,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,    25,     2,    26,     2,     2,     2,     2,
+       2,     2,     2,    26,     2,    27,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -90,7 +91,7 @@ static const char yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     3,     4,     5,
        6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
-      16,    17,    18,    19,    20,    21,    22,    23,    24
+      16,    17,    18,    19,    20,    21,    22,    23,    24,    25
 };
 
 #if YYDEBUG
@@ -99,30 +100,31 @@ static const short yyprhs[] =
        0,     0,     1,     4,     6,     8,    10,    16,    19,    21,
       23,    25,    27,    32,    37,    43,    46,    48,    50,    52,
       54,    56,    58,    60,    62,    64,    66,    68,    70,    72,
-      77,    82,    87,    92,    97,   102,   107,   112,   117,   122,
-     123,   130,   133,   135,   137,   139,   144,   149,   150,   157,
-     160,   162,   164,   166,   168,   173
+      74,    79,    84,    89,    94,    99,   104,   109,   114,   119,
+     124,   129,   130,   137,   140,   142,   144,   146,   151,   156,
+     157,   164,   167,   169,   171,   173,   175,   180
 };
 static const short yyrhs[] =
 {
-      -1,    29,    30,     0,    36,     0,    31,     0,    55,     0,
-      13,    25,    32,    26,    27,     0,    32,    33,     0,    33,
-       0,    34,     0,    35,     0,     1,     0,    10,    28,    23,
-      27,     0,    14,    28,    24,    27,     0,     5,    25,    37,
-      26,    27,     0,    37,    38,     0,    38,     0,    39,     0,
-      41,     0,    40,     0,    42,     0,    43,     0,    44,     0,
-      45,     0,    46,     0,    47,     0,    48,     0,    49,     0,
-       1,     0,     3,    28,    24,    27,     0,     8,    28,    24,
-      27,     0,    11,    28,    24,    27,     0,    12,    28,    24,
-      27,     0,    15,    28,    24,    27,     0,    16,    28,    23,
-      27,     0,    17,    28,    24,    27,     0,    19,    28,    24,
-      27,     0,    20,    28,    24,    27,     0,    22,    28,    24,
-      27,     0,     0,    50,     4,    25,    51,    26,    27,     0,
-      51,    52,     0,    52,     0,    53,     0,    54,     0,     9,
-      28,    24,    27,     0,     6,    28,    24,    27,     0,     0,
-      56,    21,    25,    57,    26,    27,     0,    57,    58,     0,
-      58,     0,    59,     0,    60,     0,     1,     0,     7,    28,
-      24,    27,     0,    18,    28,    24,    27,     0
+      -1,    30,    31,     0,    37,     0,    32,     0,    57,     0,
+      14,    26,    33,    27,    28,     0,    33,    34,     0,    34,
+       0,    35,     0,    36,     0,     1,     0,    11,    29,    24,
+      28,     0,    15,    29,    25,    28,     0,     6,    26,    38,
+      27,    28,     0,    38,    39,     0,    39,     0,    40,     0,
+      42,     0,    41,     0,    43,     0,    44,     0,    45,     0,
+      46,     0,    47,     0,    48,     0,    49,     0,    50,     0,
+      51,     0,     1,     0,     3,    29,    25,    28,     0,     9,
+      29,    25,    28,     0,    12,    29,    25,    28,     0,    13,
+      29,    25,    28,     0,    16,    29,    25,    28,     0,    17,
+      29,    24,    28,     0,    18,    29,    25,    28,     0,    20,
+      29,    25,    28,     0,    21,    29,    25,    28,     0,    23,
+      29,    25,    28,     0,     5,    29,    25,    28,     0,     0,
+      52,     4,    26,    53,    27,    28,     0,    53,    54,     0,
+      54,     0,    55,     0,    56,     0,    10,    29,    25,    28,
+       0,     7,    29,    25,    28,     0,     0,    58,    22,    26,
+      59,    27,    28,     0,    59,    60,     0,    60,     0,    61,
+       0,    62,     0,     1,     0,     8,    29,    25,    28,     0,
+      19,    29,    25,    28,     0
 };
 
 #endif
@@ -131,12 +133,12 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,    68,    69,    72,    72,    73,    79,    81,    81,    84,
-      84,    85,    88,    93,   101,   103,   103,   106,   106,   107,
-     108,   109,   110,   111,   112,   113,   114,   115,   116,   119,
-     125,   131,   137,   143,   149,   154,   160,   166,   172,   181,
-     181,   198,   198,   201,   201,   204,   212,   222,   222,   239,
-     239,   242,   242,   243,   246,   256
+       0,    69,    70,    73,    73,    74,    80,    82,    82,    85,
+      85,    86,    89,    94,   102,   104,   104,   107,   107,   108,
+     109,   110,   111,   112,   113,   114,   115,   116,   117,   118,
+     121,   127,   133,   139,   145,   151,   156,   162,   168,   174,
+     180,   189,   189,   206,   206,   209,   209,   212,   220,   230,
+     230,   247,   247,   250,   250,   251,   254,   264
 };
 #endif
 
@@ -146,29 +148,30 @@ static const short yyrline[] =
 /* YYTNAME[TOKEN_NUM] -- String name of the token TOKEN_NUM. */
 static const char *const yytname[] =
 {
-  "$", "error", "$undefined.", "AWAY", "CHANNEL", "IRC", "KEY", "MASK", 
-  "MODE", "NAME", "NEGCACHE", "NICK", "OPER", "OPTIONS", "PIDFILE", 
-  "PASSWORD", "PORT", "REALNAME", "SCANNER", "SERVER", "USERNAME", "USER", 
-  "VHOST", "NUMBER", "STRING", "'{'", "'}'", "';'", "'='", "config", 
-  "config_items", "options_entry", "options_items", "options_item", 
-  "options_negcache", "options_pidfile", "irc_entry", "irc_items", 
-  "irc_item", "irc_away", "irc_mode", "irc_nick", "irc_oper", 
+  "$", "error", "$undefined.", "AWAY", "CHANNEL", "CONNREGEX", "IRC", "KEY", 
+  "MASK", "MODE", "NAME", "NEGCACHE", "NICK", "OPER", "OPTIONS", 
+  "PIDFILE", "PASSWORD", "PORT", "REALNAME", "SCANNER", "SERVER", 
+  "USERNAME", "USER", "VHOST", "NUMBER", "STRING", "'{'", "'}'", "';'", 
+  "'='", "config", "config_items", "options_entry", "options_items", 
+  "options_item", "options_negcache", "options_pidfile", "irc_entry", 
+  "irc_items", "irc_item", "irc_away", "irc_mode", "irc_nick", "irc_oper", 
   "irc_password", "irc_port", "irc_realname", "irc_server", 
-  "irc_username", "irc_vhost", "channel_entry", "@1", "channel_items", 
-  "channel_item", "channel_name", "channel_key", "user_entry", "@2", 
-  "user_items", "user_item", "user_mask", "user_scanner", 0
+  "irc_username", "irc_vhost", "irc_connregex", "channel_entry", "@1", 
+  "channel_items", "channel_item", "channel_name", "channel_key", 
+  "user_entry", "@2", "user_items", "user_item", "user_mask", 
+  "user_scanner", 0
 };
 #endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives. */
 static const short yyr1[] =
 {
-       0,    29,    29,    30,    30,    30,    31,    32,    32,    33,
-      33,    33,    34,    35,    36,    37,    37,    38,    38,    38,
-      38,    38,    38,    38,    38,    38,    38,    38,    38,    39,
-      40,    41,    42,    43,    44,    45,    46,    47,    48,    50,
-      49,    51,    51,    52,    52,    53,    54,    56,    55,    57,
-      57,    58,    58,    58,    59,    60
+       0,    30,    30,    31,    31,    31,    32,    33,    33,    34,
+      34,    34,    35,    36,    37,    38,    38,    39,    39,    39,
+      39,    39,    39,    39,    39,    39,    39,    39,    39,    39,
+      40,    41,    42,    43,    44,    45,    46,    47,    48,    49,
+      50,    52,    51,    53,    53,    54,    54,    55,    56,    58,
+      57,    59,    59,    60,    60,    60,    61,    62
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN. */
@@ -176,10 +179,10 @@ static const short yyr2[] =
 {
        0,     0,     2,     1,     1,     1,     5,     2,     1,     1,
        1,     1,     4,     4,     5,     2,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     4,
-       4,     4,     4,     4,     4,     4,     4,     4,     4,     0,
-       6,     2,     1,     1,     1,     4,     4,     0,     6,     2,
-       1,     1,     1,     1,     4,     4
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       4,     4,     4,     4,     4,     4,     4,     4,     4,     4,
+       4,     0,     6,     2,     1,     1,     1,     4,     4,     0,
+       6,     2,     1,     1,     1,     1,     4,     4
 };
 
 /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
@@ -187,88 +190,88 @@ static const short yyr2[] =
    error. */
 static const short yydefact[] =
 {
-       1,    47,     0,     0,     2,     4,     3,     5,     0,     0,
-       0,     0,    28,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,    16,    17,    19,    18,    20,    21,
-      22,    23,    24,    25,    26,    27,     0,    11,     0,     0,
-       0,     8,     9,    10,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,    15,     0,     0,     0,
-       0,     7,    53,     0,     0,     0,    50,    51,    52,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,    14,
-       0,     0,     0,     6,     0,     0,     0,    49,    29,    30,
-      31,    32,    33,    34,    35,    36,    37,    38,     0,     0,
-       0,    42,    43,    44,    12,    13,     0,     0,    48,     0,
-       0,     0,    41,    54,    55,     0,     0,    40,    46,    45,
-       0,     0
+       1,    49,     0,     0,     2,     4,     3,     5,     0,     0,
+       0,     0,    29,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,    16,    17,    19,    18,    20,
+      21,    22,    23,    24,    25,    26,    27,    28,     0,    11,
+       0,     0,     0,     8,     9,    10,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,    15,
+       0,     0,     0,     0,     7,    55,     0,     0,     0,    52,
+      53,    54,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,    14,     0,     0,     0,     6,     0,     0,
+       0,    51,    30,    40,    31,    32,    33,    34,    35,    36,
+      37,    38,    39,     0,     0,     0,    44,    45,    46,    12,
+      13,     0,     0,    50,     0,     0,     0,    43,    56,    57,
+       0,     0,    42,    48,    47,     0,     0
 };
 
 static const short yydefgoto[] =
 {
-       1,     4,     5,    40,    41,    42,    43,     6,    23,    24,
-      25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,   100,   101,   102,   103,     7,     8,    65,    66,
-      67,    68
+       1,     4,     5,    42,    43,    44,    45,     6,    24,    25,
+      26,    27,    28,    29,    30,    31,    32,    33,    34,    35,
+      36,    37,    38,   105,   106,   107,   108,     7,     8,    68,
+      69,    70,    71
 };
 
 static const short yypact[] =
 {
-  -32768,    22,   -24,   -20,-32768,-32768,-32768,-32768,   -13,    29,
-      49,   -16,-32768,    -8,    -4,    -2,     0,     6,    10,    14,
-      15,    24,    27,    -1,-32768,-32768,-32768,-32768,-32768,-32768,
-  -32768,-32768,-32768,-32768,-32768,-32768,    54,-32768,    32,    33,
-       3,-32768,-32768,-32768,    46,    38,    41,    42,    43,    44,
-      47,    45,    50,    51,    52,    53,-32768,    56,    55,    58,
-      57,-32768,-32768,    59,    60,     5,-32768,-32768,-32768,    62,
-      63,    64,    65,    66,    67,    68,    69,    70,    71,-32768,
-      48,    72,    73,-32768,    61,    77,    75,-32768,-32768,-32768,
-  -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    76,    78,
-      30,-32768,-32768,-32768,-32768,-32768,    80,    81,-32768,    79,
-      85,    83,-32768,-32768,-32768,    84,    86,-32768,-32768,-32768,
-     105,-32768
+  -32768,    50,   -25,   -21,-32768,-32768,-32768,-32768,   -16,    31,
+      44,   -17,-32768,   -19,     0,     1,     8,    17,    24,    28,
+      33,    34,    36,    37,    -1,-32768,-32768,-32768,-32768,-32768,
+  -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    56,-32768,
+      38,    39,    12,-32768,-32768,-32768,    23,     3,    16,    45,
+      46,    47,    48,    52,    49,    53,    54,    55,    41,-32768,
+      57,    58,    59,    60,-32768,-32768,    61,    62,     6,-32768,
+  -32768,-32768,    64,    65,    66,    67,    68,    69,    70,    71,
+      72,    73,    74,-32768,    51,    75,    76,-32768,    80,    81,
+      79,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
+  -32768,-32768,-32768,    82,    83,    11,-32768,-32768,-32768,-32768,
+  -32768,    85,    86,-32768,    84,    90,    88,-32768,-32768,-32768,
+      89,    91,-32768,-32768,-32768,    77,-32768
 };
 
 static const short yypgoto[] =
 {
-  -32768,-32768,-32768,-32768,    31,-32768,-32768,-32768,-32768,    89,
+  -32768,-32768,-32768,-32768,    43,-32768,-32768,-32768,-32768,    63,
   -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
-  -32768,-32768,-32768,   -28,-32768,-32768,-32768,-32768,-32768,     8,
-  -32768,-32768
+  -32768,-32768,-32768,-32768,   -30,-32768,-32768,-32768,-32768,-32768,
+      13,-32768,-32768
 };
 
 
-#define	YYLAST		113
+#define	YYLAST		119
 
 
 static const short yytable[] =
 {
-      12,     9,    13,   -39,    37,    10,    62,    14,    11,    44,
-      15,    16,    63,    38,    17,    18,    19,    39,    20,    21,
-      45,    22,   120,    64,    46,    55,    47,     2,    48,    60,
-      12,    86,    13,   -39,    49,     3,    98,    14,    50,    99,
-      15,    16,    51,    52,    17,    18,    19,    62,    20,    21,
-      37,    22,    53,    63,    98,    54,   111,    99,    57,    38,
-      58,    59,    69,    39,    64,    70,    71,    72,    73,    75,
-      74,    61,   112,    87,    76,    77,    78,     0,    81,     0,
-      79,    80,    82,     0,    83,   106,     0,    84,    85,    88,
-      89,    90,    91,    92,    93,    94,    95,    96,    97,   104,
-     105,   107,   108,   115,   109,   121,   110,   113,   114,   116,
-     117,   118,    56,   119
+      12,     9,    13,   -41,    14,    10,    11,    65,    15,    46,
+      47,    16,    17,    39,    66,    18,    19,    20,   103,    21,
+      22,   104,    23,    40,    65,    67,    58,    41,    72,    48,
+      49,    66,    12,    90,    13,   -41,    14,    50,   116,    63,
+      15,    73,    67,    16,    17,    39,    51,    18,    19,    20,
+     125,    21,    22,    52,    23,    40,     2,    53,   103,    41,
+      60,   104,    54,    55,     3,    56,    57,    61,    62,    83,
+      74,    75,    76,    77,    79,   117,    78,   126,    80,    81,
+      82,    91,    85,    84,    86,    64,     0,    59,    87,     0,
+      88,    89,    92,    93,    94,    95,    96,    97,    98,    99,
+     100,   101,   102,   109,   110,   111,   112,   113,     0,   120,
+       0,   114,   115,   118,   119,   121,   122,   123,     0,   124
 };
 
 static const short yycheck[] =
 {
-       1,    25,     3,     4,     1,    25,     1,     8,    21,    25,
-      11,    12,     7,    10,    15,    16,    17,    14,    19,    20,
-      28,    22,     0,    18,    28,    26,    28,     5,    28,    26,
-       1,    26,     3,     4,    28,    13,     6,     8,    28,     9,
-      11,    12,    28,    28,    15,    16,    17,     1,    19,    20,
-       1,    22,    28,     7,     6,    28,    26,     9,     4,    10,
-      28,    28,    24,    14,    18,    24,    24,    24,    24,    24,
-      23,    40,   100,    65,    24,    24,    24,    -1,    23,    -1,
-      27,    25,    24,    -1,    27,    24,    -1,    28,    28,    27,
-      27,    27,    27,    27,    27,    27,    27,    27,    27,    27,
-      27,    24,    27,    24,    28,     0,    28,    27,    27,    24,
-      27,    27,    23,    27
+       1,    26,     3,     4,     5,    26,    22,     1,     9,    26,
+      29,    12,    13,     1,     8,    16,    17,    18,     7,    20,
+      21,    10,    23,    11,     1,    19,    27,    15,    25,    29,
+      29,     8,     1,    27,     3,     4,     5,    29,    27,    27,
+       9,    25,    19,    12,    13,     1,    29,    16,    17,    18,
+       0,    20,    21,    29,    23,    11,     6,    29,     7,    15,
+       4,    10,    29,    29,    14,    29,    29,    29,    29,    28,
+      25,    25,    25,    25,    25,   105,    24,     0,    25,    25,
+      25,    68,    24,    26,    25,    42,    -1,    24,    28,    -1,
+      29,    29,    28,    28,    28,    28,    28,    28,    28,    28,
+      28,    28,    28,    28,    28,    25,    25,    28,    -1,    25,
+      -1,    29,    29,    28,    28,    25,    28,    28,    -1,    28
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/share/bison/bison.simple"
@@ -978,89 +981,96 @@ yyreduce:
   switch (yyn) {
 
 case 12:
-#line 89 "config.y"
+#line 90 "config.y"
 {
    OptionsItem->negcache = yyvsp[-1].number;
 ;
     break;}
 case 13:
-#line 94 "config.y"
+#line 95 "config.y"
 {
    MyFree(OptionsItem->pidfile);
    OptionsItem->pidfile = DupString(yyvsp[-1].string);
 ;
     break;}
-case 29:
-#line 120 "config.y"
+case 30:
+#line 122 "config.y"
 {
    MyFree(IRCItem->away);
    IRCItem->away = DupString(yyvsp[-1].string);
 ;
     break;}
-case 30:
-#line 126 "config.y"
+case 31:
+#line 128 "config.y"
 {
    MyFree(IRCItem->mode);
    IRCItem->mode = DupString(yyvsp[-1].string);
 ;
     break;}
-case 31:
-#line 132 "config.y"
+case 32:
+#line 134 "config.y"
 {
    MyFree(IRCItem->nick);
    IRCItem->nick = DupString(yyvsp[-1].string);
 ;
     break;}
-case 32:
-#line 138 "config.y"
+case 33:
+#line 140 "config.y"
 {
    MyFree(IRCItem->oper);
    IRCItem->oper = DupString(yyvsp[-1].string);
 ;
     break;}
-case 33:
-#line 144 "config.y"
+case 34:
+#line 146 "config.y"
 {
    MyFree(IRCItem->password);
    IRCItem->password = DupString(yyvsp[-1].string);
 ;
     break;}
-case 34:
-#line 150 "config.y"
+case 35:
+#line 152 "config.y"
 {
    IRCItem->port = yyvsp[-1].number;
 ;
     break;}
-case 35:
-#line 155 "config.y"
+case 36:
+#line 157 "config.y"
 {
    MyFree(IRCItem->realname);
    IRCItem->realname = DupString(yyvsp[-1].string);
 ;
     break;}
-case 36:
-#line 161 "config.y"
+case 37:
+#line 163 "config.y"
 {
    MyFree(IRCItem->server);
    IRCItem->server = DupString(yyvsp[-1].string);
 ;
     break;}
-case 37:
-#line 167 "config.y"
+case 38:
+#line 169 "config.y"
 {
    MyFree(IRCItem->username);
    IRCItem->username = DupString(yyvsp[-1].string);
 ;
     break;}
-case 38:
-#line 173 "config.y"
+case 39:
+#line 175 "config.y"
 {
    MyFree(IRCItem->vhost);
    IRCItem->vhost = DupString(yyvsp[-1].string);
 ;
     break;}
-case 39:
-#line 182 "config.y"
+case 40:
+#line 181 "config.y"
+{
+   MyFree(IRCItem->connregex);
+   IRCItem->connregex = DupString(yyvsp[-1].string);
+;
+    break;}
+case 41:
+#line 190 "config.y"
 {
    node_t *node;
    struct ChannelConf *item;
@@ -1076,16 +1086,7 @@ case 39:
    tmp = (void *) item;
 ;
     break;}
-case 45:
-#line 205 "config.y"
-{
-   struct ChannelConf *item = tmp;
-
-   MyFree(item->name);
-   item->name = DupString(yyvsp[-1].string);
-;
-    break;}
-case 46:
+case 47:
 #line 213 "config.y"
 {
    struct ChannelConf *item = tmp;
@@ -1094,8 +1095,17 @@ case 46:
    item->name = DupString(yyvsp[-1].string);
 ;
     break;}
-case 47:
-#line 223 "config.y"
+case 48:
+#line 221 "config.y"
+{
+   struct ChannelConf *item = tmp;
+
+   MyFree(item->name);
+   item->name = DupString(yyvsp[-1].string);
+;
+    break;}
+case 49:
+#line 231 "config.y"
 {
    node_t *node;
    struct UserConf *item;
@@ -1111,8 +1121,8 @@ case 47:
    tmp = (void *) item; 
 ;
     break;}
-case 54:
-#line 247 "config.y"
+case 56:
+#line 255 "config.y"
 {
    struct UserConf *item = (struct UserConf *) tmp;
 
@@ -1122,8 +1132,8 @@ case 54:
    list_add(item->masks, node);
 ;
     break;}
-case 55:
-#line 257 "config.y"
+case 57:
+#line 265 "config.y"
 {
    struct UserConf *item = (struct UserConf *) tmp;
 
@@ -1366,7 +1376,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 267 "config.y"
+#line 275 "config.y"
 
 
 
