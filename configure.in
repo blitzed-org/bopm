@@ -4,6 +4,7 @@ AC_CONFIG_SRCDIR(src/opercmd.h)
 AM_INIT_AUTOMAKE()
 AM_CONFIG_HEADER(src/setup.h)
 AC_PREFIX_DEFAULT([\${HOME}/bopm])
+AM_MAINTAINER_MODE
 
 AC_ARG_WITH(select, 
 [  --with-select           use select() instead of poll()], with_select=yes, with_select=no)
