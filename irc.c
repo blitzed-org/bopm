@@ -660,8 +660,8 @@ void irc_timer()
    time_t present;
    time(&present);
    
-   /* No data in 5 minutes */
-   if((present - IRC_LAST) >= 300)
+   /* No data in NODATA_TIMEOUT minutes (set in options.h) */
+   if((present - IRC_LAST) >= NODATA_TIMEOUT)
      {
          irc_reconnect();
          time(&IRC_LAST); /* Make sure we dont do this again for another 5 minutes */

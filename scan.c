@@ -472,7 +472,8 @@ int scan_r_squid(struct scan_struct *ss)
   RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
  	
   
-  if(!strncasecmp(RECVBUFF, "HTTP/1.0 200", 12))   
+  if(!strncasecmp(RECVBUFF, "HTTP/1.0 200", 12) ||
+     !strncasecmp(RECVBUFF, "HTTP/1.1 200", 12))   
         return 1;
    
    

@@ -28,6 +28,7 @@ USER bopm
 NICKSERV_IDENT NICKSERV :IDENTIFY password1234
 
 
+
 # NICKSERV_INVITE <line> : Line to send to nickserv to request invite to a
 #                          channel. %s must exist in the line and is the
 #                          channel.  Leave commented to not use.
@@ -36,16 +37,21 @@ NICKSERV_IDENT NICKSERV :IDENTIFY password1234
 CHANSERV_INVITE CHANSERV :INVITE %s
 
 
+
 # BINDIRC <ip> : IP to bind to for IRC connection
 #
 
 #BINDIRC 127.0.0.1
 
 
+
+
 # BINDSCAN <ip> : IP to bind to for scan connections
 #
 
 #BINDSCAN 127.0.0.1
+
+
 
 
 # SERVER <servername : IRC host BOPM will be monitoring connections on
@@ -55,10 +61,14 @@ SERVER myserver.blitzed.org
 
 
 
+
 # PORT <port> : Port of IRC host BOPM will be monitoring connections on
 #
 
 PORT 6667
+
+
+
 
 # CHANNELS <list> : Comma seperated list of channels bot will join/privmsg
 #                   information.
@@ -66,10 +76,14 @@ PORT 6667
 
 CHANNELS #bopm,#wg
 
+
+
+
 # OPER <user> <pass> : Username and Password of O line BOPM will be using
 #
 
 OPER bopm operpss
+
 
 
 
@@ -81,10 +95,12 @@ SCANIP 127.0.0.1
 
 
 
+
 # SCANPORT <port> : Port to command possible open proxy to connect to.
 #                   This is usually an IRC related port (such as 6667).
 
 SCANPORT 6667
+
 
 
 
@@ -100,6 +116,7 @@ KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitze
 
 
 
+
 # DNSBL_ZONE <name> : Name of the DNS zone that every user will be checked
 #                     against.  For example, Blitzed uses opm.blitzed.org (and
 #                     you can too, if you like).  If you don't understand what
@@ -110,12 +127,16 @@ KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitze
 DNSBL_ZONE opm.blitzed.org
 
 
+
+
 # DNSBL_TO <email> : Email address that reports of open proxies should be
 #                    sent to.  For Blitzed it should be
 #                    proxy-report@blitzed.org.  If this is not set, proxies
 #                    will not be reported by email.
 
-DNSBL_TO proxy-report@blitzed.org
+#DNSBL_TO proxy-report@blitzed.org
+
+
 
 
 # DNSBL_FROM <email> : Email address that your bopm will use to communicate
@@ -124,13 +145,17 @@ DNSBL_TO proxy-report@blitzed.org
 #                      i.e. you.  If this is not set, proxies will not be
 #                      reported by email.
 
-DNSBL_FROM email@example.com
+#DNSBL_FROM email@example.com
+
+
 
 
 # SENDMAIL <path> : Absolute path to your sendmail binary.  If this is not
 #                   set, proxies will not be reported by email.
 
-SENDMAIL /usr/sbin/sendmail
+#SENDMAIL /usr/sbin/sendmail
+
+
 
 
 # HELP_EMAIL <email> : When someone messages bopm with "INFO" it will tell
@@ -139,6 +164,8 @@ SENDMAIL /usr/sbin/sendmail
 #                      "help@lists.blitzed.org"
 
 HELP_EMAIL help@lists.blitzed.org
+
+
 
 
 # AWAY <away message> : If this is set then bopm will use it as an away
