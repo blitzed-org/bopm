@@ -14,7 +14,8 @@ NICK BopmDebug
 
 
 
-# USER <username> : Defines what username BOPM will be using in place of ident
+# USER <username> : Defines what username BOPM will be using in place of
+#                   ident.
 # 
                   
 USER bopm
@@ -27,9 +28,9 @@ USER bopm
 NICKSERV_IDENT NICKSERV :IDENTIFY password1234
 
 
-# NICKSERV_INVITE <line> : Line to send to nickserv to request invite to a channel. %s
-#                          must exist in the line and is the channel.
-#                          Leave commented to not use.
+# NICKSERV_INVITE <line> : Line to send to nickserv to request invite to a
+#                          channel. %s must exist in the line and is the
+#                          channel.  Leave commented to not use.
 
 #CHANSERV_INVITE PRIVMSG CHANSERV :INVITE %s
 CHANSERV_INVITE CHANSERV :INVITE %s
@@ -59,7 +60,8 @@ SERVER myserver.blitzed.org
 
 PORT 6667
 
-# CHANNELS <list> : Comma seperated list of channels bot will join/privmsg information.
+# CHANNELS <list> : Comma seperated list of channels bot will join/privmsg
+#                   information.
 #                   There cannot be spaces between channels, only commas.
 
 CHANNELS #bopm,#wg
@@ -71,24 +73,36 @@ OPER bopm operpss
 
 
 
-# SCANIP <ip> : IP to command possible open proxy to connect to. This is usually
-#               the same IP as the IRC host we're monitoring.
-#               Don't leave this 127.0.0.1
+# SCANIP <ip> : IP to command possible open proxy to connect to. This is
+#               usually the same IP as the IRC host we're monitoring.  Don't
+#               leave this 127.0.0.1
 
 SCANIP 127.0.0.1
 
 
 
-# SCANPORT <port> : Port to command possible open proxy to connect to. This is usually
-#               an IRC related port (such as 6667).
+# SCANPORT <port> : Port to command possible open proxy to connect to.
+#                   This is usually an IRC related port (such as 6667).
 
 SCANPORT 6667
 
 
 
-# KLINE_COMMAND <command> : Line used in issuing KLINES. One %s is required within the line
-#                           which will specify the klined host. 
-#                           Do not add anymore ':' characters after the initial : character
-#                           in the kline (even for a website) as the IRCD will reject it.  
+# KLINE_COMMAND <command> : Line used in issuing KLINES. One %s is required
+#                           within the line which will specify the klined host.
+#                           Do not add anymore ':' characters after the initial
+#                           : character in the kline (even for a website) as
+#                           the IRCD will reject it.  
 
-KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitzed.org for more information.
+KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitzed.org/proxy for more information.
+
+
+
+# DNSBL_ZONE <name> : Name of the DNS zone that every user will be checked
+#                     against.  For example, Blitzed uses opm.blitzed.org (and
+#                     you can too, if you like).  If you don't understand what
+#                     a DNSBL is, you can try looking at
+#                     http://www.blitzed.org/opm.  If you leave this variable
+#                     commented, no check will be done.
+
+DNSBL_ZONE opm.blitzed.org
