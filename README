@@ -17,12 +17,16 @@ simultaneously), better layout (scalability), and dnsbl support.
 Compatibility
 -------------
 
-Bahamut (tested with 1.4.28)
-Hybrid (tested with 2.8/hybrid-5.3p8)
+Bahamut (tested with 1.4.28 -> 1.4.34)
+Hybrid (tested with 2.8/hybrid-5.3p8, ircd-hybrid-6.3 and ircd-hybrid-7beta9)
 Unreal (tested with 3.1.2 and 3.2)
 Xnet (tested with 6.1.3)
+Dancer (tested with 1.0.31)
 TR-IRCD
 IRCu
+Ultimate IRCD (tested with UltimateIRCd(Tsunami)-3.0(00).a22) - please
+note, earlier versions of Ultimate IRCD are *not* supported
+
 
 
 BOPM is designed for the Bahamut and Hybrid IRCds.   It would be easily
@@ -40,6 +44,10 @@ Any questions regarding compatibility should be sent to the developers. If
 feasible we might be able to add compatibility to multiple ircd types to the
 project in the future.
 
+New in v2.31 is support for Solaris.  This has not been extensively tested,
+please contact us if you are successfully running bopm on Solaris (or if
+you use Solaris and bopm does not work).
+
 
 Command Line Options
 --------------------
@@ -50,10 +58,6 @@ Command Line Options
 
 -d		Debug mode.  BOPM will not fork, and will write logs to stderr.
 		Multiple -d increase debug level.
-
--v <directory>	"var directory".  By default BOPM looks for its config file
-		in and writes its log to the current directory.  This
-		option allows you to specify an alternative directory.
 
 
 Operator Channel Commands
@@ -66,7 +70,7 @@ botnick stats           -- Output scan stats, uptime and client connection count
 Rehashing the Configuration File
 --------------------------------
 
-Everytime BOPM reconnects to the IRC server it rereads its configuration file.
+Every time BOPM reconnects to the IRC server it rereads its configuration file.
 It is then possible to rehash the bot by /kill'ing it.
 
 
@@ -131,7 +135,7 @@ Credits
          - Makefile trickery
          - Debugging
          - Evil bopchecker hack
-         - Autoconfiscation (kekeke)
+         - Autoconfiscation (kekeke) & Automake
          - Solaris port (with thanks to Nathan Nieblas for resources)
          - Poking people with sticks until they did things
  
