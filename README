@@ -77,5 +77,11 @@ Credits
    Ben AKA locksmith <mmcgarve@insight.rr.com> (irc.lockchat.net)
          - Debugging assistance
 
+   John Payne <jpayne@blitzed.org>
+         - Ideas for more robust HTTP handling
+
+   Jakub Jankowski <shasta@blitzed.org>
+         - Some code tidying patches
+
    For support, irc.blitzed.org #blitzed before emailing a developer. Thank you.
 
