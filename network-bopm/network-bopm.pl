@@ -63,6 +63,7 @@ my %NICKFORMAT = (
 
 my %IRC_FUNCTIONS = (
                      '001'     => \&m_perform,
+                     '302'     => \&m_userhostreply, 
                      'PING'    => \&m_ping,
                      'PRIVMSG' => \&m_privmsg,
                      'NICK'    => \&m_nick,
@@ -394,7 +395,7 @@ sub m_privmsg #\@parv, \%source
    my $parv = $_[0];
    my $source = $_[1];
 
-   bopm_send(sprintf(':%s PRIVMSG %s :%s', $$parv[0], $$parv[2], $$parv[3]));
+   bopm_send(sprintf(':%s!user@host PRIVMSG %s :%s', $$parv[0], $$parv[2], $$parv[3]));
 }
 
 # m_nick
@@ -423,6 +424,21 @@ sub m_nick
    bopm_send($conn);
 }
 
+# m_privmsg
+#
+# privmsg to channel OR user
+#
+# parv[0] source
+# parv[1] 302
+# parv[2] nick
+# parv[3] reply
+
+sub m_userhostreply
+{
+   my $parv = $_[0];
+
+   bopm_send(sprintf(':%s 302 %s %s', $$parv[0], $$parv[2], $$parv[3]));
+}
 
 ########################################## BOPM #####################################################
 
