@@ -212,3 +212,17 @@ AWAY I'm a bot.  Your messages will be ignored.
 #                   Keep this limit equal or less than MAXPOLL as defined in options.h
 
 FDLIMIT 512
+
+
+# EXCLUDE <hostmask> : Exclude hosts matching this pattern from DNSBL
+#                      checks and proxy scans.  The hostmask uses familiar
+#                      IRC wildcards * and ? and matches against both IP
+#                      and hostname.  Use EXCLUDE multiple times to build a
+#                      list.  You should not be using EXCLUDE unless you
+#                      have very good reason; if BOPM is finding false
+#                      positives then we regard that a serious problem and
+#                      would like to be told.
+
+#EXCLUDE 192.168.0.*
+#EXCLUDE some-isp-??.example.com
+
