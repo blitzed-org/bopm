@@ -33,9 +33,9 @@ along with this program; if not, write to:
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netdb.h>
 
 #include "setup.h"
+#include "inet.h"
 #include "log.h"
 
 #ifndef INADDRSZ
@@ -542,36 +542,3 @@ void *dst;
 }
 #endif
 
-/*
- * bopm_gethostbyname
- *
- * This is a function to be able to use gethostbyname2
- * as provided by some operating systems. This has the
- * ability to resolve hostnames in ipv6.
- * -TimeMr14C
- */
-
-struct hostent *bopm_gethostbyname(const char *name)
-{
-   struct hostent *he;
-
-#if defined(HAVE_GETHOSTBYNAME2)
-
-   if (strchr(name, ':'))
-   {
-      return gethostbyname2(name, AF_INET6);
-   }
-   else
-   {
-      he = gethostbyname2(name, AF_INET);
-      if (h_errno == NO_ADDRESS)
-      {
-         return gethostbyname2(name, AF_INET6);
-      }
-      else
-         return he;
-   }
-#else
-   return gethostbyname(name);
-#endif
-}

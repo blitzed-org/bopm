@@ -41,7 +41,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
 
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
@@ -111,7 +110,6 @@ int                  IRC_FD         = 0;        /* File descriptor for IRC clien
 struct bopm_sockaddr IRC_SVR;                   /* Sock Address Struct for IRC server    */
 struct bopm_ircaddr  IRC_LOCAL;                 /* Sock Address Struct for Bind          */
 
-struct hostent      *IRC_HOST;                   /* Hostent struct for IRC server         */
 fd_set               IRC_READ_FDSET;             /* fd_set for IRC (read) data for select()*/
 struct timeval       IRC_TIMEOUT;                /* timeval struct for select() timeout   */
 
@@ -206,6 +204,7 @@ static void irc_init(void)
    node_t *node;
    struct ChannelConf *chan;
    struct bopm_sockaddr bsaddr;
+   struct in_addr *irc_host;
 
 
    if (IRC_FD)
@@ -216,30 +215,16 @@ static void irc_init(void)
    memset(&bsaddr, 0, sizeof(struct bopm_sockaddr));
 
    /* Resolve IRC host. */
-   if ((IRC_HOST = bopm_gethostbyname(IRCItem->server)) == NULL)
+   if ((irc_host = firedns_resolveip4(IRCItem->server)) == NULL)
    {
-      switch(h_errno)
-      {
-         case NO_ADDRESS:
-         case HOST_NOT_FOUND:
-            log("IRC -> bopm_gethostbyname(): The specified host (%s) is unknown", IRCItem->server);
-            break;
-         case NO_RECOVERY:
-            log("IRC -> bopm_gethostbyname(): An unrecoverable error occured resolving (%s)", IRCItem->server);
-            break;
-         case TRY_AGAIN:
-            log("IRC -> bopm_gethostbyname(): Error occured with authoritive name server (%s)", IRCItem->server);
-            break;
-         default:
-            log("IRC -> bopm_gethostbyname(): Unknown error resolving (%s)", IRCItem->server);
-            break;
-      }
+      log("IRC -> firedns_resolveip4(\"%s\"): %s", IRCItem->server,
+            firedns_strerror(fdns_errno));
       exit(EXIT_FAILURE);
    }
 
    IRC_SVR.sa4.sin_family = AF_INET;
    IRC_SVR.sa4.sin_port = htons(IRCItem->port);
-   IRC_SVR.sa4.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
+   IRC_SVR.sa4.sin_addr = *irc_host;
 
    if (IRC_SVR.sa4.sin_addr.s_addr == INADDR_NONE)
    {

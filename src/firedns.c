@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <sys/socket.h>
 #include <sys/poll.h>
 #include <sys/time.h>
+#include <netinet/in.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -64,6 +65,7 @@ static char *errors[] = {
    "Not implemented",
    "Refused",
    "Timeout",
+   "Network error",
    "Unknown error"
 };
 
@@ -122,6 +124,7 @@ void firedns_init()
    int i;
    struct in_addr addr4;
    char buf[1024];
+   char *file;
 #ifdef IPV6
 
    struct in6_addr addr6;
@@ -139,13 +142,17 @@ void firedns_init()
 
    memset(servers6,'\0',sizeof(struct in6_addr) * FDNS_MAX);
 #endif
-   /* read /etc/firedns.conf if we've got it, otherwise parse /etc/resolv.conf */
+   /* read etc/firedns.conf if we've got it, otherwise parse /etc/resolv.conf */
    f = fopen(FDNS_CONFIG_PREF,"r");
    if (f == NULL)
    {
       f = fopen(FDNS_CONFIG_FBCK,"r");
       if (f == NULL)
+      {
+         log("Unable to open %s", FDNS_CONFIG_FBCK);
          return;
+      }
+      file = FDNS_CONFIG_FBCK;
       while (fgets(buf,1024,f) != NULL)
       {
          if (strncmp(buf,"nameserver",10) == 0)
@@ -176,8 +183,10 @@ void firedns_init()
    }
    else
    {
+      file = FDNS_CONFIG_PREF;
       while (fgets(buf,1024,f) != NULL)
       {
+         buf[strspn(buf, "0123456789.")] = '\0';
 #ifdef IPV6
          if (i6 < FDNS_MAX)
          {
@@ -203,7 +212,7 @@ void firedns_init()
 #endif
      )
    {
-      log("FIREDNS -> No nameservers found in /etc/resolv.conf");
+      log("FIREDNS -> No nameservers found in %s", file);
       exit(EXIT_FAILURE);
    }
 }
@@ -423,7 +432,7 @@ int firedns_doquery(struct s_connection *s)
    if (firedns_send_requests(&h,s,l) == -1)
       return -1;
 
-   return 1;
+   return s->fd;
 }
 
 int firedns_getip6(const char * const name, void *info)
@@ -490,6 +499,13 @@ struct firedns_result *firedns_getresult(const int fd)
    fdns_fdinuse--;
    result.info = (void *) c->info;
    strncpy(result.lookup, c->lookup, 256);
+
+   if(l == -1)
+   {
+      fdns_errno = FDNS_ERR_NETWORK;
+      MyFree(c);
+      return &result;
+   }
 
    if (l < 12)
    {
@@ -631,10 +647,13 @@ static struct in_addr *firedns_resolveip4_i(const char * const name, char *(*res
       FD_SET(fd,&s);
       i = select(fd + 1,&s,NULL,NULL,&tv);
       ret = (struct in_addr *) result(fd);
-      if (ret != NULL || i != 0)
+      if (fdns_errno == FDNS_ERR_NONE)
          return ret;
+      else if(fdns_errno == FDNS_ERR_NXDOMAIN)
+         return NULL;
    }
-   fdns_errno = FDNS_ERR_TIMEOUT;
+   if(fdns_errno == FDNS_ERR_NONE)
+      fdns_errno = FDNS_ERR_TIMEOUT;
    return NULL;
 }
 
@@ -767,6 +786,8 @@ void firedns_cycle(void)
 
 char *firedns_strerror(int error)
 {
+   if(error == FDNS_ERR_NETWORK)
+      return strerror(errno);
    return errors[error];
 }
 

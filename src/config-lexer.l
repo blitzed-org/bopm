@@ -93,6 +93,7 @@ whitespace             [ \t\r]*
                         }
 
 AWAY                    { return AWAY;         }
+BAN_UNKNOWN             { return BAN_UNKNOWN;  }
 BLACKLIST               { return BLACKLIST;    }
 CHANNEL                 { return CHANNEL;      }
 CONNREGEX               { return CONNREGEX;    }
@@ -121,6 +122,7 @@ PIDFILE                 { return PIDFILE;      }
 PORT                    { return PORT;         }
 PROTOCOL                { return PROTOCOL;     }
 REALNAME                { return REALNAME;     }
+REPLY                   { return REPLY;        }
 SCANLOG                 { return SCANLOG;      }
 SCANNER                 { return SCANNER;      }
 SENDMAIL                { return SENDMAIL;     }
@@ -129,6 +131,7 @@ TARGET_IP               { return TARGET_IP;    }
 TARGET_PORT             { return TARGET_PORT;  }
 TARGET_STRING           { return TARGET_STRING;}
 TIMEOUT                 { return TIMEOUT;      }
+TYPE                    { return TYPE;         }
 USER                    { return USER;         }
 USERNAME                { return USERNAME;     }
 VHOST                   { return VHOST;        }

@@ -5,7 +5,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
 
 #ifndef AF_INET6
 #define AF_INET6 10
@@ -15,6 +14,5 @@
 extern int bopm_inet_pton(int, const char *, void *);
 #endif
 extern char *inetntop(int, const void *, char *, unsigned int);
-extern struct hostent *bopm_gethostbyname(const char *);
 
 #endif /* INET_H */

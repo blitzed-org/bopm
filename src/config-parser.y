@@ -28,12 +28,13 @@
 #include "malloc.h"
 #include "config.h"
 
-int yydebug=0; 
+int yydebug=0;
 void *tmp;        /* Variable to temporarily hold nodes before insertion to list */
 
 %}
 
 %token AWAY
+%token BAN_UNKNOWN
 %token BLACKLIST
 %token CHANNEL
 %token CONNREGEX
@@ -63,6 +64,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token PROTOCOL
 %token PROTOCOLTYPE
 %token REALNAME
+%token REPLY
 %token SCANLOG
 %token SCANNER
 %token SENDMAIL
@@ -71,6 +73,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token TARGET_PORT
 %token TARGET_STRING
 %token TIMEOUT
+%token TYPE
 %token USERNAME
 %token USER
 %token VHOST
@@ -270,7 +273,7 @@ channel_items: channel_items channel_item |
 
 channel_item:  channel_name  |
                channel_key   |
-	       channel_invite;
+               channel_invite;
 
 channel_name: NAME '=' STRING ';'
 {
@@ -347,21 +350,40 @@ user_scanner: SCANNER '=' STRING ';'
 scanner_entry:
 {
    node_t *node;
-   struct ScannerConf *item;
+   struct ScannerConf *item, *olditem;
 
    item = MyMalloc(sizeof(struct ScannerConf));
 
    /* Setup ScannerConf defaults */
    item->name = DupString("undefined");
-   item->vhost = DupString("0.0.0.0");
-   item->fd = 512;
-   item->target_ip = DupString("127.0.0.1");
-   item->target_port = 6667;
-   item->timeout = 30;
-   item->max_read = 4096;
 
+	if(LIST_SIZE(ScannerItemList) > 0)
+	{
+	   olditem = ScannerItemList->tail->data;
+
+		item->vhost = DupString(olditem->vhost);
+		item->fd = olditem->fd;
+		item->target_ip = DupString(olditem->target_ip);
+		item->timeout = olditem->timeout;
+		item->max_read = olditem->max_read;
+
+		item->target_string = olditem->target_string;
+		item->target_string_created = 0;
+	}
+	else
+	{
+	   item->vhost = DupString("0.0.0.0");
+      item->fd = 512;
+      item->target_ip = DupString("127.0.0.1");
+      item->target_port = 6667;
+      item->timeout = 30;
+      item->max_read = 4096;
+		
+		item->target_string = list_create();
+		item->target_string_created = 1;
+	}
+	
    item->protocols = list_create();
-   item->target_string = list_create();
 
    node = node_create(item);
 
@@ -411,6 +433,12 @@ scanner_target_string: TARGET_STRING '=' STRING ';'
 
    node_t *node;
    node = node_create($3);
+
+	if(item->target_string_created == 0)
+	{
+	   item->target_string = list_create();
+		item->target_string_created = 1;
+	}
 
    list_add(item->target_string, node);
 };
@@ -464,19 +492,11 @@ opm_items: /* Empty */        |
            opm_items opm_item |
            opm_item;
 
-opm_item: opm_blacklist  |
-          opm_dnsbl_from |
-          opm_dnsbl_to   |
-          opm_sendmail   |
+opm_item: opm_dnsbl_from      |
+          opm_dnsbl_to        |
+          opm_sendmail        |
+          opm_blacklist_entry |
           error;
-
-opm_blacklist: BLACKLIST '=' STRING ';'
-{
-   node_t *node;
-   node = node_create((void *) DupString($3));
-
-   list_add(OpmItem->blacklists, node);
-};
 
 opm_dnsbl_from: DNSBL_FROM '=' STRING ';'
 {
@@ -496,6 +516,90 @@ opm_sendmail: SENDMAIL '=' STRING ';'
    OpmItem->sendmail = DupString($3);
 };
 
+/************************** BLACKLIST BLOCK *************************/
+
+opm_blacklist_entry:
+{
+   node_t *node;
+   struct BlacklistConf *item;
+
+   item = MyMalloc(sizeof(struct BlacklistConf));
+
+   item->name = DupString("");
+   item->kline = DupString("");
+   item->ban_unknown = 0;
+   item->type = A_BITMASK;
+   item->reply = list_create();
+
+   node = node_create(item);
+   list_add(OpmItem->blacklists, node);
+
+   tmp = (void *) item;
+}
+BLACKLIST '{' blacklist_items '}' ';';
+
+blacklist_items: /* Empty */                 |
+              blacklist_items blacklist_item |
+              blacklist_item;
+
+blacklist_item: blacklist_name        |
+                blacklist_type        |
+                blacklist_kline       |
+                blacklist_ban_unknown |
+                blacklist_reply       |
+                error;
+
+blacklist_name: NAME '=' STRING ';' {
+   struct BlacklistConf *item = tmp;
+
+   MyFree(item->name);
+   item->name = DupString($3);
+};
+
+blacklist_kline: KLINE '=' STRING ';' {
+   struct BlacklistConf *item = tmp;
+
+   MyFree(item->kline);
+   item->kline = DupString($3);
+};
+
+blacklist_type: TYPE '=' STRING ';' {
+   struct BlacklistConf *item = tmp;
+   
+   if(strcmp("A record bitmask", $3) == 0)
+      item->type = A_BITMASK;
+   else if(strcmp("A record reply", $3) == 0)
+      item->type = A_REPLY;
+   else
+      yyerror("Unknown blacklist type defined");
+};
+
+blacklist_ban_unknown: BAN_UNKNOWN '=' NUMBER ';' {
+   struct BlacklistConf *item = tmp;
+
+   item->ban_unknown = $3;
+};
+
+blacklist_reply: REPLY '{' blacklist_reply_items '}' ';';
+
+blacklist_reply_items: /* Empty */                                |
+                       blacklist_reply_items blacklist_reply_item |
+                       blacklist_reply_item;
+
+blacklist_reply_item: NUMBER '=' STRING ';'
+{
+   struct BlacklistReplyConf *item;
+   struct BlacklistConf *blacklist = tmp;
+   node_t *node;
+
+   item = MyMalloc(sizeof(struct BlacklistReplyConf));
+
+   item->number = $1;
+   item->type = DupString($3);
+
+   node = node_create(item);
+   list_add(blacklist->reply, node);
+};
 
 /*************************** EXEMPT BLOCK ***************************/
 

@@ -299,7 +299,46 @@ OPM {
          *
          * http://lists.blitzed.org/listinfo/opm-talk
          */
-        blacklist = "opm.blitzed.org";
+
+        blacklist {
+		     /* The DNS name of the blacklist */
+		     name = "opm.blitzed.org";
+			  
+			  /*
+			   * There are only two values that are valid for this
+				* "A record bitmask" and "A record reply"
+				* These options affect how the values specified to reply
+				* below will be interpreted, a bitmask is where the reply
+				* values are 2^n and more than one is added up, a reply is
+				* simply where the last octet of the IP is that number.
+				* If you are not sure then the values set for opm.blitzed.org
+				* will work without any changes.
+				*/
+			  type = "A record bitmask";
+			  
+			  /* Ban types not set in the proxy types below, we might add other proxy
+			   * types in the future, unless you want to exclude specific types of proxies
+				* it's recommended you leave this set.
+				*/
+			  ban_unknown = 1;
+
+			  /* The actual values returned by the opm.blitzed.org blacklist
+			   * As documented at http://opm.blitzed.org/info
+				*/
+			  reply {
+			     1 = "WinGate";
+				  2 = "Socks";
+				  4 = "HTTP";
+				  8 = "Router";
+				  16 = "HTTP POST";
+			  };
+
+			  /* The kline message sent for this specific blacklist, remember to put
+			   * the removal method in this.
+				* Commented out so the kline message in the IRC block is the default one..
+				*/
+			  #kline = "KLINE *@%h :Open proxy found on your host, please visit www.blitzed.org/proxy?ip=%i";
+		  };
 
         /*
          * You can specify multiple DNSBLs.  Some people see "opm.blitzed.org"
@@ -309,7 +348,7 @@ OPM {
          * error messages.  opm.blitzed.org should be adequate for most
          * people.
          */
-#	blacklist = "opm.myhost.org";
+#	blacklist { name = "opm.myhost.org"; };
 
         /*
          * You can report the insecure proxies you find to our DNSBL also!
@@ -552,9 +591,7 @@ scanner {
         protocol = SOCKS5:9578;
 
         fd = 400;
-        target_ip     = "127.0.0.1";   /* !!! CHANGE ME !!! */
-        target_port   = 6667;
-        target_string = "Looking up your hostname...";
+		  /* Added 20030408: Defaults are taken from the first scanner's settings */
 };
 
 

@@ -58,7 +58,20 @@ IRC {
 
 
 OPM {
-	blacklist = "opm.blitzed.org";
+   blacklist {
+      name = "opm.blitzed.org";
+      type = "A record bitmask";
+      ban_unknown = 1;
+		
+      reply {
+         1 = "WinGate";
+         2 = "Socks";
+         4 = "HTTP";
+         8 = "Router";
+         16 = "HTTP POST";
+      };
+   };
+
 	dnsbl_from = "yournick@blitzed.org";
 	dnsbl_to = "bopm@reports.blitzed.org";
 	sendmail = "/usr/sbin/sendmail";
@@ -93,7 +106,6 @@ scanner {
 	timeout = 30;
 
 	/* Don't forget to change this to the public IP of your server! */
-	/* Also don't forget to change these settings in the extra scanner block too! */
 	target_ip     = "127.0.0.1";
 	target_port   = 6667;
 
@@ -145,21 +157,8 @@ scanner {
         protocol = SOCKS5:9447;
         protocol = SOCKS5:9578;
 
-#	vhost = "127.0.0.1";
-
 	/* Less fds are given to this scanner */
 	fd = 400;
-
-	max_read = 4096;
-	timeout = 30;
-
-	/* Don't forget to change this to the public IP of your server! */
-	target_ip     = "127.0.0.1";
-	target_port   = 6667;
-
-	/* Don't forget to change this to have your FULL server name here! */
-	target_string = ":somese.rv.er.blitzed.org NOTICE AUTH :*** Looking up your hostname...";
-	target_string = "ERROR :Your host is trying to (re)connect too fast -- throttled.";
 };
 
 user {

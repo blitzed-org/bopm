@@ -30,7 +30,6 @@ along with this program; if not, write to the Free Software
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>

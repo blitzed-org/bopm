@@ -76,7 +76,8 @@ struct ScannerConf
    int     timeout;
    int     max_read;
 
-   list_t  *target_string;
+   list_t *target_string;
+	int     target_string_created;
 };
 
 struct ProtocolConf
@@ -93,10 +94,31 @@ struct OpmConf
    char   *sendmail;
 };
 
+enum BlacklistType {
+   A_BITMASK = 1,
+   A_REPLY
+};
+
+struct BlacklistConf
+{
+   char   *name;
+   char   *kline;
+   enum BlacklistType type;
+   int     ban_unknown;
+   list_t *reply;
+};
+
+struct BlacklistReplyConf
+{
+   char  number;
+   char *type;
+};
+
 struct ExemptConf
 {
    list_t *masks;
 };
+
 
 /* Extern to actual config data declared in config.c */
 extern struct IRCConf *IRCItem;

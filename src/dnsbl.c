@@ -33,7 +33,6 @@ along with this program; if not, write to the Free Software
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
 #include <time.h>
 #include <errno.h>
 
@@ -43,6 +42,7 @@ along with this program; if not, write to the Free Software
 #include "extern.h"
 #include "list.h"
 #include "log.h"
+#include "malloc.h"
 #include "scan.h"
 
 
@@ -53,9 +53,11 @@ void dnsbl_add(struct scan_struct *ss)
 {
    struct in_addr in;
    unsigned char a, b, c, d;
-   char lookup[DNSBL_LOOKUPLEN];
+   char lookup[128];
    node_t *p;
    int res;
+   struct dnsbl_scan *ds;
+   struct BlacklistConf *bl;
 
    if (!inet_aton(ss->ip, &in))
    {
@@ -70,18 +72,22 @@ void dnsbl_add(struct scan_struct *ss)
 
    LIST_FOREACH(p, OpmItem->blacklists->head)
    {
+		bl = (struct BlacklistConf *) p->data;
+
 #ifdef WORDS_BIGENDIAN
-      snprintf(lookup, DNSBL_LOOKUPLEN, "%d.%d.%d.%d.%s", a, b, c, d,
-               (char *) p->data);
+      snprintf(lookup, 128, "%d.%d.%d.%d.%s", a, b, c, d, bl->name);
 #else
-      snprintf(lookup, DNSBL_LOOKUPLEN, "%d.%d.%d.%d.%s", d, c, b, a,
-               (char *) p->data);
+      snprintf(lookup, 128, "%d.%d.%d.%d.%s", d, c, b, a, bl->name);
 #endif
+
+		ds = (struct dnsbl_scan *) MyMalloc(sizeof(struct dnsbl_scan));
+		ds->ss = ss;
+		ds->bl = bl; 
 
       if(OPT_DEBUG)
          log("DNSBL -> Passed '%s' to resolver", lookup);
 
-      res = firedns_getip4(lookup, (void *) ss);
+      res = firedns_getip4(lookup, (void *) ds);
 
       if(res == -1)
          log("DNSBL -> Error sending dns lookup  '%s'", lookup);
@@ -90,41 +96,65 @@ void dnsbl_add(struct scan_struct *ss)
    }
 }
 
-void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type)
+static void dnsbl_positive(struct scan_struct *ss, struct BlacklistConf *bl, 
+		unsigned char type)
 {
-   char text_type[100];
+   char text_type[128];
+	struct BlacklistReplyConf *item;
+	node_t *p;
 
-   text_type[0] = '\0';
+	text_type[0] = '\0';
+	
+	if(bl->type == A_BITMASK)
+	{
+	   LIST_FOREACH(p, bl->reply->head)
+	   {
+		   item = p->data;
+		   if(item->number & type)
+			{
+				strncat(text_type, item->type, sizeof(text_type) - strlen(text_type) - 2);
+				text_type[sizeof(text_type) - 2] = '\0';
+				strncat(text_type, ", ", sizeof(text_type) - strlen(text_type) - 1);
+				text_type[sizeof(text_type) - 1] = '\0';
+			}
+	   }
+		if(text_type[0] != '\0')
+			*(strrchr(text_type, ',')) = '\0';
+	}
+	else
+	{
+		LIST_FOREACH(p, bl->reply->head)
+		{
+			item = p->data;
+			if(item->number == type)
+			{
+				strncpy(text_type, item->type, sizeof(text_type));
+				break;
+			}
+		}
+	}
 
-   if(type & DNSBL_TYPE_WG)
-      strcat(text_type, "Wingate, ");
-   if(type & DNSBL_TYPE_SOCKS)
-      strcat(text_type, "Socks, ");
-   if(type & DNSBL_TYPE_HTTP)
-      strcat(text_type, "HTTP, ");
-   if(type & DNSBL_TYPE_CISCO)
-      strcat(text_type, "Cisco, ");
-   if(type & DNSBL_TYPE_HTTPPOST)
-      strcat(text_type, "HTTP Post, ");
+	if(text_type[0] == '\0' && bl->ban_unknown == 0)
+	{
+		if(OPT_DEBUG)
+			log("DNSBL -> Unknown result from BL zone %s (%d)", bl->name, type);
+		return;
+	}
 
-   if(text_type[0] != '\0')
-      *(strrchr(text_type, ',')) = '\0';
-
-   if(strlen(ss->ip) < strlen(lookup)) {
-      lookup += strlen(ss->ip) + 1;
-   }
-
+   /* Only report it if no other scans have found positives yet. */
+   if(ss->manual_target == NULL)
+      scan_positive(ss, (bl->kline[0] ? bl->kline : IRCItem->kline), text_type);
 
    if(ss->manual_target == NULL)
    {
       log("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick, ss->irc_username,
-          ss->irc_hostname, lookup, text_type);
+          ss->irc_hostname, bl->name, text_type);
       irc_send_channels("DNSBL -> %s!%s@%s appears in BL zone %s (%s)", ss->irc_nick,
-                        ss->irc_username, ss->irc_hostname, lookup, text_type);
+                        ss->irc_username, ss->irc_hostname, bl->name, text_type);
    }
    else /* Manual scan */
       irc_send("PRIVMSG %s :CHECK -> DNSBL -> %s appears in BL zone %s (%s)",
-               ss->manual_target->name, ss->ip, lookup, text_type);
+               ss->manual_target->name, ss->ip, bl->name, text_type);
 
    /* record stat */
    stats_dnsblrecv();
@@ -132,14 +162,13 @@ void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type
 
 void dnsbl_result(struct firedns_result *res)
 {
-   struct scan_struct *ss;
-   ss = (struct scan_struct *) res->info;
+	struct dnsbl_scan *ds = res->info;
 
    if(OPT_DEBUG)
       log("DNSBL -> Lookup result for %s!%s@%s (%s) %d.%d.%d.%d (error: %d)",
-          ss->irc_nick,
-          ss->irc_username,
-          ss->irc_hostname,
+          ds->ss->irc_nick,
+          ds->ss->irc_username,
+          ds->ss->irc_hostname,
           res->lookup,
           (unsigned char)res->text[0],
           (unsigned char)res->text[1],
@@ -149,35 +178,36 @@ void dnsbl_result(struct firedns_result *res)
    /* Everything is OK */
    if(res->text[0] == '\0' && fdns_errno == FDNS_ERR_NXDOMAIN)
    {
-      if(ss->manual_target != NULL)
+      if(ds->ss->manual_target != NULL)
          irc_send("PRIVMSG %s :CHECK -> DNSBL -> %s does not appear in BL zone %s", 
-                   ss->manual_target->name, ss->ip,
-                   (strlen(ss->ip) < strlen(res->lookup)) ? (res->lookup + strlen(ss->ip) + 1) : res->lookup);
+                   ds->ss->manual_target->name, ds->ss->ip,
+                    (strlen(ds->ss->ip) < strlen(res->lookup))
+						   ? (res->lookup + strlen(ds->ss->ip) + 1)
+							: res->lookup);
 
 
-      ss->scans--;            /* we are done with ss here */
-      scan_checkfinished(ss); /* this could free ss, don't use ss after this point */
+      ds->ss->scans--;            /* we are done with ss here */
+      scan_checkfinished(ds->ss); /* this could free ss, don't use ss after this point */
+		MyFree(ds);                   /* No longer need our information */ 
       return;
    }
+
    /* Either an error, or a positive lookup */
 
    if(fdns_errno == FDNS_ERR_NONE)
-   {
-      /* Only report it if no other scans have found positives yet. */
-      if(ss->manual_target == NULL)
-         scan_positive(ss);
-      dnsbl_log_positive(ss, res->lookup, (unsigned char)res->text[3]);
-   }
+      dnsbl_positive(ds->ss, ds->bl, (unsigned char)res->text[3]);
    else
-   {
-      /* XXX: old bopm sometimes reports failures on these.. */
+	{
       log("DNSBL -> Lookup error on %s: %s", res->lookup,
 	      firedns_strerror(fdns_errno));
-   }
+		irc_send_channels("DNSBL -> Lookup error on %s: %s", res->lookup,
+			firedns_strerror(fdns_errno));
+	}
 
    /* Check if ss has any remaining scans */
-   ss->scans--; /* We are done with ss here */
-   scan_checkfinished(ss); /* this could free ss, don't use ss after this point */
+   ds->ss->scans--; /* We are done with ss here */
+   scan_checkfinished(ds->ss); /* this could free ss, don't use ss after this point */
+	MyFree(ds);                   /* Finished with dnsbl_scan too */
 }
 
 void dnsbl_cycle(void)

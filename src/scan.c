@@ -89,8 +89,8 @@ struct cnode *nc_head;
 
 struct scan_struct *scan_create(char **, char *);
 void scan_free(struct scan_struct *);
-void scan_irckline(struct scan_struct *);
-void scan_positive(struct scan_struct *);
+void scan_irckline(struct scan_struct *, char *, char *);
+void scan_positive(struct scan_struct *, char *, char *);
 void scan_negative(struct scan_struct *);
 static void scan_log(OPM_REMOTE_T *);
 
@@ -492,7 +492,7 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
    if(ss->manual_target == NULL)
    {
       /* kline and close scan */
-      scan_positive(ss);
+      scan_positive(ss, IRCItem->kline, scan_gettype(remote->protocol));
 
       /* Report to blacklist */
       dnsbl_report(ss);
@@ -723,12 +723,14 @@ char *scan_gettype(int protocol)
  *
  * Parameters:
  *    ss: scan_struct containing information regarding positive host 
+ *    kline: command to send to IRC server to ban the user (see scan_irckline)
+ *    type: string of the type of proxy found to be running on the host
  *
  * Return: NONE
  *
  */
 
-void scan_positive(struct scan_struct *ss)
+void scan_positive(struct scan_struct *ss, char *kline, char *type)
 {
    node_t *node;
    OPM_T *scanner;
@@ -738,7 +740,7 @@ void scan_positive(struct scan_struct *ss)
       return;
 
    /* Format KLINE and send to IRC server */
-   scan_irckline(ss);
+   scan_irckline(ss, kline, type);
 
    /* Speed up the cleanup procedure */
    /* Close all scans prematurely */
@@ -779,20 +781,22 @@ void scan_negative(struct scan_struct *ss)
 
 /* scan_irckline
  *
- *    ss has been found as a positive host and is to be klined. Format a kline message using IRCItem->kline
+ *    ss has been found as a positive host and is to be klined. 
+ *    Format a kline message using the kline message provided
  *    as a format, then pass it to irc_send() to be sent to the remote server.
  *
  * Parameters:
  *    ss: scan_struct containing information regarding host to be klined
+ *    format: kline message to format
+ *    type: type of proxy found (%t format character)
  * 
  * Return: NONE
  *
  */
 
-void scan_irckline(struct scan_struct *ss)
+void scan_irckline(struct scan_struct *ss, char *format, char *type)
 {
 
-   char *format;       /* INPUT  */
    char message[MSGLENMAX];  /* OUTPUT */
 
    unsigned short pos = 0;   /* position in format */
@@ -806,10 +810,10 @@ void scan_irckline(struct scan_struct *ss)
          {'i',   (void *) ss->ip,               FORMATTYPE_STRING },
          {'h',   (void *) ss->irc_hostname,     FORMATTYPE_STRING },
          {'u',   (void *) ss->irc_username,     FORMATTYPE_STRING },
-         {'n',   (void *) ss->irc_nick,         FORMATTYPE_STRING }
+         {'n',   (void *) ss->irc_nick,         FORMATTYPE_STRING },
+         {'t',   (void *) type,                 FORMATTYPE_STRING }
       };
 
-   format = IRCItem->kline;
 
    /* copy format to message character by character, inserting any matching data after % */
    while(format[pos] != '\0' && len < (MSGLENMAX - 2))
@@ -908,7 +912,7 @@ void scan_checkfinished(struct scan_struct *ss)
  */
 void scan_manual(char *param, struct ChannelConf *target)
 {
-   struct hostent *he;
+   struct in_addr *addr;
    struct scan_struct *ss;
    struct scanner_struct *scs;
 
@@ -938,34 +942,15 @@ void scan_manual(char *param, struct ChannelConf *target)
    ss = (struct scan_struct *) MyMalloc(sizeof(struct scan_struct));
 
    /* If IP is a hostname, resolve it using gethostbyname (which will block!) */
-   if (!(he = gethostbyname(ip)))
+   if (!(addr = firedns_resolveip4(ip)))
    {
-      switch (h_errno)
-      {
-         case HOST_NOT_FOUND:
-            irc_send("PRIVMSG %s :CHECK -> Host '%s' is unknown.",
-                      target->name, ip);
-            return;
-         case NO_ADDRESS:
-            irc_send("PRIVMSG %s :CHECK -> The specified name '%s' exists, but has no address.",
-                      target->name, ip);
-            return;
-         case NO_RECOVERY:
-            irc_send("PRIVMSG %s :CHECK -> An unrecoverable error occured whilst resolving '%s'.",
-                      target->name, ip);
-            return;
-         case TRY_AGAIN:
-            irc_send("PRIVMSG %s :CHECK -> A temporary nameserver error occurred resolving '%s'.",
-                      target->name, ip);
-            return;
-         default:
-            irc_send("PRIVMSG %s :CHECK -> Unknown error resolving '%s' (sorry!)", target->name, ip);
-            return;
-      }
+       irc_send("PRIVMSG %s :CHECK -> Error resolving host '%s': %s",
+             target->name, ip, firedns_strerror(fdns_errno));
+       return;
    }
 
    /* IP = the resolved IP now (it was the ip OR hostname before) */
-   ip = inet_ntoa(*((struct in_addr *) he->h_addr));
+   ip = inet_ntoa(*addr);
 
    /* These don't exist in a manual scan */
    ss->irc_nick     = NULL;

@@ -34,7 +34,7 @@ struct in6_addr {
 #endif
 
 #define FDNS_MAX              8                    /* max number of nameservers used */
-#define FDNS_CONFIG_PREF     "/etc/firedns.conf"   /* preferred firedns config file */
+#define FDNS_CONFIG_PREF     BOPM_ETCDIR "/firedns.conf" /* preferred firedns config file */
 #define FDNS_CONFIG_FBCK     "/etc/resolv.conf"    /* fallback config file */
 #define FDNS_TIMEOUT         5                     /* Number of seconds to
 						      wait for a reply */
@@ -49,7 +49,8 @@ struct in6_addr {
 #define FDNS_ERR_NOIMPT      4                     /* Not implemented */
 #define FDNS_ERR_REFUSED     5                     /* Refused */
 #define FDNS_ERR_TIMEOUT     6                     /* Timeout - local */
-#define FDNS_ERR_OTHER       7                     /* Other error */
+#define FDNS_ERR_NETWORK     7                     /* Network error */
+#define FDNS_ERR_OTHER       8                     /* Other error */
 
 /* Used with the above error values */
 extern int fdns_errno;
