@@ -586,7 +586,47 @@ void irc_parse()
      }
 
     /* Search for +c notices */
+    /* Xnet (and others?) looks like this:
+     *  NOTICE BopmMirage :*** Notice -- Client connecting: Iain (iain@modem-449.gacked.dialup.pol.co.uk) [62.25.241.193] {1} (6667)
+     */
+    if(strcasecmp(token[0], "NOTICE") == 0 &&
+       strcasecmp(token[6], "connecting:") == 0)
+     {
+	  char conn_notice[513];
+	  STAT_NUM_CONNECTS++;
 
+	  /* take a copy of the original connect notice now in case
+	   * we need it for evidence later */
+	  snprintf(conn_notice, sizeof(conn_notice),
+		   "%s %s %s %s %s %s %s %s %s %s %s", token[0],
+		   token[1], token[2], token[3], token[4], token[5],
+		   token[6], token[7], token[8], token[9], token[10]);
+
+	  /* make sure it is null terminated */
+	  conn_notice[512] = '\0';
+	  
+	  /* Token 9 is the IP of the remote host 
+	   * enclosed in [ ]. We need to remove it from
+	   * [ ] and pass it to the scanner. */
+	  addr = token[9] + 1;			/* Shift over 1 byte to pass over [ */
+          addr = strtok(addr, "]");		/* Replace ] with a /0              */
+
+          /* Token 7 is the nickname of the connecting client */
+          irc_nick = token[7];
+
+          /* Token 8 is (user@host), we want to parse the user/host out
+           * for future reference in case we need to kline the host */
+
+          irc_user = token[8] + 1;          /* Shift one byte over to discard '(' */
+          irc_user = strtok(irc_user, "@"); /* username is everything before the '@' */
+
+          irc_addr = strtok(NULL , ")");    /* irc_addr is everything between '@' and closing ')' */
+          if(CONF_DNSBL_ZONE && dnsbl_check(addr, irc_nick,
+                                            irc_user, irc_addr))
+             return;
+          scan_connect(addr, irc_addr, irc_nick, irc_user, 0, conn_notice);
+     } 
+    
     if(token[0][0] == ':')
      {
           /* Toss any notices NOT from a server */
@@ -625,10 +665,10 @@ void irc_parse()
                   addr = strtok(addr, "]");        /* Replace ] with a /0              */
 
 
-                  /* Token 9 is the nickname of the connecting client */
+                  /* Token 8 is the nickname of the connecting client */
                   irc_nick = token[8];
 
-                 /* Token 10 is (user@host), we want to parse the user/host out
+                 /* Token 9 is (user@host), we want to parse the user/host out
                   * for future reference in case we need to kline the host */
                   
                   irc_user = token[9] + 1;          /* Shift one byte over to discard '(' */
