@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/poll.h>
 #include <sys/time.h>
 #include <string.h>
 #include <unistd.h>
@@ -595,23 +596,21 @@ struct in6_addr *firedns_resolveip6(const char * const name) {
 }
 
 void firedns_cycle(void) {
-   fd_set s;
-   struct timeval tv;
    struct s_connection *p, *prev;
    struct firedns_result *res, new_result;
-   int i, t, fd;
+   static struct pollfd *ufds = NULL;
+   int size, i, fd;
    time_t timenow;
 
    if(connection_head == NULL)
       return;
 
-   tv.tv_sec = 0;
-   tv.tv_usec = 0;
+   if(ufds == NULL)
+       ufds = MyMalloc(sizeof(struct pollfd) * OptionsItem->dns_fdlimit);
 
-   FD_ZERO(&s);
    time(&timenow);
-   t = 0;
    prev = NULL;
+   size = 0;
 
    for(p = connection_head; p != NULL; p != NULL && (p = p->next))
    {
@@ -639,31 +638,42 @@ void firedns_cycle(void) {
          if(new_result.info != NULL)
             dnsbl_result(&new_result);
 
+
          continue;
       }
-      FD_SET(p->fd, &s);
-      if(p->fd > t)
-         t = p->fd;
 
+      ufds[size].events = 0;
+      ufds[size].revents = 0;
+      ufds[size].fd = p->fd;
+      ufds[size].events = POLLIN;
+
+      size++;
       prev = p;
    }
 
-   i = select(t + 1, &s, NULL, NULL, &tv);
-   if(i < 1)
-      return;
+
+   switch(poll(ufds, size, 0))
+   {
+       case -1:
+       case 0:
+	   return;
+   }
 
    for(p = connection_head; p != NULL; p != NULL && (p = p->next))
    {
       if(p->fd > 0)
       {
-	  if(FD_ISSET(p->fd, &s))
+	  for(i = 0; i < size; i++)
 	  {
-	      fd = p->fd;
-	      p = p->next;
-	      res = firedns_getresult(fd);
-	      
-	      if(res != NULL && res->info != NULL)
-		  dnsbl_result(res);
+	      if((ufds[i].revents & POLLIN) && ufds[i].fd == p->fd)
+	      {
+		  fd = p->fd;
+		  p = p->next;
+		  res = firedns_getresult(fd);
+		  
+		  if(res != NULL && res->info != NULL)
+		      dnsbl_result(res);
+	      }
 	  }
       }else if(fdns_fdinuse < OptionsItem->dns_fdlimit)
       {
