@@ -10,7 +10,7 @@ install-data-local:
 	@if test -f $(sysconfdir)/bopm.conf ; then \
 		echo "$@ will not overwrite existing $(sysconfdir)/bopm.conf"; \
 	else \
-		$(mkinstalldirs) $(sysconfdir) \
+		$(mkinstalldirs) $(sysconfdir); \
 		echo "$(INSTALL_DATA) bopm.conf.sample $(sysconfdir)/bopm.conf"; \
 		$(INSTALL_DATA) bopm.conf.sample $(sysconfdir)/bopm.conf; \
 	fi
