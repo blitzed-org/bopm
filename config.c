@@ -25,6 +25,7 @@ along with this program; if not, write to the Free Software
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "config.h"
 #include "log.h"
