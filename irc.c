@@ -692,8 +692,7 @@ void irc_parse()
 
 void do_perform()
 {    
-      log("rc_send(CONF_NICKSERV_IDENT);       /* Identify to nickserv */
-IRC -> Connected to %s:%d", CONF_SERVER, CONF_PORT);
+      log("IRC -> Connected to %s:%d", CONF_SERVER, CONF_PORT);
 
       if(CONF_NICKSERV_IDENT)
           irc_send(CONF_NICKSERV_IDENT);       /* Identify to nickserv */
