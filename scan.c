@@ -279,7 +279,7 @@ void scan_check()
                              * to save CPU. */
                             if(ss->verbose)
                              {
-                               irc_send("PRIVMSG %s :%s (%d): Connection "
+                               irc_send("PRIVMSG %s :%s (%d): Negotiation "
 					"to %s failed.", CONF_CHANNELS,
 					ss->protocol->type,
 					ss->protocol->port, ss->irc_addr);
@@ -394,7 +394,16 @@ void scan_timer()
     for(ss = CONNECTIONS;ss;)
       {
           if(((present - ss->create_time) >= 30) || (ss->state == STATE_CLOSED)) /* State closed or timed out, remove */ 
-            { 
+            {
+
+                if(ss->verbose)
+                 {
+                         irc_send("PRIVMSG %s :%s (%d): Connection "
+                                        "to %s timed out.", CONF_CHANNELS,
+                                        ss->protocol->type,
+                                        ss->protocol->port, ss->irc_addr);
+                 }
+ 
                 nextss = ss->next;
                 scan_del(ss);
                 ss = nextss;
