@@ -30,6 +30,7 @@ struct scanner_struct
 };
 
 extern void scan_init();
+extern char *scan_prototype(int protocol);
 void scan_connect(char **user, char *msg);
 
 #endif /* SCAN_H */

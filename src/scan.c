@@ -61,6 +61,7 @@
 #include "options.h"
 #include "negcache.h"
 #include "malloc.h"
+#include "match.h"
 
 /* Libopm */
 
@@ -78,17 +79,17 @@
 static list_t *SCANNERS = NULL;   /* List of OPM_T */
 static list_t *MASKS    = NULL;   /* Associative list of masks->scanners */
 
-
-
-
-
 /* Function declarations */
 
 struct scan_struct *scan_create(char **, char *);
 void scan_free(struct scan_struct *);
 
-
-
+/* Callbacks for LIBOPM */
+void scan_open_proxy(OPM_T *, OPM_REMOTE_T *, int, void *);
+void scan_negotiation_failed(OPM_T *, OPM_REMOTE_T *, int, void *);
+void scan_timeout(OPM_T *, OPM_REMOTE_T *, int, void *);
+void scan_end(OPM_T *, OPM_REMOTE_T *, int, void *);
+void scan_handle_error(OPM_T *, OPM_REMOTE_T *, int, void *);
 
 
 /* scan_init
@@ -141,6 +142,15 @@ void scan_init()
       opm_config(scs->scanner, OPM_CONFIG_TIMEOUT, &(sc->timeout));
       opm_config(scs->scanner, OPM_CONFIG_MAX_READ, &(sc->max_read));
       opm_config(scs->scanner, OPM_CONFIG_TARGET_STRING, sc->target_string);
+
+
+      /* Setup callbacks */
+      opm_callback(scs->scanner, OPM_CALLBACK_OPENPROXY, &scan_open_proxy, NULL);
+      opm_callback(scs->scanner, OPM_CALLBACK_NEGFAIL, &scan_negotiation_failed, NULL);
+      opm_callback(scs->scanner, OPM_CALLBACK_TIMEOUT, &scan_timeout, NULL);
+      opm_callback(scs->scanner, OPM_CALLBACK_END, &scan_end, NULL);
+      opm_callback(scs->scanner, OPM_CALLBACK_ERROR, &scan_handle_error, NULL);
+
 
       /* Setup the protocols */
       LIST_FOREACH(p1, sc->protocols->head)
@@ -203,12 +213,17 @@ void scan_connect(char **user, char *msg)
 {
 
    struct scan_struct *ss;
+   struct scanner_struct *scs;
+   struct mask_struct *ms;
 
    //FIXME: Check negcache here before any scanning
    
 
    //create scan_struct
-   ss = scan_create(user, msg);   
+   ss = scan_create(user, msg);
+
+   // Added ss->remote to all matching scanners
+
 }
 
 
@@ -274,4 +289,114 @@ void scan_free(struct scan_struct *ss)
    MyFree(ss->proof);
    
    opm_remote_free(ss->remote);
+}
+
+
+
+/* scan_open_proxy CALLBACK
+ *
+ *    Called by libopm when a proxy is verified open.
+ *
+ * Parameters:
+ *    scanner: Scanner that found the open proxy.
+ *    remote: Remote struct containing information regarding remote end
+ *
+ * Return: NONE
+ * 
+ */
+
+void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
+{
+}
+
+
+
+
+/* scan_negotiatoin_failed CALLBACK
+ *
+ *    Called by libopm when negotiation of a specific protocol failed.
+ *
+ * Parameters:
+ *    scanner: Scanner where the negotiation failed.
+ *    remote: Remote struct containing information regarding remote end
+ *
+ * Return: NONE
+ *
+ */
+
+void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
+{
+}
+
+
+
+/* scan_timeout CALLBACK
+ *
+ *    Called by libopm when the negotiation of a specific protocol timed out.
+ *
+ * Parameters:
+ *    scanner: Scanner where the connection timed out.
+ *    remote: Remote struct containing information regarding remote end
+ *
+ * Return: NONE
+ *
+ */
+
+void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
+{
+}
+
+
+
+/* scan_end CALLBACK
+ *
+ *    Called by libopm when a specific SCAN has completed (all protocols in that scan).
+ *
+ * Parameters:
+ *    scanner: Scanner the scan ended on.
+ *    remote: Remote struct containing information regarding remote end
+ *
+ * Return: NONE
+ *
+ */
+
+void scan_end(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
+{
+}
+
+
+
+/* scan_handle_error CALLBACK
+ *
+ *    Called by libopm when an error occurs with a specific connection. This does not
+ *    mean the entire scan has ended.
+ *
+ * Parameters:
+ *    scanner: Scanner where the error occured.
+ *    remote: Remote struct containing information regarding remote end
+ *    err: OPM_ERROR code describing the error.
+ *
+ * Return: NONE
+ *
+ */
+
+void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data)
+{
+   switch(err)
+   {
+      case OPM_ERR_MAX_READ:
+         break;
+      case OPM_ERR_BIND:
+         break;
+      case OPM_ERR_NOFD:
+         break;
+      default:   /* Unknown Error! */
+   }
+}
+
+
+
+char *scan_getprototype(int protocol)
+{
+   return "SOMETYPE";
 }
