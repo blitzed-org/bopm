@@ -132,7 +132,7 @@ options_scanlog: SCANLOG '=' STRING ';'
 {
    MyFree(OptionsItem->scanlog);
    OptionsItem->scanlog = DupString($3);
-}
+};
 
 /*************************** IRC BLOCK ***************************/
 
