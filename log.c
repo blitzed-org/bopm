@@ -39,49 +39,46 @@ along with this program; if not, write to the Free Software
 
 FILE *logfile;
 
-
 void log_open(char *filename)
 {
-    logfile = fopen(filename, "a");
+	logfile = fopen(filename, "a");
     
-    if(!logfile)
-      {
-           perror("Cannot open log file. Aborting.");
-           exit(1);
-      }
-    
+	if (!logfile) {
+		perror("Cannot open log file. Aborting.");
+		exit(EXIT_FAILURE);
+	}
 }
 
-void log_close()
+void log_close(void)
 {
-     fclose(logfile);
+	fclose(logfile);
 }
 
 void log(char *data, ...)
 {
-        time_t present;
-	struct tm *tm_present;
-        va_list arglist;
- 
         char data2[513];
 	char buf_present[25];
-	
-        if(!OPT_DEBUG && !logfile)
-            return;
-
-        time(&present);
-	tm_present = gmtime(&present);
-	strftime(buf_present, sizeof(buf_present), "%b %d %H:%M:%S %Y", tm_present);
+        va_list arglist;
+	time_t present;
+	struct tm *tm_present;
  
-        va_start(arglist, data);
-        vsnprintf(data2, 512, data, arglist);
-        va_end(arglist);
+	if (!OPT_DEBUG && !logfile)
+		return;
 
-	if(OPT_DEBUG)
-	    fprintf(stderr, "[%s] %s\n", buf_present, data2);
-	else {
-            fprintf(logfile, "[%s] %s\n", buf_present, data2);
-            fflush(logfile);
-	 }
+	time(&present);
+	tm_present = gmtime(&present);
+	strftime(buf_present, sizeof(buf_present), "%b %d %H:%M:%S %Y",
+	    tm_present);
+ 
+	va_start(arglist, data);
+	vsnprintf(data2, 512, data, arglist);
+	va_end(arglist);
+
+	if (OPT_DEBUG) {
+		fprintf(stderr, "[%s] %s\n", buf_present, data2);
+	} else {
+		fprintf(logfile, "[%s] %s\n", buf_present, data2);
+		fflush(logfile);
+	}
 }
 
