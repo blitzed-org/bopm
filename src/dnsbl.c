@@ -202,9 +202,9 @@ void dnsbl_report(struct scan_struct *ss)
    if ((fp = popen(cmdbuf, "w")) == NULL) 
    {
       log("DNSBL -> Failed to create pipe to '%s' for email report!", cmdbuf);
-      irc_send_channels("PRIVMSG %s :I was trying to create a pipe to "
-                        "'%s' to send a DNSBL report, and it failed!  I'll "
-                        "give up for now.", cmdbuf);
+      irc_send_channels("I was trying to create a pipe to'%s' to send a DNSBL "
+	                "report, and it failed! I'll give up for now.",
+			cmdbuf);
       return;
    }
  

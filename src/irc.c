@@ -728,8 +728,9 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
 
    log("IRC -> Connected to %s:%d", IRCItem->server, IRCItem->port);
 
-   /* Identify to nickserv */
-   irc_send("%s", IRCItem->nickserv);
+   /* Identify to nickserv if needed */
+   if(strlen(IRCItem->nickserv))
+      irc_send("%s", IRCItem->nickserv);
    
    /* Oper */
    irc_send("OPER %s", IRCItem->oper);
