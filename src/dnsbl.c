@@ -92,7 +92,10 @@ void dnsbl_add(struct scan_struct *ss)
       res = firedns_getip4(lookup, (void *) ds);
 
       if(res == -1)
+      {
          log_printf("DNSBL -> Error sending dns lookup  '%s'", lookup);
+         free(ds);
+      }
       else
          ss->scans++; /* Increase scan count - one for each blacklist */
    }

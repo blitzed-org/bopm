@@ -232,7 +232,7 @@ static int firedns_send_requests(struct s_header *h, struct s_connection *s, int
 #endif
 
    if(fdns_fdinuse > OptionsItem->dns_fdlimit)
-      return;
+      return 0;
 
    /* set header flags */
    h->flags1 = 0 | FLAGS1_MASK_RD;
