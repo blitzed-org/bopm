@@ -28,7 +28,7 @@ if test "$with_unreal" = "yes"; then
  AC_DEFINE(WITH_UNREAL, 1, [Define if you are using Unreal ircd (any version)])
 fi
 
-AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h)
+AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h strings.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -49,10 +49,14 @@ if test "$with_select" = "yes" || test "$have_sys_poll_h" = "no"; then
  fi
 fi
 
-AC_CHECK_FUNCS(socket strdup strstr)
+AC_CHECK_FUNCS(inet_aton socket strdup strstr)
 
 dnl AIX fun
 AC_C_BIGENDIAN
+
+dnl Solaris has to be weird doesn't it...
+AC_CHECK_LIB(socket, socket, AC_SUBST(LSOCKET, [-lsocket]))
+AC_CHECK_LIB(nsl, gethostbyname, AC_SUBST(LNSL, [-lnsl]))
 
 dnl teehee - taken from MRTG / Tobias Oetiker
 echo $ECHO_N "checking for POSIX-compliant goat $ECHO_C"
