@@ -56,9 +56,7 @@ void log(char *data, ...)
         va_list arglist;
  
         char data2[513];
-        char tolog[513];	
-
-
+	
         if(!logfile)
             return;
 
@@ -68,10 +66,7 @@ void log(char *data, ...)
         vsnprintf(data2, 512, data, arglist);
         va_end(arglist);
 
-        snprintf(tolog, 512, "[%d] %s\n", (int) present, data2);
-
-        fwrite(tolog,1,strlen(tolog),logfile);
-
+        fprintf(logfile, "[%d] %s\n", (int) present, data2);
         fflush(logfile);
 }
 
