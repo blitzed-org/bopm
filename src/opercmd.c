@@ -162,9 +162,9 @@ void reap_commands(time_t present)
 		    (present - cmd_stack[c].added >= 120)) {
 			irc_send("PRIVMSG %s :Reaping dead command from "
 			    "%s of type %u with param '%s', added %s ago.",
-			    cmd_stack[c].nick, cmd_stack[c].type,
-			    cmd_stack[c].param,
-			    dissect_time(present - cmd_stack[c].added));
+			    cmd_stack[c].target, cmd_stack[c].nick,
+			    cmd_stack[c].type, cmd_stack[c].param,
+			    dissect_time(cmd_stack[c].added));
 			delete_command(c);
 		}
 	}
