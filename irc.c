@@ -105,8 +105,7 @@ void irc_connect()
        memset(&IRC_SVR, 0, sizeof(IRC_SVR));
    
        /* Resolve IRC host */
-       if(!(IRC_HOST = gethostbyname(CONF_SERVER)))
-          {
+       if(!(IRC_HOST = gethostbyname(CONF_SERVER)))          
                switch(h_errno)
 		{
 
@@ -127,21 +126,45 @@ void irc_connect()
 			      log("IRC -> gethostbyname(): Unknown error resolving (%s)", CONF_SERVER);
 
 		}
-
-          }
+          
 
        IRC_SVR.sin_family      = AF_INET;
        IRC_SVR.sin_port        = htons(CONF_PORT);
        IRC_SVR.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
 
        if(IRC_SVR.sin_addr.s_addr == INADDR_NONE)
-            return;   /* Generate ERROR here */
+          {
+               log("IRC -> Unknown error resolving remote host (%s)", CONF_SERVER);
+	       exit(1);
+	  }    
 
    
        IRC_FD = socket(PF_INET, SOCK_STREAM, 0);  /* Request file desc for IRC client socket */
 
        if(IRC_FD == -1)
-            return;  /* Generate ERROR here */
+              switch(errno)
+		{
+                   case EINVAL:
+		   case EPROTONOSUPPORT: 
+			       log("IRC -> socket(): SOCK_STREAM is not supported on this domain");
+			       exit(1);
+	           case ENFILE:
+			       log("IRC -> socket(): Not enough free file descriptors to allocate IRC socket");
+			       exit(1);
+                   case EMFILE:
+			       log("IRC -> socket(): Process table overflow when requesting file descriptor");
+			       exit(1);
+	           case EACCES:
+			       log("IRC -> socket(): Permission denied to create socket of type SOCK_STREAM");
+                               exit(1);
+	           case ENOMEM:
+			       log("IRC -> socket(): Insufficient memory to allocate socket");
+                               exit(1);
+	           default:
+			       log("IRC -> socket(): Unknown error allocating socket");
+			       exit(1);
+
+                }
 
       
                                                   /* Connect to IRC server as client */
