@@ -40,6 +40,7 @@ along with this program; if not, write to the Free Software
 #include "scan.h"
 #include "stats.h"
 #include "options.h"
+#include "version.h"
 
 void do_alarm(int);
 void do_int(int);
@@ -123,7 +124,7 @@ int main(int argc, char **argv)
        log("MAIN -> Debug level %d", OPT_DEBUG);
     }
 
-    log("MAIN -> BOPM started.");
+    log("MAIN -> BOPM %s started.", VERSION);
     log("MAIN -> Reading configuration file...");
 
     config_load(LOGFILE);

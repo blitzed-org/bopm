@@ -44,6 +44,7 @@ along with this program; if not, write to the Free Software
 #include "stats.h"
 #include "extern.h"
 #include "options.h"
+#include "version.h"
 
 /* Certain variables we don't want to allocate memory for over and over again
  * so global scope is given */
@@ -515,6 +516,14 @@ void irc_parse()
 	       else
 		   target = nick;
 
+
+               /* Ctcp Version */
+               if(strncasecmp(msg, "\001VERSION\001", 9) == 0)
+                {
+                  irc_send("NOTICE %s :\001VERSION Blitzed Open Proxy Monitor %s\001", nick , VERSION);
+                  return;
+                }
+              
 	       if(strncasecmp(msg, "INFO", 4) == 0)
 	        {
 	          irc_send("NOTICE %s :This bot is designed to scan "
