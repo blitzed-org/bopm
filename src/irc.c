@@ -698,12 +698,15 @@ static void irc_parse(void)
 		if (strchr(token[0], '@'))
 			return;
 
-		if (tokens >= 11 && strcmp(token[7], "connecting:") == 0)
+		if (tokens >= 11 && strcmp(token[7], "connecting:") == 0 &&
+		    strcmp(token[1], "NOTICE") == 0)
 			do_hybrid_connect(tokens, token);
-		else if (tokens >= 9 && strcmp(token[4], "connecting:") == 0)
+		else if (tokens >= 9 && strcmp(token[4], "connecting:") == 0 &&
+		    strcmp(token[1], "NOTICE") == 0)
 			do_trircd_connect(tokens, token);
 		else if (tokens >= 17 && strcmp(token[8], "Client") == 0 &&
-		    strcmp(token[9], "connecting") == 0)
+		    strcmp(token[9], "connecting") == 0 &&
+		    strcmp(token[1], "NOTICE") == 0)
 			do_ultimateircd_connect(tokens, token);
 	}
 }
