@@ -74,8 +74,6 @@ node_t *list_add(list_t *list, node_t *node)
 
 node_t *list_remove(list_t *list, node_t *node)
 {
-   node_t *p;
-
    if(list == NULL || node == NULL)
       return NULL;
 
