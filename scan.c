@@ -452,7 +452,7 @@ void scan_timer()
 int scan_w_squid(struct scan_struct *ss)
 {
    
-    snprintf(SENDBUFF, 128, "CONNECT %s:%d HTTP/1.0\n\n", CONF_SCANIP, CONF_SCANPORT);
+    snprintf(SENDBUFF, 128, "CONNECT %s:%d HTTP/1.0\r\n\r\n", CONF_SCANIP, CONF_SCANPORT);
     send(ss->fd, SENDBUFF, strlen(SENDBUFF), 0);
 
     return 1;
