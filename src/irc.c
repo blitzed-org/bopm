@@ -953,7 +953,7 @@ static char *get_chan_key(const char *channel)
 	len = strlen(CONF_CHANNELS);
 
 	for (i = 0; i < len; i++) {
-		if (CONF_CHANNELS[i] != '#') 
+		if (CONF_CHANNELS[i] != '#' && CONF_CHANNELS[i] != '&') 
 			continue;
 		
 		for (h = (i + 1); h < len; h++) {
@@ -999,7 +999,7 @@ static char *check_channel(const char *channel)
 	len = strlen(CONF_CHANNELS);
 
 	for (i = 0; i < len; i++) {
-		if (CONF_CHANNELS[i] != '#') 
+		if (CONF_CHANNELS[i] != '#' && CONF_CHANNELS[i] != '&') 
 			continue;
 
 		for (h = (i + 1); h < len; h++) {
