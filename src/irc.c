@@ -439,6 +439,8 @@ static void irc_connect(void)
    irc_send("USER %s %s %s :%s",
             IRCItem->username, IRCItem->username, IRCItem->username,
             IRCItem->realname);
+
+   time(&IRC_LAST);
 }
 
 
