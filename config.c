@@ -89,7 +89,7 @@ void config_load(char *filename)
 {
     FILE *in;
 
-    char line[1024];  //1k buffer for reading the file
+    char line[1024];  /* 1k buffer for reading the file */
 
     char *key;
     char *args;   
