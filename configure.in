@@ -64,6 +64,7 @@ AC_STRUCT_TM
 dnl Checks for library functions.
 AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
+
 AC_FUNC_SNPRINTF
 
 dnl check for yacc

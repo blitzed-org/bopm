@@ -95,7 +95,7 @@ bopm_SOURCES = compat.c compat.h config-parser.y config-lexer.l config.c config.
     stats.c stats.h firedns.c firedns.h
 
 
-bopm_LDADD = libopm/src/.libs/libopm.a @LNSL@ @LSOCKET@
+bopm_LDADD = libopm/src/.libs/libopm.a @LNSL@ @LSOCKET@ @LIBOBJS@
 subdir = src
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = setup.h
@@ -110,7 +110,7 @@ am_bopm_OBJECTS = compat.$(OBJEXT) config-parser.$(OBJEXT) \
 	negcache.$(OBJEXT) opercmd.$(OBJEXT) scan.$(OBJEXT) \
 	scanwarn.$(OBJEXT) stats.$(OBJEXT) firedns.$(OBJEXT)
 bopm_OBJECTS = $(am_bopm_OBJECTS)
-bopm_DEPENDENCIES = libopm/src/.libs/libopm.a
+bopm_DEPENDENCIES = libopm/src/.libs/libopm.a @LIBOBJS@
 bopm_LDFLAGS =
 
 DEFS = @DEFS@
@@ -120,7 +120,7 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/compat.Po \
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/snprintf.Po ./$(DEPDIR)/compat.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/config-lexer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/config-parser.Po ./$(DEPDIR)/config.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/dnsbl.Po ./$(DEPDIR)/firedns.Po \
@@ -145,7 +145,7 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	install-exec-recursive installdirs-recursive install-recursive \
 	uninstall-recursive check-recursive installcheck-recursive
 DIST_COMMON = Makefile.am Makefile.in config-lexer.c config-parser.c \
-	config-parser.h setup.h.in
+	config-parser.h setup.h.in snprintf.c
 DIST_SUBDIRS = $(SUBDIRS)
 SOURCES = $(bopm_SOURCES)
 
@@ -215,6 +215,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/snprintf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/config-lexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/config-parser.Po@am__quote@
@@ -236,7 +237,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stats.Po@am__quote@
 
 distclean-depend:
-	-rm -rf ./$(DEPDIR)
+	-rm -rf $(DEPDIR) ./$(DEPDIR)
 
 .c.o:
 @AMDEP_TRUE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@

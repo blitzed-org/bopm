@@ -52,6 +52,7 @@
 # include <sys/poll.h>
 #endif
 
+#include "compat.h"
 #include "config.h"
 #include "irc.h"
 #include "log.h"

@@ -37,6 +37,7 @@ along with this program; if not, write to the Free Software
 #include <time.h>
 #include <errno.h>
 
+#include "compat.h"
 #include "config.h"
 #include "dnsbl.h"
 #include "extern.h"

@@ -35,6 +35,7 @@ along with this program; if not, write to
 
 #include <time.h>
 
+#include "compat.h"
 #include "config.h"
 #include "extern.h"
 #include "log.h"

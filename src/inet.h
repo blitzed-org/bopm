@@ -12,7 +12,7 @@
 #endif
 
 #ifndef HAVE_INET_PTON
-extern int inet_pton(int, const char *, void *);
+extern int bopm_inet_pton(int, const char *, void *);
 #endif
 extern char *inetntop(int, const void *, char *, unsigned int);
 extern struct hostent *bopm_gethostbyname(const char *);

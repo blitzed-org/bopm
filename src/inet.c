@@ -107,7 +107,7 @@ static const char *IpQuadTab[] =
  *  inet_ntoa --  its broken on some Ultrix/Dynix too. -avalon
  */
 
-char *inetntoa(char *in)
+static char *inetntoa(char *in)
 {
    static char buf[16];
    register char *bufptr = buf;
@@ -284,6 +284,12 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, unsigned int 
 }
 #endif
 
+#if 0
+/*
+ * This code does not seem to be used anywhere currently?
+ * -grifferz
+ */
+
 /* char *
  * inetntop(af, src, dst, size)
  *      convert a network format address to presentation format.
@@ -315,6 +321,7 @@ const char *inetntop(int af, const void *src, char *dst, unsigned int size)
    }
    /* NOTREACHED */
 }
+#endif
 
 /*
  * WARNING: Don't even consider trying to compile this on a system where
@@ -505,7 +512,7 @@ unsigned char *dst;
 }
 #endif	/* IPv6 */
 
-int inet_pton(af, src, dst)
+int bopm_inet_pton(af, src, dst)
 int af;
 const char *src;
 void *dst;

@@ -1,3 +1,5 @@
+/* vim: set shiftwidth=3 softtabstop=3 expandtab: */
+
 /*
 Copyright (C) 2002  Erik Fears
  
@@ -29,6 +31,7 @@ along with this program; if not, write to the Free Software
 # include <string.h>
 #endif
 
+#include "compat.h"
 #include "config.h"
 #include "extern.h"
 

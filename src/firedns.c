@@ -1,3 +1,5 @@
+/* vim: set shiftwidth=3 softtabstop=3 expandtab: */
+
 /*
 firedns.c - firedns library
 Copyright (C) 2002 Ian Gulliver
@@ -20,6 +22,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include "setup.h"
+
 #include <stdlib.h>
 #include <time.h>
 #include <sys/types.h>
@@ -32,6 +36,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <errno.h>
 #include <fcntl.h>
 
+#include "compat.h"
 #include "inet.h"
 #include "malloc.h"
 #include "firedns.h"
