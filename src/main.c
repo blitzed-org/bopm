@@ -44,9 +44,12 @@ along with this program; if not, write to the Free Software
 #include "opercmd.h"
 #include "scan.h"
 #include "stats.h"
+#include "negcache.h"
 #include "options.h"
 
 extern string_list *CONF_SCAN_WARNING;
+extern unsigned int CONF_NEG_CACHE;
+extern struct cnode *nc_head;
 
 static RETSIGTYPE do_signal(int signum);
 
@@ -67,8 +70,11 @@ int main(int argc, char **argv)
 	char spid[16];
 	pid_t pid;
 	int c, lenc, lenl, lenp;
+	unsigned int nc_counter;
 	FILE *pidout;
 
+	nc_counter = 0;
+	
 	do_stats_init();
 	do_scan_init();
 
@@ -147,6 +153,10 @@ int main(int argc, char **argv)
 		fclose(pidout);
 	}
 
+	/* Initialise negative cache */
+	if (CONF_NEG_CACHE)
+		nc_init(&nc_head);
+
 	if (CONF_SCAN_WARNING)
 		do_scanwarn_init();
 
@@ -174,6 +184,17 @@ int main(int argc, char **argv)
 				scanwarn_timer();
 			scan_timer();
 			ALARMED = 0;
+
+			if (CONF_NEG_CACHE) {
+				if (nc_counter++ >= NEG_CACHE_REBUILD) {
+					/*
+					 * Time to rebuild the negative
+					 * cache.
+					 */
+					negcache_rebuild();
+					nc_counter = 0;
+				}
+			}
 		}
 	}
     
