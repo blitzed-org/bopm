@@ -94,6 +94,9 @@ o IRCu
   port 25 because it is common for providers to transparently proxy port
   25.
 
+  Also, to see connect notices, your bopm should set itself umode "+s +16384".
+  There is a config file item for setting umodes.
+
 Credits
 -------
 
@@ -137,3 +140,6 @@ Credits
 
    Emre ERTUGAY <collide@tr.net>
          - TR-IRCD testing help
+
+   Alex Wu <wu@wunix.org>
+         - IRCu testing
