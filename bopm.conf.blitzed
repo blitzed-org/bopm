@@ -117,7 +117,9 @@ user {
 	scanner = "blitzed";
 };
 
+/*
 exempt {
-#	mask = "*!*@localhost";
-#	mask = "*!*@127.0.0.1";
+	mask = "*!*@localhost";
+	mask = "*!*@127.0.0.1";
 };
+*/
