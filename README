@@ -14,6 +14,23 @@ improves on wgmon with HTTP support, faster scanning (it can scan clients
 simultaneously), better layout (scalability), and dnsbl support.
 
 
+Requirements
+------------
+
+o An IRCd which presents connection notices in a format which BOPM
+  recognises (see below).
+
+o A host will full connectivity for all the ports you wish to scan.  i.e. is
+  NOT transparently proxied -- many domestic internet connections have port 80
+  transparently proxied and this produces completely unpredictable results,
+  sometimes as severe as 100% of clients being K:lined!
+
+o A unix OS with GNU Make, an ANSI C compiler, etc..  BOPM probably does
+  compile and work on win32 under cygwin, but we won't support it.
+
+o Permission from your users to portscan them for open proxies.
+
+
 Compatibility
 -------------
 
