@@ -1,3 +1,24 @@
+2002-01-29 17:31  andy
+
+	* config.c:
+
+	config.c:
+		Now we've added a zero element on the config hash we need to adjust
+		the sizes..
+	
+2002-01-29 01:49  strtok
+
+	* README:
+
+	README: Added codebase specific compatibility (those tested)
+	
+2002-01-29 01:46  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Missed a late commit.
+	
 2002-01-29 01:45  andy
 
 	* bopm.conf.sample:
