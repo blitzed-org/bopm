@@ -327,8 +327,8 @@ static void irc_connect(void)
 	irc_send("NICK %s",CONF_NICK);
 	if (CONF_PASSWORD)
 		irc_send("PASS %s",CONF_PASSWORD);
-	irc_send("USER %s %s %s :Blitzed Open Proxy Monitor", CONF_USER,
-	    CONF_USER, CONF_USER);
+	irc_send("USER %s %s %s :%s", CONF_USER, CONF_USER, CONF_USER,
+	    CONF_REALNAME);
 }
 
 

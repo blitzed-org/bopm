@@ -48,6 +48,7 @@ char *CONF_SERVER          = 0;
 char *CONF_PASSWORD        = 0;
 char *CONF_USER            = 0;
 char *CONF_NICK            = 0;
+char *CONF_REALNAME        = 0;
 char *CONF_OPER            = 0;
 char *CONF_OPER_MODES      = 0;
 char *CONF_SCANIP          = 0;
@@ -79,6 +80,7 @@ config_hash hash[] = {
        {"PASSWORD",            TYPE_STRING, 0,0,    &CONF_PASSWORD           },
        {"USER",                TYPE_STRING, 1,0,    &CONF_USER               },
        {"NICK",                TYPE_STRING, 1,0,    &CONF_NICK               },
+       {"REALNAME",            TYPE_STRING, 1,0,    &CONF_REALNAME           },
        {"OPER",                TYPE_STRING, 1,0,    &CONF_OPER               },
        {"OPER_MODES",          TYPE_STRING, 1,0,    &CONF_OPER_MODES         },
        {"SCANIP",              TYPE_STRING, 1,0,    &CONF_SCANIP             },

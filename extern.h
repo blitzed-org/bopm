@@ -7,6 +7,7 @@ extern char *CONF_SERVER;
 extern char *CONF_PASSWORD;
 extern char *CONF_USER;
 extern char *CONF_NICK;
+extern char *CONF_REALNAME;
 extern char *CONF_OPER;
 extern char *CONF_OPER_MODES;
 extern char *CONF_REASON;

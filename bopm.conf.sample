@@ -21,6 +21,13 @@ NICK BopmDebug
 USER bopm
 
 
+# REALNAME <realname> : What realname (the bit in /whois after
+#                       nick/ident/host) should bopm use?
+#
+
+REALNAME Blitzed Open Proxy Monitor
+
+
 # NICKSERV_IDENT <line> : Line to send to nickserv to identify
 #                         Leave commented to not use.
 
@@ -95,7 +102,7 @@ CHANNELS #bopm,#wg
 #               channels).
 #               Keep this commented if you don't need any keys.
 
-KEYS secret
+#KEYS secret
 
 
 
