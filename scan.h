@@ -41,4 +41,7 @@
     
      int scan_w_squid(scan_struct *ss);
      int scan_r_squid(scan_struct *ss);
+     
+     int scan_w_socks4(scan_struct *ss);
+     int scan_r_socks4(scan_struct *ss);
 #endif 

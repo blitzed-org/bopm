@@ -50,10 +50,11 @@ char RECVBUFF[513];
 
 protocol_hash SCAN_PROTOCOLS[] = {
 
-       {"OpenSquid", 8080, &(scan_w_squid), &(scan_r_squid) },
-       {"OpenSquid", 3128, &(scan_w_squid), &(scan_r_squid) },
-       {"OpenSquid",   80, &(scan_w_squid), &(scan_r_squid) }
+       {"OpenSquid", 8080, &(scan_w_squid),  &(scan_r_squid)  },
+       {"OpenSquid", 3128, &(scan_w_squid),  &(scan_r_squid)  },
+       {"OpenSquid",   80, &(scan_w_squid),  &(scan_r_squid)  },
 
+       {"Socks4"   , 1080, &(scan_w_socks4), &(scan_r_socks4) }
 };
 
 
@@ -146,7 +147,7 @@ void scan_check()
     struct scan_struct *ss;
 
     int highfd = 0;
-   
+
 
     if(!CONNECTIONS)
        return;
@@ -346,3 +347,55 @@ int scan_r_squid(struct scan_struct *ss)
   return 0;
 }
 
+
+/*  Functions for handling open socks4 data
+ *
+ *  Return 1 on success.
+ */
+
+
+/*  CONNECT request byte order for socks4
+ *  
+ *  		+----+----+----+----+----+----+----+----+----+----+....+----+
+ *  		| VN | CD | DSTPORT |      DSTIP        | USERID       |NULL|
+ *  		+----+----+----+----+----+----+----+----+----+----+....+----+
+ *   # of bytes:  1    1      2              4           variable       1
+ *  						 
+ *  VN = Version, CD = Command Code (1 is connect request)
+ *
+ */
+
+int scan_w_socks4(struct scan_struct *ss)
+{
+
+     struct in_addr addr;
+     short int shortport;
+     char dstip[5];
+     char dstport[3];
+
+     inet_aton(ss->addr, &addr);
+     shortport = (short int) CONF_PORT;
+
+     memcpy(dstip, &(addr.s_addr), 4);
+     memcpy(dstport, &shortport, 2);
+
+     dstip[4] = dstport[2] = 0;  /* Null terminate */ 
+
+     snprintf(SENDBUFF, 512, "%c%c%s%sBOPM%c",4,1,dstport,dstip,0);  /* Form Socks4 packet */
+     send(ss->fd, SENDBUFF, strlen(SENDBUFF), 0);
+     return 1;
+}
+
+/*  REPLY byte order for socks4 
+ *
+ * 		+----+----+----+----+----+----+----+----+
+ * 		| VN | CD | DSTPORT |      DSTIP        |
+ * 		+----+----+----+----+----+----+----+----+
+ * # of bytes:	   1    1      2              4
+ * 						 
+ *
+ */
+
+int scan_r_socks4(struct scan_struct *ss)
+{
+}
