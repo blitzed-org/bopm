@@ -20,6 +20,12 @@ along with this program; if not, write to the Free Software
 
 */
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+
 #include <stdio.h>
 #include <time.h>
 
@@ -27,6 +33,15 @@ along with this program; if not, write to the Free Software
 #include "misc.h"
 #include "stats.h"
 #include "extern.h"
+#include "opercmd.h"
+#include "scan.h"
+#include "stats.h"
+
+time_t STAT_START_TIME;
+int STAT_NUM_CONNECTS;
+
+extern struct protocol_hash **SCAN_PROTOCOLS;
+
 
 void do_stats_init()
 {
@@ -36,16 +51,18 @@ void do_stats_init()
 
 void do_stats(const char *target)
 {
+   int i;
+ 
    irc_send("PRIVMSG %s :Uptime: %s", target,
 	    dissect_time(time(NULL) - STAT_START_TIME));
-   irc_send("PRIVMSG %s :Found %u WinGates, %u open", target,
-	    STAT_NUM_WINGATE, STAT_NUM_WINGATE_OPEN);
-   irc_send("PRIVMSG %s :Found %u SOCKS4 servers, %u open", target,
-	    STAT_NUM_SOCKS4, STAT_NUM_SOCKS4_OPEN);
-   irc_send("PRIVMSG %s :Found %u SOCKS5 servers, %u open", target,
-	    STAT_NUM_SOCKS5, STAT_NUM_SOCKS5_OPEN);
-   irc_send("PRIVMSG %s :Found %u HTTP proxies, %u open", target,
-	    STAT_NUM_HTTP, STAT_NUM_HTTP_OPEN);
-   irc_send("PRIVMSG %s :Number of connects: %u", target, STAT_NUM_CONNECTS);
+
+
+   for(i = 0; i < sizeof(SCAN_PROTOCOLS) / sizeof(protocol_hash);i++)
+      irc_send("PRIVMSG %s :Found %u [%s], %u open.", target,  
+               SCAN_PROTOCOLS[i]->stat_num, SCAN_PROTOCOLS[i]->type,
+               SCAN_PROTOCOLS[i]->stat_numopen);
+        
+   irc_send("PRIVMSG %s :Number of connects: %u", target, STAT_NUM_CONNECTS);      
+
    return;
 }

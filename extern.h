@@ -22,5 +22,7 @@
     extern int   CONF_SCANPORT;
 
     extern int   OPT_DEBUG;
-
+ 
+    extern    time_t STAT_START_TIME;
+    extern    int STAT_NUM_CONNECTS;
 #endif    

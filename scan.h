@@ -1,7 +1,5 @@
 #ifndef SCAN_H
 #define SCAN_H
-
-
     
     typedef struct protocol_hash protocol_hash;
     typedef struct scan_struct scan_struct;
@@ -17,6 +15,8 @@
           int port;                 /* Port to scan protocol on             */
           scan_function w_handler;    /* Function to handle specific protocol */
           scan_function r_handler;
+          unsigned int stat_num;
+          unsigned int stat_numopen;
      };
 
     struct scan_struct
