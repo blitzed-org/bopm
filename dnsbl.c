@@ -46,110 +46,123 @@ along with this program; if not, write to the Free Software
 
 extern unsigned int STAT_DNSBL_MATCHES;
 
-/* check an ip address for presence in a DNS (black|block)list.
- * All we need to do is reverse the octets, append the BL zone
- * and then do a gethostbyname.  If that gives us an answer, then
- * it is on the BL */
+/*
+ * Check an ip address for presence in a DNS (black|block)list.  All we need
+ * to do is reverse the octets, append the BL zone and then do a
+ * gethostbyname.  If that gives us an answer, then it is on the BL.
+ */
 int dnsbl_check(const char *addr, const char *irc_nick,
-		const char *irc_user, char *irc_addr)
+    const char *irc_user, char *irc_addr)
 {
-   struct in_addr in;
-   struct hostent *he;
-   char *buf;
-   int buflen, a, b, c, d;
+	size_t buflen;
+	struct in_addr in;
+	struct hostent *he;
+	char *buf;
+	unsigned char a, b, c, d;
   
-   if(!inet_aton(addr, &in))
-    {
-      log("DNSBL -> Invalid address '%s', ignoring.", addr);
-      return(0);
-    }
+	if (!inet_aton(addr, &in)) {
+		log("DNSBL -> Invalid address '%s', ignoring.", addr);
+		return(0);
+	}
 
-   d = (int) (in.s_addr >> 24) & 0xFF;
-   c = (int) (in.s_addr >> 16) & 0xFF;
-   b = (int) (in.s_addr >> 8) & 0xFF;
-   a = (int) in.s_addr & 0xFF;
+	d = (unsigned char) (in.s_addr >> 24) & 0xFF;
+	c = (unsigned char) (in.s_addr >> 16) & 0xFF;
+	b = (unsigned char) (in.s_addr >> 8) & 0xFF;
+	a = (unsigned char) in.s_addr & 0xFF;
 
-   /* enough for a reversed IP and the zone */
-   buflen = 18 + strlen(CONF_DNSBL_ZONE);
-   buf = malloc(buflen * sizeof(char));
+	/* Enough for a reversed IP and the zone. */
+	buflen = 18 + strlen(CONF_DNSBL_ZONE);
+	buf = malloc(buflen * sizeof(*buf));
 
 #ifdef WORDS_BIGENDIAN
-   snprintf(buf, buflen, "%d.%d.%d.%d.%s.", a, b, c, d, CONF_DNSBL_ZONE);
+	snprintf(buf, buflen, "%d.%d.%d.%d.%s.", a, b, c, d,
+	    CONF_DNSBL_ZONE);
 #else
-   snprintf(buf, buflen, "%d.%d.%d.%d.%s.", d, c, b, a, CONF_DNSBL_ZONE);
+	snprintf(buf, buflen, "%d.%d.%d.%d.%s.", d, c, b, a,
+	    CONF_DNSBL_ZONE);
 #endif
 
-   if(OPT_DEBUG)
-      log("DNSBL -> Checking %s", buf);
+	if (OPT_DEBUG)
+		log("DNSBL -> Checking %s", buf);
    
-   if(!(he = gethostbyname(buf)))
-    {
-      switch(h_errno)
-       {
-	 /* some of these errors indicate serious problems that will
-	  * require admin intervention */
-         case NO_RECOVERY:
-            irc_send("PRIVMSG %s :Whilst checking '%s' against my dnsbl "
-		     "zone '%s', I got a non-recoverable name server "
-		     "error.  Might want to take a look!", CONF_CHANNELS,
-		     addr, CONF_DNSBL_ZONE);
-	    break;
-	 case TRY_AGAIN:
-	    irc_send("PRIVMSG %s :Whilst checking '%s' against my dnsbl "
-		     "zone '%s', I got a temporary error on the "
-		     "authoritative name server.  Might want to take a "
-		     "look!", CONF_CHANNELS, addr, CONF_DNSBL_ZONE);
-	    break;
+	if (!(he = gethostbyname(buf))) {
+		switch(h_errno) {
+			/*
+			 * Some of these errors indicate serious problems
+			 * that will require admin intervention.
+			 */
+		case NO_RECOVERY:
+			irc_send("PRIVMSG %s :Whilst checking '%s' "
+			    "against my dnsbl zone '%s', I got a "
+			    "non-recoverable name server error.  Might "
+			    "want to take a look, check if your local "
+			    "resolver is working!?", CONF_CHANNELS, addr,
+			    CONF_DNSBL_ZONE);
+			break;
+		case TRY_AGAIN:
+			irc_send("PRIVMSG %s :Whilst checking '%s' "
+			    "against my dnsbl zone '%s', I got a "
+			    "temporary nameserver error.  Might want to "
+			    "take a look, check if your local resolver is "
+			    "working!?", CONF_CHANNELS, addr,
+			    CONF_DNSBL_ZONE);
+			break;
 
-	 default:
-            /* some other error but we don't care, we can just treat this
-	     * IP as OK */
-	    break;
-       }
+		default:
+			/*
+			 * Some other error but we don't care, we can just
+			 * treat this IP as OK.
+			 */
+	    		break;
+		}
 
-      free(buf);
-      return(0);
-    }
-   free(buf);
+		free(buf);
+		return(0);
+	}
+	free(buf);
 
-   /* we got an answer, so we need to kline this IP now */
-   irc_kline(irc_addr, (char *)addr);
-   log("DNSBL -> %s appears in BL zone %s", addr, CONF_DNSBL_ZONE);
-   irc_send("PRIVMSG %s :DNSBL: %s!%s@%s appears in BL zone %s",
-            CONF_CHANNELS, irc_nick, irc_user, irc_addr,
-            CONF_DNSBL_ZONE);
+	/*
+	 * We got an answer, so we need to kline this IP now.
+	 */
+	irc_kline(irc_addr, (char *)addr);
+	log("DNSBL -> %s appears in BL zone %s", addr, CONF_DNSBL_ZONE);
+	irc_send("PRIVMSG %s :DNSBL: %s!%s@%s appears in BL zone %s",
+	    CONF_CHANNELS, irc_nick, irc_user, irc_addr, CONF_DNSBL_ZONE);
 
-   STAT_DNSBL_MATCHES++;
-   return(1);
+	STAT_DNSBL_MATCHES++;
+	return(1);
 }
 
-/* send an email to report this open proxy */
+/*
+ * Send an email to report this open proxy.
+ */
 void dnsbl_report(struct scan_struct *ss)
 {
-   FILE *fp;
-   char cmdbuf[512], buf[4096];
+ 	char buf[4096], cmdbuf[512];
+	FILE *fp;
 
-   if(!ss || !ss->addr)
-      return;
+	if (!ss || !ss->addr)
+		return;
 
-   snprintf(cmdbuf, sizeof(cmdbuf), "%s -t", CONF_SENDMAIL);
-   snprintf(buf, sizeof(buf), "From: %s <%s>\n"
+	snprintf(cmdbuf, sizeof(cmdbuf), "%s -t", CONF_SENDMAIL);
+	snprintf(buf, sizeof(buf),
+	    "From: %s <%s>\n"
             "To: %s\n"
 	    "Subject: BOPM Report\n\n"
 	    "%s: %s\n\n"
 	    "%s\n", CONF_NICK, CONF_DNSBL_FROM, CONF_DNSBL_TO,
 	    ss->protocol->type, ss->addr, ss->conn_notice);
 
-   if((fp = popen(cmdbuf, "w")) == NULL) {
-	   log("DNSBL -> Failed to create pipe to '%s' for email report!",
-	       cmdbuf);
-	   irc_send("PRIVMSG %s :I was trying to create a pipe to '%s' to "
-		    "send a DNSBL report, and it failed!  I'll give up "
-		    "for now.", CONF_CHANNELS, cmdbuf);
-	   return;
-   }
+	if ((fp = popen(cmdbuf, "w")) == NULL) {
+		log("DNSBL -> Failed to create pipe to '%s' for email "
+		    "report!", cmdbuf);
+		irc_send("PRIVMSG %s :I was trying to create a pipe to "
+		    "'%s' to send a DNSBL report, and it failed!  I'll "
+		    "give up for now.", CONF_CHANNELS, cmdbuf);
+		return;
+	}
 
-   fputs(buf, fp);
-   pclose(fp);
-   log("DNSBL -> Sent report to %s", CONF_DNSBL_TO);
+	fputs(buf, fp);
+	pclose(fp);
+	log("DNSBL -> Sent report to %s", CONF_DNSBL_TO);
 }
