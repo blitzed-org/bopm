@@ -312,6 +312,8 @@ void irc_reconnect()
       close(IRC_FD);
   IRC_FD = 0;  /* Set IRC_FD 0 for reconnection on next irc_cycle() */
 
+  log("IRC -> Connectiong to (%s) lost, rehashing and reconnecting.", CONF_SERVER);
+
 }
 
 /* Read one character at a time until an
