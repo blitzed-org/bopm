@@ -415,12 +415,9 @@ void irc_parse()
        }
     
     /* Handle nickserv identification */
-
-    if(!strcasecmp(token[1], "NOTICE"))
+            
+    if(!strcasecmp(token[1], "NOTICE") && strchr(token[0], '@'))
       {
-          if(!strchr(token[0], '@'))  /* Ignore server notices */
-               return ;
-
           if(!strcasecmp(strtok(token[0] + 1, "!") , "NICKSERV"))
             {
                   time(&present);
