@@ -1,3 +1,337 @@
+2003-06-25 15:16  dgl
+
+	* README: 3.0.4 -> 3.1.0
+
+2003-06-23 10:43  strtok
+
+	* network-bopm/network-bopm.pl: 
+	Cleanup
+
+2003-06-23 10:41  strtok
+
+	* network-bopm/network-bopm.pl: 
+	PROTOCOL{NICK} is no longer required.
+
+2003-06-23 10:30  strtok
+
+	* network-bopm/network-bopm.pl: 
+	Do TS delta check to see if nick is new enough to be scanned
+
+2003-06-22 14:02  strtok
+
+	* network-bopm/network-bopm.pl: 
+	Removed listening code, service now sends a NOTICE to a bopm nick ,
+	which means the bopm can be connected to any server.
+
+2003-06-22 11:03  andy
+
+	* src/dnsbl.c: I am calling it a very big typo, OK?
+
+2003-06-22 10:05  strtok
+
+	* src/scan.c: 
+	Don't spam channel with negotiation timeout/failures on manual scan
+	(mofo@efnet)
+
+2003-06-22 07:19  andy
+
+	* .cvsignore: Ignore libtool.
+
+2003-06-22 07:18  andy
+
+	* libtool: These shouldn't be in CVS.
+
+2003-06-22 06:55  andy
+
+	* src/dnsbl.c: ...the effect is that bopm will use the else clause
+	(destined for manual scans) for every but the first positive
+	result... -> Segfault :)  -- mark AT nedworks.org
+
+2003-06-22 06:19  andy
+
+	* src/: config-parser.y, defs.h, firedns.c, irc.c, list.c, main.c,
+	negcache.c, opercmd.c: Mostly pedantry.
+
+2003-06-21 15:25  strtok
+
+	* network-bopm/network-bopm.pl: 
+	Relay /KILLs that pertain to bopm Do not QUIT on /kill
+
+2003-06-21 15:04  strtok
+
+	* network-bopm/network-bopm.pl: 
+	Catch/relay USERHOST reply (302)
+
+2003-06-21 14:52  strtok
+
+	* network-bopm/network-bopm.pl: 
+	Fixed parser Relay PRIVMSG
+
+2003-06-21 14:34  strtok
+
+	* network-bopm/network-bopm.pl: 
+	IO::Socket reuse => 1 (from dg)
+
+2003-06-21 14:25  strtok
+
+	* network-bopm/network-bopm.pl: 
+	Require PASS Remove USE Event
+
+2003-06-21 14:02  strtok
+
+	* libtool, network-bopm/network-bopm.pl: 
+	Added initial network-bopm perl script.
+
+2003-06-21 07:33  andy
+
+	* src/stats.c: As newfd has become an unsigned int it can no longer
+	contain error return values from dup(). A slight oversight, I think
+	:) -- mark AT nedworks.org
+
+2003-06-20 22:11  andy
+
+	* README: A bit about logging.
+
+2003-06-20 21:31  andy
+
+	* .cvsignore, src/main.c: Reopen logfiles on receipt of SIGUSR1. 
+	An example contrib log rotation script which uses this.
+
+2003-06-20 17:57  dgl
+
+	* src/: config.h, dnsbl.c, stats.c, stats.h: Made the dnsbl stats
+	into per dnsbl stats.
+
+2003-06-20 17:27  dgl
+
+	* src/dnsbl.c: Only print DNSBL results if no scan has had a
+	positive match already.
+
+2003-06-19 21:55  andy
+
+	* src/: irc.c, opercmd.c, scan.c: Fix a gcc3-ism.
+
+2003-06-19 21:18  andy
+
+	* libtool, src/config.c, src/config.h, src/dnsbl.c, src/firedns.c,
+	src/inet.c, src/irc.c, src/main.c, src/misc.c, src/misc.h,
+	src/negcache.c, src/negcache.h, src/opercmd.c, src/opercmd.h,
+	src/scan.c, src/scan.h, src/stats.c: LOTS of tidying up to compile
+	with no warnings.
+
+2003-06-19 21:12  andy
+
+	* configure, configure.in: Tidy up fascist CFLAGS again.
+
+2003-06-19 16:21  strtok
+
+	* src/list.c: 
+	No more need for node_t *p
+
+2003-06-19 16:14  strtok
+
+	* src/list.c: 
+	Make sure we elements-- before returning.
+
+2003-06-19 16:11  strtok
+
+	* src/list.c: 
+	list_remove no longer checks for the existance of the node in the
+	list
+
+2003-06-19 16:07  strtok
+
+	* bopm.conf.blitzed, bopm.conf.sample, src/config-lexer.l: 
+	Added ON/OFF and YES/NO as bool type and changed default to YES/NO
+	in conf
+
+2003-06-19 16:03  strtok
+
+	* bopm.conf.blitzed, bopm.conf.sample, src/config-lexer.l: 
+	Use true/false instead of 1/0 in config files/parser
+
+2003-06-19 09:34  andy
+
+	* configure, configure.in: Tidy up the fascist CFLAGS and add an
+	option for -Werror.
+
+2003-06-19 09:19  dgl
+
+	* libtool, src/Makefile.am, src/Makefile.in, src/scanwarn.c,
+	src/scanwarn.h: Remove scanwarn.{c,h} as nothing uses them (they
+	were just empty functions..).
+
+2003-06-19 09:12  dgl
+
+	* src/: config.c, config.h, dnsbl.c, firedns.c, firedns.h, main.c,
+	scan.c: Changed a load of (struct something *) MyMalloc casts to
+	just MyMalloc to keep Andy happy, same with sizeof..  A few little
+	warning fixes (with ./configure --extra-fascism), mostly for
+	firedns.
+
+2003-06-19 08:30  dgl
+
+	* src/: dnsbl.c, firedns.c, firedns.h: Reorganisation of the DNS
+	code so it's a bit easier to read, and several bugs fixed: the
+	lookup is aborted if it can't send the lookup and the fd limit is
+	also correctly dealt with.  Several API changes and a new error for
+	fd limit reached.
+
+2003-06-17 12:10  dgl
+
+	* src/firedns.c: firedns_getip{4,6} are meant to return an fd..
+
+2003-06-17 12:02  dgl
+
+	* src/firedns.c: bad dg. free -> MyFree.
+
+2003-06-17 11:56  dgl
+
+	* src/firedns.c: Add stuff to the list only if we don't get -1
+	return from the firedns setup
+
+2003-06-17 11:34  dgl
+
+	* src/: dnsbl.c, firedns.c: Two little cleanups..
+
+2003-06-17 06:31  dgl
+
+	* README: Add a comment about !all
+
+2003-06-17 06:23  dgl
+
+	* src/irc.c: Make !all work properly.
+
+2003-06-17 05:49  dgl
+
+	* src/irc.c: Check all the characters of the nickname provided (not
+	just the first 3), also means that < 3 character nicknames will
+	work..
+
+2003-06-17 05:47  andy
+
+	* bopm.conf.sample: Better keep it commented out.
+
+2003-06-17 05:32  andy
+
+	* bopm.conf.sample: New connregex line for StarIrcd/SorIrcd.
+
+2003-06-11 22:51  andy
+
+	* CREDITS: [no log message]
+
+2003-06-11 22:51  andy
+
+	* src/: dlclist.c, dnsbl.c, malloc.c, malloc.h, scan.c: As per
+	patch supplied by Christopher Bongaarts:
+	
+	http://lists.blitzed.org/pipermail/bopm/2003-June/001282.html
+	
+	Portability fixes for Sun Forte compiler:
+	
+	- No C++ comments - No inline - Don't initialize values of an auto
+	variable from members of a struct   passed via pointer
+	
+	NOTE: I have not added in any of the firedns parts yet - we need to
+	think about that some more.
+
+2003-06-03 09:31  andy
+
+	* CREDITS: Thanks, Joshua.
+
+2003-06-02 16:54  dgl
+
+	* src/: config.c, dnsbl.c, firedns.c, irc.c, log.c, main.c,
+	config.h, firedns.h, log.h, main.h, negcache.c, opercmd.c,
+	opercmd.h, scan.c, scan.h, stats.c, stats.h: log -> log_printf to
+	fix namespace collision, various other fixes for compile warnings
+	from gcc 3 (mostly signed/unsigned and prototypes).
+
+2003-04-30 08:28  dgl
+
+	* bopm.conf.sample, src/config-parser.y, src/dnsbl.c,
+	src/firedns.c: - Cleaned up bopm.conf.sample (it was a mess of tabs
+	and not tabs..) - Made firedns_resolveip4 accept IP as input
+	(firedns really is getting messy) - Added missing target_port to
+	scanner block stuff (now documented too) - DNSBL lookups no longer
+	print timeout error to the channel
+
+2003-04-29 12:51  dgl
+
+	* bopm.conf.blitzed, bopm.conf.sample, src/config-lexer.l,
+	src/config-parser.y, src/config.h, src/dnsbl.c, src/dnsbl.h,
+	src/firedns.c, src/firedns.h, src/inet.c, src/inet.h, src/irc.c,
+	src/main.c, src/scan.c, src/stats.c: Lots of mostly DNS related
+	changes
+	
+	dnsbl.{c,h}: - Many changes to accomdate configurable output from
+	blacklists - Return values from DNSBLs must now be set in the
+	configuration file,   they are not hardcoded - It is possible to
+	ignore some of the results returned from DNSBLs - Lookup errors are
+	now sent to channels as errors as well as to the log - The void
+	pointer passed to firedns is now a dnsbl_scan struct (contains	 a
+	pointer to the blacklist and to the scan_struct).
+	
+	firedns.{c,h}: - firedns.conf is now read from the BOPM
+	configuration dir   (etc/firedns.conf) not the system wide /etc.   
+	(firedns.conf is just a list of IP addresses, one on each line)  -
+	Fixes to make firedns.conf work in a sane way - Better errors when
+	problems occur reading configuration files - firedns_resolveip4
+	fixed to actually work - new error: Network error, for errors
+	receiving from the dns server
+	
+	inet.{c,h}, irc.c, scan.c, main.c: - bopm_gethostbyname removed,
+	code uses firedns_resolveip4 now - DNS lookup code adjusted to use
+	firedns
+	
+	scan.c: - %t in kline format strings - the type of proxy found on
+	the host   works for both DNSBL results and proxies found by BOPM
+	
+	configuation: - Added new blacklist directives (this breaks old
+	config files).	- scanner blocks now inherit settings from _the one
+	above them_,   this saves multiple definitions of the same thing in
+	different   scanner blocks (this affects vhost, fd, target_ip,
+	target_port,   timeout, max_read and target_strning in scanner
+	blocks).
+
+2003-04-07 15:51  strtok
+
+	* src/config-lexer.l: 
+	Ignore ^M in config file.
+
+2003-03-06 16:43  andy
+
+	* Makefile.in, aclocal.m4, configure, configure.in, libtool,
+	src/Makefile.in, src/firedns.c, src/setup.h.in: Add checks for size
+	of int/long.  Work out what type to use for a 32-bit int. 
+	Regenerate autotools.
+
+2003-03-06 16:37  dgl
+
+	* src/firedns.c: Of course, you need an extra header file for that
+	to work..  so changing int32_t to int.	(I blame vim's syntax
+	hilighting for lulling me into a false sense of security, but
+	probably testing stuff with the exact code you commit is also a
+	good idea).
+
+2003-03-06 15:59  dgl
+
+	* src/firedns.c: Fix for a weird bug exposed by running on alpha -
+	the returned record would only have 2 bytes, so it appeared that
+	the proxy had no type.
+	
+	This happens because firedns assumes that long = 4 bytes, so the
+	temp. fix changes long -> int32_t.
+	
+	Thanks to Chainsaw for trusting the BOPM developers with a shell
+	account on his machine ;-).
+
+2003-02-18 16:49  strtok
+
+	* ChangeLog, Makefile.in, aclocal.m4, configure, configure.in,
+	src/Makefile.am, src/Makefile.in, src/opercmd.c: 
+	Updated ChangeLog Commented out OP command Version is now 3.0.3
+
 2003-02-12 09:31  andy
 
 	* README: Fix <check> typo, add a bit about fdstat.
@@ -700,12 +1034,12 @@
 
 2002-12-08 16:28  strtok
 
-	* src/config-parser.y: file config-parser.y was initially added on
+	* src/config-lexer.l: file config-lexer.l was initially added on
 	branch LIBOPM.
 
 2002-12-08 16:28  strtok
 
-	* src/config-lexer.l: file config-lexer.l was initially added on
+	* src/config-parser.y: file config-parser.y was initially added on
 	branch LIBOPM.
 
 2002-12-08 16:28  strtok
@@ -719,12 +1053,12 @@
 
 2002-12-08 11:00  dgl
 
-	* src/firedns.h: file firedns.h was initially added on branch
+	* src/firedns.c: file firedns.c was initially added on branch
 	LIBOPM.
 
 2002-12-08 11:00  dgl
 
-	* src/firedns.c: file firedns.c was initially added on branch
+	* src/firedns.h: file firedns.h was initially added on branch
 	LIBOPM.
 
 2002-12-08 11:00  dgl
@@ -844,12 +1178,12 @@
 
 2002-11-19 22:59  strtok
 
-	* src/config.tab.h: file config.tab.h was initially added on branch
-	LIBOPM.
+	* src/config.tab.h: Added config.tab.h to project
 
 2002-11-19 22:59  strtok
 
-	* src/config.tab.h: Added config.tab.h to project
+	* src/config.tab.h: file config.tab.h was initially added on branch
+	LIBOPM.
 
 2002-11-19 22:58  strtok
 
@@ -872,19 +1206,19 @@
 
 2002-11-12 00:57  strtok
 
-	* src/malloc.h: file malloc.h was initially added on branch LIBOPM.
-
-2002-11-12 00:57  strtok
-
 	* src/malloc.c: file malloc.c was initially added on branch LIBOPM.
 
 2002-11-12 00:57  strtok
 
-	* src/list.h: file list.h was initially added on branch LIBOPM.
+	* src/malloc.h: file malloc.h was initially added on branch LIBOPM.
 
 2002-11-12 00:57  strtok
 
 	* src/list.c: file list.c was initially added on branch LIBOPM.
+
+2002-11-12 00:57  strtok
+
+	* src/list.h: file list.h was initially added on branch LIBOPM.
 
 2002-11-12 00:57  strtok
 
@@ -905,12 +1239,12 @@
 
 2002-11-12 00:57  strtok
 
-	* src/config.l: file config.l was initially added on branch LIBOPM.
+	* src/config.tab.c: file config.tab.c was initially added on branch
+	LIBOPM.
 
 2002-11-12 00:57  strtok
 
-	* src/config.tab.c: file config.tab.c was initially added on branch
-	LIBOPM.
+	* src/config.l: file config.l was initially added on branch LIBOPM.
 
 2002-11-12 00:57  strtok
 
