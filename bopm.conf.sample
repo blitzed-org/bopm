@@ -117,6 +117,13 @@ SCANIP 127.0.0.1
 SCANPORT 6667
 
 
+# TARGET_STRING <string> : Target string we test for in the data read by the scanner,
+#                          this should be a string within the data that your ircd usually
+#                          sends on connect. The default should work on most bahamut 
+#                          based ircds.
+
+TARGET_STRING *** Looking up your hostname...
+
 
 
 # KLINE_COMMAND <command> : Line used in issuing KLINES. Two %s are required
