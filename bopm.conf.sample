@@ -85,6 +85,15 @@ CHANNELS #bopm,#wg
 OPER bopm operpss
 
 
+# OPER_MODES <modes> : Mode string to set on itself as soon as it opers up.
+#                      This should include whatever mode enables connect
+#                      notices (usually +c), and often a good idea to disable
+#                      helper modes so that users don't try to talk to the
+#                      bopm
+
+OPER_MODES +c-h
+
+
 
 
 # SCANIP <ip> : IP to command possible open proxy to connect to. This is

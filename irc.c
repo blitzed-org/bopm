@@ -402,7 +402,7 @@ void irc_parse()
     if(!strcasecmp(token[1], "001"))
      { 
          irc_send("OPER %s", CONF_OPER);
-         irc_send("MODE %s +c-h", CONF_NICK);      
+         irc_send("MODE %s %s", CONF_NICK, CONF_OPER_MODES);      
 	 if(CONF_AWAY)
 	    irc_send("AWAY :%s (/msg %s INFO)", CONF_AWAY, CONF_NICK);
          do_perform();   

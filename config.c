@@ -37,6 +37,7 @@ char *CONF_SERVER          = 0;
 char *CONF_USER            = 0;
 char *CONF_NICK            = 0;
 char *CONF_OPER            = 0;
+char *CONF_OPER_MODES      = 0;
 char *CONF_SCANIP          = 0;
 char *CONF_BINDIRC         = 0;
 char *CONF_BINDSCAN        = 0;
@@ -63,6 +64,7 @@ config_hash hash[] = {
        {"USER",                TYPE_STRING,     &CONF_USER               },
        {"NICK",                TYPE_STRING,     &CONF_NICK               },
        {"OPER",                TYPE_STRING,     &CONF_OPER               },
+       {"OPER_MODES",          TYPE_STRING,     &CONF_OPER_MODES         },
        {"SCANIP",              TYPE_STRING,     &CONF_SCANIP             },
        {"SCANPORT",            TYPE_INT   ,     &CONF_SCANPORT           },
        {"BINDIRC",             TYPE_STRING,     &CONF_BINDIRC            },
