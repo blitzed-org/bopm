@@ -713,6 +713,12 @@ int scan_w_socks5(struct scan_struct *conn)
 
 int scan_w_wingate(struct scan_struct *conn)
 {
+     
+    int len;
+ 
+    len = snprintf(SENDBUFF, 512, "%s:%d\r\n", CONF_SCANIP, CONF_SCANPORT);
+    send(conn->fd, SENDBUFF, len, 0);
+
     return 1;
 }
 
