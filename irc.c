@@ -316,6 +316,9 @@ static void irc_connect(void)
 		default:
 			log("IRC -> connect(): Unknown error connecting to (%s)",
 			    CONF_SERVER);
+
+                        if (OPT_DEBUG >= 1)
+                        	log(strerror(errno));
 		}	
 		exit(EXIT_FAILURE);
 	}
