@@ -1,3 +1,1 @@
 Retain ops with chanserv
-Strip spaces off beginning/end of lines in config file (important for 1 word config params, like binds)
-
