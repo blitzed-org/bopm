@@ -139,9 +139,9 @@ SCANPORT 6667
 # TARGET_STRING <string> : Target string we test for in the data read by the scanner,
 #                          this should be a string within the data that your ircd usually
 #                          sends on connect. The default should work on most bahamut 
-#                          based ircds.
+#                          based ircds once you edit it for your server name.
 
-TARGET_STRING *** Looking up your hostname...
+:penguin.uk.eu.blitzed.org NOTICE AUTH :*** Looking up your hostname...
 
 
 
