@@ -28,7 +28,7 @@
 #include "malloc.h"
 #include "config.h"
 
-//int yydebug=1; 
+int yydebug=1; 
 void *tmp;        /* Variable to temporarily hold nodes before insertion to list */
 
 %}
@@ -36,6 +36,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token AWAY
 %token CHANNEL
 %token CONNREGEX
+%token FD
 %token IRC
 %token KEY
 %token MASK
@@ -48,9 +49,14 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token PIDFILE
 %token PASSWORD
 %token PORT
+%token PROTOCOL
+%token PROTOCOLTYPE
 %token REALNAME
 %token SCANNER
 %token SERVER
+%token TARGET_IP
+%token TARGET_PORT
+%token TARGET_STRING
 %token USERNAME
 %token USER
 %token VHOST
@@ -63,6 +69,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 
 %token <number> NUMBER
 %token <string> STRING
+%token <number> PROTOCOLTYPE
 
 %%
 
@@ -299,7 +306,13 @@ SCANNER '{' scanner_items  '}' ';' ;
 scanner_items: scanner_items scanner_item |
                scanner_item;
 
-scanner_item: scanner_name     |
+scanner_item: scanner_name          |
+              scanner_vhost         |
+              scanner_fd            |
+              scanner_target_ip     |
+              scanner_target_port   |
+              scanner_target_string |
+              scanner_protocol      |
               error;
 
 scanner_name: NAME '=' STRING ';'
@@ -307,6 +320,56 @@ scanner_name: NAME '=' STRING ';'
    struct ScannerConf *item = (struct ScannerConf *) tmp;
    MyFree(item->name);
    item->name = DupString($3);
+};
+
+scanner_vhost: VHOST '=' STRING ';'
+{
+   struct ScannerConf *item = (struct ScannerConf *) tmp;
+   MyFree(item->vhost);
+   item->vhost = DupString($3);
+};
+
+scanner_target_ip: TARGET_IP '=' STRING ';'
+{
+   struct ScannerConf *item = (struct ScannerConf *) tmp;
+   MyFree(item->target_ip);
+   item->vhost = DupString($3);
+};
+
+scanner_target_string: TARGET_STRING '=' STRING ';'
+{
+   struct ScannerConf *item = (struct ScannerConf *) tmp;
+   MyFree(item->target_string);
+   item->vhost = DupString($3);
+};
+
+scanner_fd: FD '=' NUMBER ';'
+{
+   struct ScannerConf *item = (struct ScannerConf *) tmp;
+   item->fd = $3;
+};
+
+scanner_target_port: TARGET_PORT '=' NUMBER ';'
+{
+   struct ScannerConf *item = (struct ScannerConf *) tmp;
+   item->target_port = $3;
+};
+
+scanner_protocol: PROTOCOL '=' PROTOCOLTYPE ':' NUMBER ';'
+{
+   struct ProtocolConf *item;
+   struct ScannerConf  *item2;
+
+   node_t *node;
+ 
+   item = MyMalloc(sizeof(struct ProtocolConf));
+   item->type = $3;
+   item->port = $5;
+
+   item2 = (struct ScannerConf *) tmp;
+
+   node = node_create(item);
+   list_add(item2->protocols, node);
 };
 
 %%

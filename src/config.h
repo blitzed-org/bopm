@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "list.h"
+#include "libopm/src/opm_types.h"
 
 extern FILE *yyin;
 

@@ -92,27 +92,64 @@ whitespace             [ \t]*
              
                         }
 
-AWAY                    { return AWAY;     }
-CHANNEL                 { return CHANNEL;  }
-CONNREGEX               { return CONNREGEX;}
-IRC                     { return IRC;      }
-KEY                     { return KEY;      }
-MASK                    { return MASK;     }
-MODE                    { return MODE;     }
-NAME                    { return NAME;     }
-NEGCACHE                { return NEGCACHE; }
-NICK                    { return NICK;     }
-OPER                    { return OPER;     }
-OPTIONS                 { return OPTIONS;  }
-PASSWORD                { return PASSWORD; }
-PIDFILE                 { return PIDFILE;  }
-PORT                    { return PORT;     }
-REALNAME                { return REALNAME; }
-SCANNER                 { return SCANNER;  }
-SERVER                  { return SERVER;   }
-USER                    { return USER;     }
-USERNAME                { return USERNAME; }
-VHOST                   { return VHOST;    }
+AWAY                    { return AWAY;         }
+CHANNEL                 { return CHANNEL;      }
+CONNREGEX               { return CONNREGEX;    }
+FD                      { return FD;           }
+IRC                     { return IRC;          }
+KEY                     { return KEY;          }
+MASK                    { return MASK;         }
+MODE                    { return MODE;         }
+NAME                    { return NAME;         }
+NEGCACHE                { return NEGCACHE;     }
+NICK                    { return NICK;         }
+OPER                    { return OPER;         }
+OPTIONS                 { return OPTIONS;      }
+PASSWORD                { return PASSWORD;     }
+PIDFILE                 { return PIDFILE;      }
+PORT                    { return PORT;         }
+PROTOCOL                { return PROTOCOL;     }
+REALNAME                { return REALNAME;     }
+SCANNER                 { return SCANNER;      }
+SERVER                  { return SERVER;       }
+TARGET_IP               { return TARGET_IP;    }
+TARGET_PORT             { return TARGET_PORT;  }
+TARGET_STRING           { return TARGET_STRING;}
+USER                    { return USER;         }
+USERNAME                { return USERNAME;     }
+VHOST                   { return VHOST;        }
+
+
+HTTP                    {
+                          yylval.number = OPM_TYPE_HTTP;
+                          return PROTOCOLTYPE;
+                        }
+
+HTTPPOST                {
+                          yylval.number = OPM_TYPE_HTTPPOST;
+                          return PROTOCOLTYPE;
+                        }
+
+SOCKS4                  {
+                          yylval.number = OPM_TYPE_SOCKS4;
+                          return PROTOCOLTYPE;
+                        }
+
+SOCKS5                  {
+                          yylval.number = OPM_TYPE_SOCKS5;
+                          return PROTOCOLTYPE;
+                        }
+
+WINGATE                 {
+                          yylval.number = OPM_TYPE_WINGATE;
+                          return PROTOCOLTYPE;
+                        }
+
+ROUTER                  {
+                          yylval.number = OPM_TYPE_ROUTER;
+                          return PROTOCOLTYPE;
+                        }
+
 
 [0-9]+                  {
                            yylval.number=atoi(yytext); 

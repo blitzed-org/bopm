@@ -1,3 +1,6 @@
+#ifndef INET_H
+#define INET_H
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -11,3 +14,5 @@
 extern int inetpton(int, const char *, void *);
 extern char *inetntop(int, const void *, char *, unsigned int);
 extern struct hostent *bopm_gethostbyname(const char *);
+
+#endif /* INET_H */

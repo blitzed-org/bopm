@@ -61,7 +61,12 @@
 #include "negcache.h"
 
 
+/* Libopm */
 
+#include "libopm/src/opm.h"
+#include "libopm/src/opm_common.h"
+#include "libopm/src/opm_error.h"
+#include "libopm/src/opm_types.h"
 
 /* scan_connect
  *
