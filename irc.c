@@ -57,7 +57,7 @@ struct hostent     *IRC_HOST;         /* Hostent struct for IRC server         *
 fd_set              IRC_FDSET;        /* fd_set for IRC data for select()      */
 
 struct timeval      IRC_TIMEOUT;      /* timeval struct for select() timeout   */
-
+time_t              IRC_NICKSERV_LAST = 0; /* Last notice from nickserv             */
 
 /* Give one cycle to the IRC client, which
  * will allow it to poll for data and handle
@@ -332,6 +332,7 @@ void irc_parse()
    char *token[16];
    int   tokens = 0;
    int   i, h, len;
+   time_t present;
 
     printf("%s\n", IRC_RAW);
 
@@ -345,7 +346,7 @@ void irc_parse()
 
    /* Anything with less than 1 token is useless to us */  
 
-   if(tokens <= 1)
+    if(tokens <= 1)
         return;
    
     if(!strcasecmp(token[0], "PING"))
@@ -415,6 +416,20 @@ void irc_parse()
                          
        }
 
+
+    if(!strcasecmp(token[1], "NOTICE"))
+      {
+          if(!strcasecmp(strtok(token[0] + 1, "!") , "NICKSERV"))
+            {
+                  time(&present);
+                  if(((int) present - (int) IRC_NICKSERV_LAST) >= 10) /* If last used notice was greater than/equal to 10 sec ago */
+                    {
+                         irc_send(CONF_NICKSERV_IDENT);              /* Identify to nickserv */  
+                         time(&IRC_NICKSERV_LAST);                   /* Record last ident    */
+                    }
+            }
+          return;
+      }
 
     /* Search for +c notices */
 
