@@ -525,7 +525,7 @@ static void scan_negfail_next(scan_struct *conn)
 
     for (i = 0; i < SCAN_NUMPROTOCOLS; i++) {
 	if(SCAN_PROTOCOLS[i].stage != 1 ||
-		SCAN_PROTOCOLS[i].port == conn->protocol->port)
+		SCAN_PROTOCOLS[i].port != conn->protocol->port)
 	    continue;
 
 	/* Let people know what's happening */
