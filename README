@@ -35,16 +35,11 @@ Compatibility
 -------------
 
 Bahamut (tested with 1.4.28 -> 1.4.34)
-Hybrid (tested with 2.8/hybrid-5.3p8, ircd-hybrid-6.3 and ircd-hybrid-7beta9)
+Hybrid (tested with 2.8/hybrid-5.3p8, ircd-hybrid-6.3 and ircd-hybrid-7)
 Unreal (tested with 3.1.2 and 3.2)
-Xnet (tested with 6.1.3)
 Dancer (tested with 1.0.31)
-TR-IRCD
-IRCu
 Ultimate IRCD (tested with UltimateIRCd(Tsunami)-3.0(00).a22) - please
 note, earlier versions of Ultimate IRCD are *not* supported
-
-
 
 BOPM is designed for the Bahamut and Hybrid IRCds.   It is easily
 suitable for any other ircd with little modification (connregex in bopm.conf).
@@ -54,8 +49,7 @@ hostname would be a significant factor to BOPM's efficiency.
 
 If you want to use BOPM but you don't think your ircd supports it then please
 contact us.  As long as source is available for your ircd then we can almost
-certainly make BOPM work with it.  We have already done this for Unreal,
-TR-IRCD and Xnet ircds.
+certainly make BOPM work with it.
 
 Any questions regarding compatibility should be sent to the developers. If
 feasible we might be able to add compatibility to multiple ircd types to the
@@ -76,6 +70,8 @@ Operator Channel Commands
 -------------------------
 
 botnick <check> <host> [scanner]  -- Manually scan host for insecure proxies and output all errors.
+                                     If scanner is not given, bopm will scan on all scanners.
+
 botnick stats                     -- Output scan stats, uptime and client connection count.
 
 
@@ -97,7 +93,7 @@ subscribe to this list from:
   http://lists.blitzed.org/listinfo/bopm
 
 If you need help in closer to realtime, you can find us in #blitzed on
-irc.blitzed.org.
+irc.blitzed.org. NOTE: READ THE DOCS FIRST OR WE WILL NOT HELP YOU
 
 
 Compatibility Notes
