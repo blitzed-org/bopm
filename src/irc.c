@@ -87,7 +87,6 @@ static void m_privmsg(char **, unsigned int, char *, struct UserInfo *);
 static void m_ctcp(char **, unsigned int, char *, struct UserInfo *);
 static void m_notice(char **, unsigned int, char *, struct UserInfo *);
 static void m_perform(char **, unsigned int, char *, struct UserInfo *);
-static void m_versioncheck(char **, unsigned int, char *, struct UserInfo *);
 static void m_userhost(char **, unsigned int, char *, struct UserInfo *);
 static void m_cannot_join(char **, unsigned int, char *, struct UserInfo *);
 
@@ -123,7 +122,6 @@ static struct CommandHash COMMAND_TABLE[] = {
          {"PING",                 m_ping           },
          {"INVITE",               m_invite         },
          {"001",                  m_perform        },
-         {"002",                  m_versioncheck   },
          {"302",                  m_userhost       },
          {"471",                  m_cannot_join    },
          {"473",                  m_cannot_join    },
@@ -328,8 +326,15 @@ static void irc_init(void)
 }
 
 
-/*
- * Send data to remote IRC host.
+/* irc_send
+ *
+ *    Send data to remote IRC host.
+ *
+ * Parameters:
+ *    data: Format of data to send
+ *    ...: varargs to format with
+ * 
+ * Return: NONE
  */
 
 
@@ -357,6 +362,16 @@ void irc_send(char *data, ...)
    }
 }
 
+/* irc_send
+ *
+ *    Send privmsg to all channels.
+ *
+ * Parameters:
+ *    data: Format of data to send
+ *    ...: varargs to format with
+ *
+ * Return: NONE
+ */
 
 void irc_send_channels(char *data, ...)
 {
@@ -376,9 +391,14 @@ void irc_send_channels(char *data, ...)
 
 
 
-/*
- * Create socket and connect to IRC server specificied in config file
- * (IRCItem->server) with port (IRCItem->port).
+/* irc_connect
+ *
+ *    Connect to IRC server.
+ *    XXX: FD allocation done here
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
  */
 
 static void irc_connect(void)
@@ -427,12 +447,14 @@ static void irc_connect(void)
 }
 
 
-/* Disconnect from IRC. Reconnection will happen when the next irc_cycle.
-
-   !!! This function should be used for reconnection rather than calling irc_connect
-   directly. !!!
-
-*/
+/* irc_reconnect
+ *
+ *    Close connection to IRC server.
+ *
+ * Parameters: NONE
+ *
+ * Return: NONE
+ */
 
 static void irc_reconnect(void)
 {
@@ -446,9 +468,16 @@ static void irc_reconnect(void)
    log("IRC -> Connection to (%s) lost, reconnecting.", IRCItem->server);
 }
 
-/*
- * Read one character at a time until an endline is hit, at which time control
- * is passed to irc_parse() to parse that line.
+
+
+/* irc_read
+ *
+ *    irc_read is called my irc_cycle when new data is ready to be
+ *    read from the irc server. 
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
  */
 
 static void irc_read(void)
@@ -485,10 +514,17 @@ static void irc_read(void)
    }
 }
 
-/*
- * A full line has been read by irc_read(); this function breaks the line
- * into parv[]. 
+
+/* irc_parse
+ *
+ *    irc_parse is called by irc_read when a full line of data
+ *    is ready to be parsed.
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
  */
+
 
 static void irc_parse(void)
 {
@@ -576,8 +612,15 @@ static void irc_parse(void)
 }
 
 
-/*
- * Functions we need to perform ~1 seconds.
+
+
+/* irc_timer
+ *
+ *    Functions to be performed every ~seconds.
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
  */
 
 void irc_timer(void)
@@ -608,10 +651,20 @@ void irc_timer(void)
 
 }
 
-/*
- * Check if channel is one of our configured report channels, and return a
- * pointer to it if so, or NULL if not.
+
+
+
+/* get_channel
+ *
+ *    Check if a channel is defined in our conf. If so return
+ *    a pointer to it.
+ *
+ * Parameters:
+ *    channel: channel to search conf for
+ *
+ * Return: Pointer to ChannelConf containing the channel
  */
+
 static struct ChannelConf *get_channel(const char *channel)
 {
    node_t *node;
@@ -716,9 +769,18 @@ static void userinfo_free(struct UserInfo *source_p)
 }
 
 
-/*  do_perform
+
+/* m_perform
  *
- *     Actions to perform when successfully connected to IRC.
+ *    actions to perform on IRC connection
+ *
+ * Parameters:
+ * parv[0]  = source
+ * parv[1]  = PING
+ * parv[2]  = PING TS/Package
+ *
+ * source_p: UserInfo struct of the source user, or NULL if
+ * the source (parv[0]) is a server.
  */
 
 static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo *notused)
@@ -761,20 +823,6 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
       else
          irc_send("JOIN %s", channel->name);
    }
-}
-
-
-/* m_versioncheck */
-static void m_versioncheck(char **parv, unsigned int parc, char *msg, struct UserInfo *notused)
-{
-#ifndef WITH_UNREAL
-   if(parc < 4)
-      return;
-
-   if(strstr(parv[3], "version Unreal") != NULL)
-      log("IRC -> BOPM appears to be connecting to an Unreal based IRCD, without unreal support enabled!");
-
-#endif
 }
 
 
@@ -1004,7 +1052,7 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
  *
  */
 
-void m_userhost(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+static void m_userhost(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
    if(parc < 4)
       return;
@@ -1022,7 +1070,7 @@ void m_userhost(char **parv, unsigned int parc, char *msg, struct UserInfo *sour
  *
  */
 
-void m_cannot_join(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
+static void m_cannot_join(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
    struct ChannelConf *channel;
 
