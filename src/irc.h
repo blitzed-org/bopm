@@ -51,8 +51,8 @@ struct CommandHash
 extern int remote_is_ipv6;
 extern int bindto_ipv6;
 
-extern void irc_send(char *data, ...);
-extern void irc_kline(char *addr, char *ip);
+extern void irc_send(char *, ...);
+extern void irc_send_channels(char *, ...);
 extern void irc_cycle(void);
 extern void irc_timer(void);
 

@@ -98,6 +98,7 @@ extern struct cnode *nc_head;
 
 char                IRC_RAW[MSGLENMAX];         /* Buffer to read data into              */
 char                IRC_SENDBUFF[MSGLENMAX];    /* Send buffer                           */
+char                IRC_CHANNELS[MSGLENMAX];    /* Stores comma delim list of channels   */
 int                 IRC_RAW_LEN    = 0;         /* Position of IRC_RAW                   */
 
 int                 remote_is_ipv6 = 0;
@@ -196,6 +197,9 @@ void irc_cycle(void)
 
 static void irc_init(void)
 {
+    node_t *node;
+    struct ChannelConf *chan;
+
     struct bopm_sockaddr bsaddr;
 
     ssize = sizeof(struct bopm_sockaddr);
@@ -361,6 +365,20 @@ static void irc_init(void)
             exit(EXIT_FAILURE);
         }
     }
+
+    /* Setup target list for irc_send_channels */
+    IRC_CHANNELS[0] = '\0';
+    LIST_FOREACH(node, IRCItem->channels->head)
+    {
+       chan = (struct ChannelConf *) node->data;
+       strncat(IRC_CHANNELS, chan->name, MSGLENMAX);
+
+       if(node->next)
+          strncat(IRC_CHANNELS, ",", MSGLENMAX);
+    }    
+    IRC_CHANNELS[MSGLENMAX] = '\0';
+
+
 }
 
 
@@ -376,13 +394,13 @@ void irc_send(char *data, ...)
     char    tosend[MSGLENMAX];
 
     va_start(arglist, data);
-    vsnprintf(data2, MSGLENMAX - 1, data, arglist);
+    vsnprintf(data2, MSGLENMAX, data, arglist);
     va_end(arglist);
 
     if (OPT_DEBUG >= 2)
         log("IRC SEND -> %s", data2);
 
-    snprintf(tosend, MSGLENMAX - 1, "%s\n", data2);
+    snprintf(tosend, MSGLENMAX, "%s\n", data2);
 
     if (send(IRC_FD, tosend, strlen(tosend), 0) == -1)
     {
@@ -393,14 +411,24 @@ void irc_send(char *data, ...)
     }
 }
 
-/*
- * K:line given ip for given reason.
- */
 
-void irc_kline(char *addr, char *ip)
+void irc_send_channels(char *data, ...)
 {
-    //irc_send(IRCItem->kline, addr, ip);
+    va_list arglist;
+    char    data2[MSGLENMAX];
+    char    tosend[MSGLENMAX];
+
+    va_start(arglist, data);
+    vsnprintf(data2, MSGLENMAX, data, arglist);
+    va_end(arglist);
+
+    snprintf(tosend, MSGLENMAX, "PRIVMSG %s :%s", IRC_CHANNELS, data2);
+
+    irc_send(tosend);
 }
+
+
+
 
 /*
  * Create socket and connect to IRC server specificied in config file

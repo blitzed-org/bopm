@@ -380,10 +380,14 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
    scs = (struct scanner_struct *) data;
    ss = (struct scan_struct *) remote->data;
 
-   log("SCAN -> Open proxy %s:%d (%s) [%s]", remote->ip, remote->port,
-             scan_gettype(remote->protocol), scs->name);   
-
    scan_positive(ss);
+
+   log("SCAN -> Open proxy %s:%d (%s) [%s]", remote->ip, remote->port,
+             scan_gettype(remote->protocol), scs->name);
+
+   irc_send_channels("OPEN PROXY -> %s:%d (%s) [%s]", remote->ip, remote->port,
+             scan_gettype(remote->protocol), scs->name);
+
 }
 
 
@@ -684,7 +688,5 @@ void scan_irckline(struct scan_struct *ss)
       /* continue to next character in format */
       pos++;
    }
-
-   if(OPT_DEBUG >= 2)
-      log("SCAN -> KLINE FORMAT = [%s]", message); 
+   irc_send(message);
 }
