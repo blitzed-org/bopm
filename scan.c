@@ -31,6 +31,7 @@ along with this program; if not, write to the Free Software
 #include <netdb.h>
 #include <time.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "irc.h"
 #include "log.h"
@@ -91,6 +92,8 @@ void scan_connect(char *ip)
             newconn->protocol = &(SCAN_PROTOCOLS[i]); /* Give struct a link to information about the protocol
                                                          it will be handling. */
 
+            memset(&(newconn->sockaddr), 0, sizeof(struct sockaddr_in));
+
             newconn->sockaddr.sin_family = AF_INET;                       /* Fill in sockaddr with information about remote host */
             newconn->sockaddr.sin_port = htons(newconn->protocol->port); 
             newconn->sockaddr.sin_addr.s_addr = inet_addr(ip);
@@ -108,6 +111,7 @@ void scan_connect(char *ip)
             time(&(newconn->create_time));                               /* Log create time of connection for timeouts */
 
             scan_add(newconn);                                           /* Add struct to list of connections */                                                             
+            fcntl(newconn->fd, F_SETFL, O_NONBLOCK);                     /* Set socket non blocking */
             connect(newconn->fd, (struct sockaddr *) &(newconn->sockaddr), sizeof(newconn->sockaddr));  /* Connect ! */
         }    
 
