@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "config.h"
-#include "config.tab.h"
+#include "config-parser.h"
 
 
 void ccomment(void);
@@ -100,6 +100,7 @@ DNSBL_FROM              { return DNSBL_FROM;   }
 DNSBL_TO                { return DNSBL_TO;     }
 FD                      { return FD;           }
 IRC                     { return IRC;          }
+KLINE                   { return KLINE;        }
 KEY                     { return KEY;          }
 MASK                    { return MASK;         }
 MAX_READ                { return MAX_READ;     }

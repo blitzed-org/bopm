@@ -65,6 +65,15 @@ dnl Checks for library functions.
 AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
 
+dnl check for yacc
+AC_PROG_INSTALL
+AC_PROG_YACC
+
+dnl check for lexx
+AM_PROG_LEX
+
+
+
 dnl if they want select() or they don't have poll() then we need to check
 dnl that we actually have select()
 if test "$with_select" = "yes" || test "$have_sys_poll_h" = "no"; then

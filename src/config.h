@@ -33,6 +33,7 @@ struct IRCConf
    char *away;
 
    char *connregex;
+   char *kline;
 
    list_t *channels;   /* List of ChannelConf */
 };

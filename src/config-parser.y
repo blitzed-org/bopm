@@ -41,6 +41,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token DNSBL_TO
 %token FD
 %token IRC
+%token KLINE
 %token KEY
 %token MASK
 %token MAX_READ
@@ -121,6 +122,8 @@ irc_items: irc_items irc_item |
            irc_item;
 
 irc_item: irc_away      |
+          irc_connregex |
+          irc_kline     |
           irc_nick      |
           irc_mode      |
           irc_oper      |
@@ -130,7 +133,6 @@ irc_item: irc_away      |
           irc_server    |
           irc_username  |
           irc_vhost     |
-          irc_connregex |
           channel_entry |
           error;
 
@@ -138,6 +140,12 @@ irc_away: AWAY '=' STRING ';'
 {
    MyFree(IRCItem->away);
    IRCItem->away = DupString($3);
+};
+
+irc_kline: KLINE '=' STRING ';'
+{
+   MyFree(IRCItem->kline);
+   IRCItem->kline = DupString($3);
 };
 
 irc_mode: MODE '=' STRING ';'
