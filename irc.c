@@ -267,7 +267,7 @@ void irc_read()
 	       irc_parse();               /* Parse Line */
 	       IRC_RAW_LEN = 0;           /* Reset counter */
 	       
-	       continue;
+	       break;
 	   }
 
 	   if(c != '\r' && c != '\n' && c != 0)
@@ -345,7 +345,7 @@ void irc_parse()
 
                   ip = token[10] + 1;          /* Shift over 1 byte to pass over [ */
                   ip = strtok(ip, "]");        /* Replace ] with a /0              */
-                  printf("Connecting IP: %s", ip);
+                  printf("Connecting IP: %s\n", ip);
                   scan_connect(ip);
             }
      }

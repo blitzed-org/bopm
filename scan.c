@@ -40,17 +40,16 @@ along with this program; if not, write to the Free Software
 #include "extern.h"
 
 
-struct scan_struct *scans = 0;  /* Linked list head for connections */
+struct scan_struct *CONNECTIONS = 0;  /* Linked list head for connections */
 
 
-                                /* Table hashes protocols to functions which
-                                 * handle the specifics of those protocols */
+/*    Protocol Name, Port, Write Handler, Read Handler */ 
 
 protocol_hash SCAN_PROTOCOLS[] = {
 
-       {"OpenSquid", 8080, scan_squid },
-       {"OpenSquid", 3128, scan_squid },
-       {"OpenSquid",   80, scan_squid }
+       {"OpenSquid", 8080, &(scan_w_squid), &(scan_r_squid) },
+       {"OpenSquid", 3128, &(scan_w_squid), &(scan_r_squid) },
+       {"OpenSquid",   80, &(scan_w_squid), &(scan_r_squid) }
 
 };
 
@@ -109,10 +108,10 @@ void scan_connect(char *ip)
               }
 
             time(&(newconn->create_time));                               /* Log create time of connection for timeouts */
-
-            scan_add(newconn);                                           /* Add struct to list of connections */                                                             
-            fcntl(newconn->fd, F_SETFL, O_NONBLOCK);                     /* Set socket non blocking */
-            connect(newconn->fd, (struct sockaddr *) &(newconn->sockaddr), sizeof(newconn->sockaddr));  /* Connect ! */
+            newconn->state = STATE_ESTABLISHED;                              /* Connection is just established             */
+            scan_add(newconn);                                           /* Add struct to list of connections          */                                                             
+            fcntl(newconn->fd, F_SETFL, O_NONBLOCK);                     /* Set socket non blocking                    */
+            connect(newconn->fd, (struct sockaddr *) &(newconn->sockaddr), sizeof(newconn->sockaddr));  /* Connect !   */
         }    
 
 }
@@ -124,31 +123,82 @@ void scan_connect(char *ip)
 
 void scan_cycle()
 {
-   scan_checkwrite();
-   scan_checkread();
+   scan_check();
 }
 
 
-/*  Test for sockets to be written to.
+/*  Test for sockets to be written/read to.
  *
  */
 
-void scan_checkwrite()
+void scan_check()
 {
+
+    fd_set w_fdset;
+    fd_set r_fdset;
+
+    struct timeval timeout;
+    struct scan_struct *ss;
+
+    int highfd = 0;
+   
+
+    if(!CONNECTIONS)
+       return;
+
+    FD_ZERO(&w_fdset);
+    FD_ZERO(&r_fdset);
+
+    /* Add connections to appropriate sets */
+
+    for(ss = CONNECTIONS; ss; ss = ss->next)
+      {
+          if(ss->state == STATE_ESTABLISHED)
+            {
+               if(ss->fd > highfd)    
+                  highfd = ss->fd;
+
+               FD_SET(ss->fd, &w_fdset);
+               continue;
+            }
+         
+          if(ss->state == STATE_SENT)
+           {
+              if(ss->fd > highfd)
+                 highfd = ss->fd;
+             
+               FD_SET(ss->fd, &r_fdset);
+           }
+      }
+
+    timeout.tv_sec      = 0;  /* No timeout */
+    timeout.tv_usec     = 0;
+
+    switch(select((highfd + 1), &r_fdset, &w_fdset, 0, &timeout)) 
+     {
+
+        case -1:
+           return;  /* error in select */
+        case 0:
+           break;
+                        /* Pass pointer to connection to handler */
+        default:
+             for(ss = CONNECTIONS; ss; ss = ss->next)
+               {
+                  if(FD_ISSET(ss->fd, &r_fdset))
+                      (*ss->protocol->r_handler)(ss);
+                  if(FD_ISSET(ss->fd, &w_fdset))                                                             
+                      (*ss->protocol->w_handler)(ss);
+                    
+               }
+     } 
 }
 
 
-/*  Test for sockets to be read from.
- *
- */ 
 
-void scan_checkread()
-{
-}
 
 /* Link struct to connection list 
  */
-
 
 void scan_add(scan_struct *newconn)
 {
@@ -157,16 +207,16 @@ void scan_add(scan_struct *newconn)
 
        /* Only item in list */
          
-       if(!scans)
+       if(!CONNECTIONS)
          {
             newconn->next = 0;
-            scans = newconn;
+            CONNECTIONS = newconn;
          }
        else       /* Link to end of list */
         {
-             for(ss = scans;ss;ss = ss->next)
+             for(ss = CONNECTIONS;ss;ss = ss->next)
                 {
-                     if(!ss->next)
+                      if(!ss->next)
                        {
                           newconn->next = 0;
                           ss->next = newconn;
@@ -179,12 +229,14 @@ void scan_add(scan_struct *newconn)
 
 
 
-/* Functions used to SEND specific data to
- * operate possible proxies. */
+/* Functions for handling open http data */
 
-int scan_squid(int fd)
+void scan_w_squid(struct scan_struct *ss)
 {
+    printf("WRITE READY FOR HOST (%s) PORT (%d)\n", ss->addr, ss->protocol->port);
+}
 
-
-      return 1;
+void scan_r_squid(struct scan_struct *ss)
+{
+   printf("READ DATA FROM HOST\n");
 }
