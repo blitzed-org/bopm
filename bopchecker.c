@@ -43,6 +43,7 @@ extern struct scan_struct *CONNECTIONS;
 int OPT_DEBUG = 1;
 char *CONFNAME = DEFAULTNAME;
 char *CONFFILE;
+int RC = 0;
 
 int main(int argc, char **argv)
 {
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
 
 	if (argc - optind != 1) {
 		usage(argv);
-		return(EXIT_FAILURE);
+		exit(0);
 	}
 
 	signal(SIGPIPE, SIG_IGN);
@@ -92,26 +93,26 @@ int main(int argc, char **argv)
 			case HOST_NOT_FOUND:
 				fprintf(stderr, "Host '%s' is unknown.\n",
 					host);
-				return(1);
+				exit(0);
 			case NO_ADDRESS:
 				fprintf(stderr, "The specified name '%s' "
 					"exists, but has no address.\n",
 					host);
-				return(1);
+				exit(0);
 			case NO_RECOVERY:
 				fprintf(stderr, "An unrecoverable error "
 					"occured whilst resolving '%s'.\n",
 					host);
-				return(1);
+				exit(0);
 			case TRY_AGAIN:
 				fprintf(stderr, "A temporary error "
 					"occurred on an authoritative name "
 					"server.\n");
-				return(1);
+				exit(0);
 			default:
 				fprintf(stderr, "Unknown error resolving "
 					"'%s'.\n", host);
-				return(EXIT_FAILURE);
+				exit(0);
 		}
 	}
 
@@ -124,18 +125,31 @@ int main(int argc, char **argv)
 	do {
 		int still_alive = 0;
 		
-		scan_cycle();
 		scan_timer();
+		scan_cycle();
 
 		for (ss = CONNECTIONS; ss; ss = ss->next) {
-			if (ss->protocol->stat_numopen)
-				return(EXIT_SUCCESS);
+			if (ss->protocol->stat_numopen) {
+				if (strcasecmp("http", ss->protocol->type) == 0)
+					RC |= PROXY_HTTP;
+				else if (strcasecmp("socks4", ss->protocol->type) == 0)
+					RC |= PROXY_SOCKS4;
+				else if (strcasecmp("socks5", ss->protocol->type) == 0)
+					RC |= PROXY_SOCKS5;
+				else if (strcasecmp("wingate", ss->protocol->type) == 0)
+					RC |= PROXY_WINGATE;
+				else {
+					fprintf(stderr, "Unknown type %s!", ss->protocol->type);
+				}
+			}
+
 			if (ss->state != STATE_CLOSED)
 				still_alive++;
 		}
 
-		if (!still_alive)
-			return(EXIT_FAILURE);
+		if (!still_alive) {
+			exit(RC);
+		}
 	} while(1);
 }
 

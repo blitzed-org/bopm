@@ -1,6 +1,11 @@
 #ifndef BOPCHECKER_H
 #define BOPCHECKER_H
 
+#define PROXY_HTTP    0x1
+#define PROXY_WINGATE 0x2
+#define PROXY_SOCKS4  0x4
+#define PROXY_SOCKS5  0x8
+
 void usage(char **argv);
 void log(char *data,...);
 void irc_kline(char *addr, char *ip);
