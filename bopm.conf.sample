@@ -129,3 +129,17 @@ DNSBL_FROM email@example.com
 #                   set, proxies will not be reported by email.
 
 SENDMAIL /usr/sbin/sendmail
+
+
+# HELP_EMAIL <email> : When someone messages bopm with "INFO" it will tell
+#                      them to email a certain address for help.  If you are a
+#                      Blitzed admin you should be setting this to
+#                      "help@lists.blitzed.org"
+
+HELP_EMAIL help@lists.blitzed.org
+
+
+# AWAY <away message> : If this is set then bopm will use it as an away
+#                       message as soon as it connects.
+
+AWAY I'm a bot.  Your messages will be ignored.

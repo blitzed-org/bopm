@@ -21,6 +21,8 @@
     extern char *CONF_DNSBL_FROM;
     extern char *CONF_DNSBL_TO;
     extern char *CONF_SENDMAIL;
+    extern char *CONF_HELP_EMAIL;
+    extern char *CONF_AWAY;
 
     extern int   CONF_PORT;
     extern int   CONF_SCANPORT;

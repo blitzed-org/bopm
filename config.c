@@ -48,6 +48,8 @@ char *CONF_DNSBL_ZONE      = 0;
 char *CONF_DNSBL_FROM      = 0;
 char *CONF_DNSBL_TO        = 0;
 char *CONF_SENDMAIL        = 0;
+char *CONF_HELP_EMAIL      = 0;
+char *CONF_AWAY            = 0;
 
 int  CONF_SCANPORT         = 0;
 int  CONF_PORT             = 0;
@@ -73,6 +75,8 @@ config_hash hash[] = {
        {"DNSBL_FROM",          TYPE_STRING,     &CONF_DNSBL_FROM         },
        {"DNSBL_TO",            TYPE_STRING,     &CONF_DNSBL_TO           },
        {"SENDMAIL",            TYPE_STRING,     &CONF_SENDMAIL           },
+       {"HELP_EMAIL",          TYPE_STRING,     &CONF_HELP_EMAIL         },
+       {"AWAY",                TYPE_STRING,     &CONF_AWAY               },
 };
 
 

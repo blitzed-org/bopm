@@ -400,6 +400,8 @@ void irc_parse()
      { 
          irc_send("OPER %s", CONF_OPER);
          irc_send("MODE %s +c", CONF_NICK);      
+	 if(CONF_AWAY)
+	    irc_send("AWAY :%s (/msg %s INFO)", CONF_AWAY, CONF_NICK);
          do_perform();   
          return;    
      }   
@@ -508,17 +510,38 @@ void irc_parse()
 
 	       prefixlen = strlen(msg);
 
+	       if(token[2][0] == '#')
+		   target = CONF_CHANNELS;
+	       else
+		   target = nick;
+
+	       if(strncasecmp(msg, "INFO", 4) == 0)
+	        {
+	          irc_send("NOTICE %s :This bot is designed to scan "
+			   "incoming connections for the presence of open "
+			   "SOCKS, HTTP and other similar servers.", nick);
+		  irc_send("NOTICE %s :These misconfigured servers allow "
+			   "anyone to abuse them to 'bounce' through, "
+			   "and are frequently used to harass.  As a "
+			   "result, use of such proxies is not permitted "
+			   "on this IRC network.", nick);
+		  irc_send("NOTICE %s :If you found this bot because of "
+			   "NukeNabber or other firewall software on your "
+			   "computer, please be aware that this is not "
+			   "a nuke or any other form of abusive activity.",
+			   nick);
+		  irc_send("NOTICE %s :You can get more information about "
+			   "this bot and what it does by contacting %s.",
+			   nick, CONF_HELP_EMAIL);
+		  return;
+		}
+
 	       if(strncasecmp(msg, CONF_NICK, prefixlen > 3 ? prefixlen : 3) &&
 	          strcasecmp(msg, "!all"))
 	        {
 	           /* not in the form we accept, ignore this message */
 		   return;
 		}
-
-	       if(token[2][0] == '#')
-		   target = CONF_CHANNELS;
-	       else
-		   target = nick;
 
 	       if (!token[4])
 		{
