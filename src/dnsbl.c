@@ -195,6 +195,9 @@ void dnsbl_report(struct scan_struct *ss)
       "%s: %s\n\n"
       "%s\n", IRCItem->nick, OpmItem->dnsbl_from, OpmItem->dnsbl_to,
               scan_gettype(ss->remote->protocol), ss->ip, ss->proof);
+
+   if(OPT_DEBUG >= 3)
+      log("DNSBL -> Sending following email:\n%s\n", buf);
  
    if ((fp = popen(cmdbuf, "w")) == NULL) 
    {
