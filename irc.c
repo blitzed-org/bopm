@@ -295,6 +295,8 @@ void irc_connect()
 #endif /* UNREAL */
 
        irc_send("NICK %s",CONF_NICK);
+       if(CONF_PASSWORD)
+           irc_send("PASS %s",CONF_PASSWORD);
        irc_send("USER %s %s %s :Blitzed Open Proxy Monitor", CONF_USER, CONF_USER, CONF_USER);
 
 }

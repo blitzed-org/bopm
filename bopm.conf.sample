@@ -54,10 +54,16 @@ CHANSERV_INVITE CHANSERV :INVITE %s
 
 
 
-# SERVER <servername : IRC host BOPM will be monitoring connections on
+# SERVER <servername> : IRC host BOPM will be monitoring connections on
 #
 
 SERVER myserver.blitzed.org
+
+
+# PASSWORD <password> : If you need a password to connect to your server,
+#                       define it here.  Leave commented if not.
+
+#PASSWORD verysecret
 
 
 

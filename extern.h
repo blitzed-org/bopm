@@ -6,6 +6,7 @@
     extern int h_errno;
 
     extern char *CONF_SERVER;
+    extern char *CONF_PASSWORD;
     extern char *CONF_USER;
     extern char *CONF_NICK;
     extern char *CONF_OPER;

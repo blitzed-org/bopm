@@ -34,6 +34,7 @@ along with this program; if not, write to the Free Software
 /* Global Configuration Variables */
 
 char *CONF_SERVER          = 0;
+char *CONF_PASSWORD        = 0;
 char *CONF_USER            = 0;
 char *CONF_NICK            = 0;
 char *CONF_OPER            = 0;
@@ -61,6 +62,7 @@ int  CONF_PORT             = 0;
 config_hash hash[] = {
        {"SERVER",              TYPE_STRING, 1,0,    &CONF_SERVER             },
        {"PORT",                TYPE_INT   , 1,0,    &CONF_PORT               },
+       {"PASSWORD",            TYPE_STRING, 0,0,    &CONF_PASSWORD           },
        {"USER",                TYPE_STRING, 1,0,    &CONF_USER               },
        {"NICK",                TYPE_STRING, 1,0,    &CONF_NICK               },
        {"OPER",                TYPE_STRING, 1,0,    &CONF_OPER               },
