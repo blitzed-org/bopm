@@ -224,5 +224,5 @@ void fdstats_output(char *target)
          total_fd_use++;
    }
 
-   irc_send("PRIVMSG %s :Total open FD: %d", target, total_fd_use);
+   irc_send("PRIVMSG %s :Total open FD: %u/%d", target, total_fd_use, rlim.rlim_cur);
 }
