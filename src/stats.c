@@ -1,3 +1,5 @@
+/* vim: set shiftwidth=3 softtabstop=3 expandtab: */
+
 /*
 Copyright (C) 2002  Erik Fears
  
@@ -22,6 +24,23 @@ along with this program; if not, write to the Free Software
 
 #include "setup.h"
 
+#include <stdio.h>
+
+#ifdef STDC_HEADERS
+# include <stdlib.h>
+#endif
+
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -31,9 +50,6 @@ along with this program; if not, write to the Free Software
 #include <sys/resource.h> /* getrlimit */
 #include <errno.h>
 #include <fcntl.h>
-
-#include <stdio.h>
-#include <time.h>
 
 #include "irc.h"
 #include "misc.h"
