@@ -300,7 +300,7 @@ void irc_reconnect()
 
   IRC_FD = 0;  /* Set IRC_FD 0 for reconnection on next irc_cycle() */
 
-  log("IRC -> Connectiong to (%s) lost, rehashing and reconnecting.", CONF_SERVER);
+  log("IRC -> Connection to (%s) lost, rehashing and reconnecting.", CONF_SERVER);
 
 }
 
