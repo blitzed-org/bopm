@@ -489,7 +489,9 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
 
    if(ss->manual_target == NULL)
    {
+      /* kline and close scan */
       scan_positive(ss);
+
       /* Report to blacklist */
       dnsbl_report(ss);
 
@@ -727,8 +729,11 @@ char *scan_gettype(int protocol)
 void scan_positive(struct scan_struct *ss)
 {
    node_t *node;
-
    OPM_T *scanner;
+
+   /* If already a positive, don't kline/close again */
+   if(ss->positive)
+      return;
 
    /* Format KLINE and send to IRC server */
    scan_irckline(ss);
