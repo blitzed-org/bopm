@@ -72,7 +72,7 @@ static void nc_rebuild(struct cnode *old_head, struct cnode *new_head,
 
 time_t last_nc_expire;
 unsigned int maxb;
-struct cnode *nc_head = NULL;
+extern struct cnode *nc_head;
 
 /*
  * Return the bit which appears k bits from the right in x.
@@ -183,7 +183,7 @@ struct cnode *check_neg_cache(const unsigned long ip)
    time_t now;
    struct cnode *n;
 
-   if (!OptionsItem->negcache == 0)
+   if (OptionsItem->negcache <= 0)
       return(NULL);
 
    n = nc_search(nc_head, ip);

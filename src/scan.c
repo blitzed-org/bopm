@@ -71,9 +71,6 @@
 #include "libopm/src/opm_types.h"
 
 
-
-
-
 /* GLOBAL LISTS */
 
 static list_t *SCANNERS = NULL;   /* List of OPM_T */
@@ -678,7 +675,11 @@ void scan_negative(struct scan_struct *ss)
 {
    //insert IP in negcache
    if(OptionsItem->negcache > 0)
+   {
+      if(OPT_DEBUG >= 2)
+         log("SCAN -> Adding %s to negative cache", ss->ip);
       negcache_insert(ss->ip);
+   }
 }
 
 
