@@ -63,7 +63,7 @@ if ($removed == 1) {
 } 
 
 // Opening the XML page to get the results
-$stream = fopen("http://blitzed.org/opm/getXML.phtml?ip=".$ip."", "r");
+$stream = fopen("http://opm.blitzed.org/getXML?ip=".$ip."", "r");
 if (!$stream) { echo "<TR><TD bgcolor=\"".$cell_color."\">Error getting results</td></tr></table>"; return; }
 while (!feof($stream)) {
         $buffer .= fread($stream, 5000);
@@ -98,7 +98,7 @@ echo "Type of Proxy:\n";
 echo "<UL>";
 for ($i = 0; $XML_values[$XML_indexes["type"][$i]]["value"]; $i++)
 {
-        echo "<LI>" . $XML_values[$XML_indexes["type"][$i]]["value"] . "\n";
+        echo "<LI>" . $XML_values[$XML_indexes["type"][$i]]["value"] . " (port: " . $XML_values[$XML_indexes["type"][$i]]["attributes"]["port"] . ")" .  "\n";
 }
 echo "</UL><P>";
 echo "Proxy was first added to the database on " . $XML_values[$XML_indexes["first_added"][0]]["value"] . "<BR>\n";
