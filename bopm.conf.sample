@@ -152,10 +152,11 @@ IRC {
 #          invite = "privmsg chanserv :invite #bopm";
 	};
 
-	/*
-	channel {
-	   name = "#other channel";
-	}; */
+        /*
+         * You can define a bunch of channels if you want:
+         *
+	 * channel { name = "#other"; }; channel { name="#channel"; }
+         */
        
         /*
          * connregex is a POSIX regular expression used to parse connection
