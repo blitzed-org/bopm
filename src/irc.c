@@ -518,6 +518,8 @@ static void irc_read(void)
 
    if((len <= 0) && (errno != EAGAIN))
    {
+      if(OPT_DEBUG >= 2)
+         log_printf("irc_read -> errno=%d len=%d", errno, len);
       irc_reconnect();
       IRC_RAW_LEN = 0;
       return;
