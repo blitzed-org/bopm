@@ -67,10 +67,12 @@ int RC = 0;
 
 int main(int argc, char **argv)
 {
+	int len, c, i, still_alive;
 	struct hostent *he;
 	char *ip, *host;
 	struct scan_struct *ss;
-	int len, c, i, still_alive = 0;
+
+	still_alive = 0;
 
 	while (1) {
 		c = getopt(argc, argv, "+c:");
@@ -84,7 +86,7 @@ int main(int argc, char **argv)
 				break;
 			case '?':
 			default:
-				/* unknown arg, just do nothing */
+				/* Unknown arg, just do nothing. */
 				break;
 		}
 	}
@@ -97,16 +99,18 @@ int main(int argc, char **argv)
 	signal(SIGPIPE, SIG_IGN);
 
 	len = strlen(CONFNAME) + strlen(CONFEXT) + 2;
-	CONFFILE = (char *) malloc(len * sizeof(char));
+	CONFFILE = malloc(len * sizeof(*CONFFILE));
 	snprintf(CONFFILE, len, "%s.%s", CONFNAME, CONFEXT);
 
-	/* The only things we need in a conf file are SCANIP and
-	 * SCANPORT */
+	/*
+	 * The only things we need in a conf file are SCANIP and
+	 * SCANPORT.
+	 */
 	for (i = 0; hash[i].key; i++) {
 		if (strcasecmp(hash[i].key, "SCANIP") != 0 &&
 		    strcasecmp(hash[i].key, "SCANPORT") != 0 &&
 		    strcasecmp(hash[i].key, "TARGET_STRING") != 0) {
-			/* nuke the required field */
+			/* Nuke the required field. */
 			hash[i].req = 0;
 		}
 	}
@@ -123,26 +127,25 @@ int main(int argc, char **argv)
 		switch(h_errno) {
 			case HOST_NOT_FOUND:
 				fprintf(stderr, "Host '%s' is unknown.\n",
-					host);
+				    host);
 				exit(0);
 			case NO_ADDRESS:
 				fprintf(stderr, "The specified name '%s' "
-					"exists, but has no address.\n",
-					host);
+				    "exists, but has no address.\n", host);
 				exit(0);
 			case NO_RECOVERY:
 				fprintf(stderr, "An unrecoverable error "
-					"occured whilst resolving '%s'.\n",
-					host);
+				    "occured whilst resolving '%s'.\n",
+				    host);
 				exit(0);
 			case TRY_AGAIN:
 				fprintf(stderr, "A temporary error "
-					"occurred on an authoritative name "
-					"server.\n");
+				    "occurred on an authoritative name "
+				    "server.\n");
 				exit(0);
 			default:
 				fprintf(stderr, "Unknown error resolving "
-					"'%s'.\n", host);
+				    "'%s'.\n", host);
 				exit(0);
 		}
 	}
@@ -151,20 +154,21 @@ int main(int argc, char **argv)
 
 	fprintf(stderr, "Checking %s [%s] for open proxies\n", host, ip);
 
-	scan_connect(ip, host, "*", "*", 1, 0);    /* Scan using verbose */
+	/* Scan using verbose. */
+	scan_connect(ip, host, "*", "*", 1, 0);
 
 	do {
 		still_alive = 0;
 
 		scan_cycle();
-		/* pause 1s */
+		/* Pause 1s. */
 		sleep(1);
 
 		for (ss = CONNECTIONS; ss; ss = ss->next) {
 			if (ss->state != STATE_CLOSED) {
 				time_t now = time(NULL);
 				if ((now - ss->create_time) >= 30) {
-					/* timed out */
+					/* Timed out. */
 					ss->state = STATE_CLOSED;
 				} else {
 					still_alive = 1;
@@ -174,19 +178,23 @@ int main(int argc, char **argv)
 		}
 	} while (still_alive);
 
-	/* All connections now closed, check what we got */
+	/* All connections now closed, check what we got. */
 	for (ss = CONNECTIONS; ss; ss = ss->next) {
 		if (ss->protocol->stat_numopen) {
 			if (strcasecmp("http", ss->protocol->type) == 0)
 				RC |= PROXY_HTTP;
-			else if (strcasecmp("socks4", ss->protocol->type) == 0)
+			else if (strcasecmp("socks4",
+			    ss->protocol->type) == 0)
 				RC |= PROXY_SOCKS4;
-			else if (strcasecmp("socks5", ss->protocol->type) == 0)
+			else if (strcasecmp("socks5",
+			    ss->protocol->type) == 0)
 				RC |= PROXY_SOCKS5;
-			else if (strcasecmp("wingate", ss->protocol->type) == 0)
+			else if (strcasecmp("wingate",
+			    ss->protocol->type) == 0)
 				RC |= PROXY_WINGATE;
 			else {
-				fprintf(stderr, "Unknown type %s!", ss->protocol->type);
+				fprintf(stderr, "Unknown type %s!",
+				    ss->protocol->type);
 			}
 		}
 	}
@@ -200,9 +208,8 @@ void usage(char **argv)
 
 void log(char *data,...)
 {
-	va_list arglist;
-
 	char data2[513];
+	va_list arglist;
 
 	va_start(arglist, data);
 	vsnprintf(data2, 512, data, arglist);
@@ -213,7 +220,7 @@ void log(char *data,...)
 
 void irc_kline(char *addr, char *ip)
 {
-	/* Just enough to shut gcc up */
+	/* Just enough to shut gcc up. */
 	if (addr || ip)
 		return;
 }
@@ -231,7 +238,7 @@ void irc_send(char *data, ...)
 }
 
 int dnsbl_check(const char *addr, const char *irc_nick,
-		const char *irc_user, char *irc_addr)
+    const char *irc_user, char *irc_addr)
 {
 	if (addr || irc_nick || irc_user || irc_addr)
 		return(0);
