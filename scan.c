@@ -81,13 +81,13 @@ unsigned int FD_USE = 0;                 /* Keep track of numbers of open FD's, 
 protocol_hash SCAN_PROTOCOLS[] = {
 
        {"HTTP"      , 8080, &(scan_w_squid),    0 ,0 },
-       {"HTTP"      , 8001, &(scan_w_squid),    0 ,0 },
+/*     {"HTTP"      , 8001, &(scan_w_squid),    0 ,0 },    */
        {"HTTP"      , 8000, &(scan_w_squid),    0 ,0 },
        {"HTTP"      , 3128, &(scan_w_squid),    0 ,0 },
        {"HTTP"      ,   80, &(scan_w_squid),    0 ,0 },
        {"Socks4"    , 1080, &(scan_w_socks4),   0 ,0 },
        {"Socks5"    , 1080, &(scan_w_socks5),   0 ,0 },
-       {"Cisco"     ,   23, &(scan_w_cisco),    0 ,0 },
+/*     {"Cisco"     ,   23, &(scan_w_cisco),    0 ,0 },    */
        {"Wingate"   ,   23, &(scan_w_wingate),  0 ,0 },
 };
 
@@ -138,6 +138,8 @@ void scan_connect(char *addr, char *irc_addr, char *irc_nick,
             newconn->irc_addr = strdup(irc_addr);
             newconn->irc_nick = strdup(irc_nick);
             newconn->irc_user = strdup(irc_user);
+            newconn->data = 0;                     /* This is allocated later on in scan_establish
+                                                      to save on memory */
 	    newconn->verbose = verbose;
             newconn->bytes_read = 0; 
             newconn->fd = 0;
@@ -557,39 +559,31 @@ void scan_del(scan_struct *delconn)
      close(delconn->fd);
      FD_USE--;            /* 1 file descriptor freed up for use */
 
-     if(delconn->state != STATE_UNESTABLISHED)  /* If it's established, free the scan buffer */
-          free(delconn->data); 
-
      lastss = 0;
 
      for(ss = CONNECTIONS; ss; ss = ss->next)
        {
              if(ss == delconn)
                {     
-                        /* Removing the head */
-                                   
+
+                        /* Link around deleted node */                                   
                    if(lastss == 0)
-                     {
-                         CONNECTIONS = ss->next;
-                         free(ss->addr);
-                         free(ss->irc_addr);
-                         free(ss->irc_nick);
-                         free(ss->irc_user);
-			 if(ss->conn_notice)
-			   free(ss->conn_notice);
-                         free(ss);
-                     }
+                      CONNECTIONS = ss->next;                     
                    else
-                     {
-                         lastss->next = ss->next;
-                         free(ss->addr);
-                         free(ss->irc_addr);
-                         free(ss->irc_nick);
-                         free(ss->irc_user);
-			 if(ss->conn_notice)
-			   free(ss->conn_notice);
-                         free(ss);
-                     }
+                      lastss->next = ss->next;
+                     
+                   free(ss->addr);
+                   free(ss->irc_addr);
+                   free(ss->irc_nick);
+                   free(ss->irc_user);
+
+                   if(ss->conn_notice)
+                      free(ss->conn_notice);
+                   if(delconn->data)  /* If it's established, free the scan buffer */
+                      free(delconn->data);
+
+                   free(ss);
+
                    break;
                }
 
