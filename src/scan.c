@@ -727,7 +727,7 @@ static int scan_w_socks4(struct scan_struct *conn)
  
 	len = snprintf(SENDBUFF, 512, "%c%c%c%c%c%c%c%c%c",  4, 1,
 	    (((unsigned short) CONF_SCANPORT) >> 8) & 0xFF,
-	    (((unsigned short) CONF_SCANPORT) & 0xff),
+	    (((unsigned short) CONF_SCANPORT) & 0xFF),
 	    (char) (laddr >> 24) & 0xFF, (char) (laddr >> 16) & 0xFF,
 	    (char) (laddr >> 8) & 0xFF, (char) laddr & 0xFF, 0);
 
@@ -738,23 +738,77 @@ static int scan_w_socks4(struct scan_struct *conn)
 /*
  * Send version authentication selection message to socks5
  *
- *      +----+----------+----------+
- *      |VER | NMETHODS | METHODS  |
- *      +----+----------+----------+
- *      | 1  |    1     | 1 to 255 |
- *      +----+----------+----------+
+ *       +----+----------+----------+
+ *       |VER | NMETHODS | METHODS  |
+ *       +----+----------+----------+
+ *       | 1  |    1     | 1 to 255 |
+ *       +----+----------+----------+
  *                                                                                               
  *  VER always contains 5, for socks version 5
  *  Method 0 is 'No authentication required'
+ *
+ *
+ *
+ *  The SOCKS request is formed as follows:
+ *
+ *        +----+-----+-------+------+----------+----------+
+ *       |VER | CMD |  RSV  | ATYP | DST.ADDR | DST.PORT |
+ *       +----+-----+-------+------+----------+----------+
+ *       | 1  |  1  | X'00' |  1   | Variable |    2     |
+ *       +----+-----+-------+------+----------+----------+
+ *
+ *     Where:
+ *
+ *         o  VER    protocol version: X'05'
+ *         o  CMD
+ *            o  CONNECT X'01'
+ *            o  BIND X'02'
+ *            o  UDP ASSOCIATE X'03'
+ *         o  RSV    RESERVED
+ *         o  ATYP   address type of following address
+ *            o  IP V4 address: X'01'
+ *            o  DOMAINNAME: X'03'
+ *            o  IP V6 address: X'04'
+ *         o  DST.ADDR       desired destination address
+ *         o  DST.PORT desired destination port in network octet
+ *            order
+ *
+ *
  */
+
 static int scan_w_socks5(struct scan_struct *conn)
 {
-	int len;
+	
+        struct in_addr addr;
+        unsigned long laddr;
+        int len;
 
+        if (inet_aton(CONF_SCANIP, &addr) == 0) {
+                log("SCAN -> scan_w_socks4 : %s is not a valid IP",
+                    CONF_SCANIP);
+        }
+
+        laddr = htonl(addr.s_addr);
+
+        /* Form authentication string */
 	/* Version 5, 1 number of methods, 0 method (no auth). */
 	len = snprintf(SENDBUFF, 512, "%c%c%c", 5, 1, 0);
 	send(conn->fd, SENDBUFF, len, 0);
+  
+        /* Form request string */
 
+        /* Will need to write ipv6 support here in future 
+         * as socks5 is ipv6 compatible
+         */
+
+        len = snprintf(SENDBUFF, 512, "%c%c%c%c%c%c%c%c%c%c", 5, 1, 0, 1,
+            (char) (laddr >> 24) & 0xFF, (char) (laddr >> 16) & 0xFF,
+            (char) (laddr >> 8) & 0xFF, (char) laddr & 0xFF, 
+            (((unsigned short) CONF_SCANPORT) >> 8) & 0xFF,
+            (((unsigned short) CONF_SCANPORT) & 0xFF)
+                      );
+
+        send(conn->fd, SENDBUFF, len, 0);
 	return(1);
 }
 
