@@ -9,27 +9,13 @@
 
 struct bopm_sockaddr
 {
-    union {
         struct sockaddr_in sa4;
-#ifdef IPV6
-
-        struct sockaddr_in6 sa6;
-#endif
-
-    } sas;
 };
 
 
 struct bopm_ircaddr
 {
-    union {
         struct in_addr in4;
-#ifdef IPV6
-
-        struct in6_addr in6;
-#endif
-
-    } ins;
 };
 
 
@@ -48,8 +34,6 @@ struct CommandHash
    irc_command handler;
 };
 
-extern int remote_is_ipv6;
-extern int bindto_ipv6;
 
 extern void irc_send(char *, ...);
 extern void irc_send_channels(char *, ...);

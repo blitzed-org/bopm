@@ -96,28 +96,21 @@ extern struct cnode *nc_head;
  * again so global scope is given.
  */
 
-char                IRC_RAW[MSGLENMAX];         /* Buffer to read data into              */
-char                IRC_SENDBUFF[MSGLENMAX];    /* Send buffer                           */
-char                IRC_CHANNELS[MSGLENMAX];    /* Stores comma delim list of channels   */
-int                 IRC_RAW_LEN    = 0;         /* Position of IRC_RAW                   */
+char                 IRC_RAW[MSGLENMAX];         /* Buffer to read data into              */
+char                 IRC_SENDBUFF[MSGLENMAX];    /* Send buffer                           */
+char                 IRC_CHANNELS[MSGLENMAX];    /* Stores comma delim list of channels   */
+int                  IRC_RAW_LEN    = 0;         /* Position of IRC_RAW                   */
 
-int                 remote_is_ipv6 = 0;
-int                 bindto_ipv6    = 0;
-
-int                 IRC_FD         = -1;        /* File descriptor for IRC client        */
+int                  IRC_FD         = -1;        /* File descriptor for IRC client        */
 
 struct bopm_sockaddr IRC_SVR;                   /* Sock Address Struct for IRC server    */
-struct bopm_ircaddr IRC_LOCAL;                  /* Sock Address Struct for Bind          */
+struct bopm_ircaddr  IRC_LOCAL;                 /* Sock Address Struct for Bind          */
 
-unsigned int ssize = -1;
-unsigned int isize = -1;
+struct hostent      *IRC_HOST;                   /* Hostent struct for IRC server         */
+fd_set               IRC_READ_FDSET;             /* fd_set for IRC (read) data for select()*/
+struct timeval       IRC_TIMEOUT;                /* timeval struct for select() timeout   */
 
-struct hostent     *IRC_HOST;                   /* Hostent struct for IRC server         */
-fd_set              IRC_READ_FDSET;             /* fd_set for IRC (read) data for select()*/
-
-struct timeval      IRC_TIMEOUT;                /* timeval struct for select() timeout   */
-time_t              IRC_NICKSERV_LAST = 0;      /* Last notice from nickserv             */
-time_t              IRC_LAST = 0;               /* Last full line of data from irc server*/
+time_t               IRC_LAST = 0;               /* Last full line of data from irc server*/
 
 /* Table should be ordered with most occuring (or priority)
    commands at the top of the list. */
@@ -199,17 +192,14 @@ static void irc_init(void)
 {
     node_t *node;
     struct ChannelConf *chan;
-
     struct bopm_sockaddr bsaddr;
 
-    ssize = sizeof(struct bopm_sockaddr);
-    isize = sizeof(struct bopm_ircaddr);
 
     if (IRC_FD)
         close(IRC_FD);
 
-    memset(&IRC_SVR, 0, ssize);
-    memset(&IRC_LOCAL, 0, isize);
+    memset(&IRC_SVR, 0, sizeof(IRC_SVR));
+    memset(&IRC_LOCAL, 0, sizeof(IRC_LOCAL));
     memset(&bsaddr, 0, sizeof(struct bopm_sockaddr));
 
     /* Resolve IRC host. */
@@ -234,48 +224,18 @@ static void irc_init(void)
         exit(EXIT_FAILURE);
     }
 
-#ifdef IPV6
-    if (remote_is_ipv6)
-    {
-        IRC_SVR.sas.sa6.sin6_family = AF_INET6;
-        IRC_SVR.sas.sa6.sin6_port = htons(IRCItems->port);
-        IRC_SVR.sas.sa6.sin6_addr = *((struct in6_addr *) IRC_HOST->h>addr_list[0]);
+    IRC_SVR.sa4.sin_family = AF_INET;
+    IRC_SVR.sa4.sin_port = htons(IRCItem->port);
+    IRC_SVR.sa4.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
 
-        if (IN6_ARE_ADDR_EQUAL(&(IRC_SVR.sas.sa6.sin6_addr) & in6addr_any))
-        {
-            log("IRC -> Unknown error resolving remote host (%s)",
-                IRCItem->server);
-            exit(EXIT_FAILURE);
-        }
-    }
-    else
-    {
-        IRC_SVR.sas.sa4.sin_family = AF_INET;
-        IRC_SVR.sas.sa4.sin_port = htons(IRCItem->port);
-        IRC_SVR.sas.sa4.sin_addr =
-            *((struct in_addr *) IRC_HOST->h_addr);
-
-        if (IRC_SVR.sas.sa4.sin_addr.s_addr == INADDR_NONE)
-        {
-            log("IRC -> Unknown error resolving remote host (%s)",
-                IRCItem->server);
-            exit(EXIT_FAILURE);
-        }
-    }
-#else
-    IRC_SVR.sas.sa4.sin_family = AF_INET;
-    IRC_SVR.sas.sa4.sin_port = htons(IRCItem->port);
-    IRC_SVR.sas.sa4.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
-
-    if (IRC_SVR.sas.sa4.sin_addr.s_addr == INADDR_NONE)
+    if (IRC_SVR.sa4.sin_addr.s_addr == INADDR_NONE)
     {
         log("IRC -> Unknown error resolving remote host (%s)",
             IRCItem->server);
         exit(EXIT_FAILURE);
     }
-#endif
 
-    IRC_FD = socket(remote_is_ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, 0);
+    IRC_FD = socket(AF_INET, SOCK_STREAM, 0);
 
     /* Request file desc for IRC client socket */
 
@@ -312,42 +272,20 @@ static void irc_init(void)
         exit(EXIT_FAILURE);
     }
 
+    /* Bind */
     if (strlen(IRCItem->vhost) > 0)
     {
         int bindret = 0;
-#ifdef IPV6
-
-        if (bindto_ipv6)
+        if (!inetpton(AF_INET, IRCItem->vhost, &(IRC_LOCAL.in4.s_addr)))
         {
-            if (!inetpton(AF_INET6, IRCItem->vhost, &(IRC_LOCAL.ins.in6.s6_addr)))
-            {
-                log("IRC -> bind(): %s is an invalid address", IRCItem->vhost);
-                exit(EXIT_FAILURE);
-            }
-            copy_s_addr(bsaddr.sas.sa6.sin6_addr.s6_addr,
-                        IRC_LOCAL.ins.in6.s6_addr);
-            bsaddr.sas.sa6.sin6_family = AF_INET6;
-            bsaddr.sas.sa6.sin6_port = htons(0);
-            bindret = bind(IRC_FD, (struct sockaddr *) &(bsaddr.sas.sa6),
-                           sizeof(bsaddr));
+            log("IRC -> bind(): %s is an invalid address", IRCItem->vhost);
+            exit(EXIT_FAILURE);
         }
-        else
-        {
-#endif
-            if (!inetpton(AF_INET, IRCItem->vhost, &(IRC_LOCAL.ins.in4.s_addr)))
-            {
-                log("IRC -> bind(): %s is an invalid address", IRCItem->vhost);
-                exit(EXIT_FAILURE);
-            }
-            bsaddr.sas.sa4.sin_addr.s_addr = IRC_LOCAL.ins.in4.s_addr;
-            bsaddr.sas.sa4.sin_family = AF_INET;
-            bsaddr.sas.sa4.sin_port = htons(0);
-            bindret = bind(IRC_FD, (struct sockaddr *) &(bsaddr.sas.sa4),
-                           sizeof(bsaddr));
-#ifdef IPV6
+        bsaddr.sa4.sin_addr.s_addr = IRC_LOCAL.in4.s_addr;
+        bsaddr.sa4.sin_family = AF_INET;
+        bsaddr.sa4.sin_port = htons(0);
 
-        }
-#endif
+        bindret = bind(IRC_FD, (struct sockaddr *) &(bsaddr.sa4), sizeof(bsaddr.sa4));
 
         if (bindret)
         {
@@ -364,6 +302,7 @@ static void irc_init(void)
             }
             exit(EXIT_FAILURE);
         }
+
     }
 
     /* Setup target list for irc_send_channels */
@@ -788,12 +727,6 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
     struct ChannelConf *channel;
 
     log("IRC -> Connected to %s:%d", IRCItem->server, IRCItem->port);
-
-    //FIXME
-    //if (CONF_NICKSERV_IDENT) {
-    /* Identify to nickserv. */
-    //  irc_send(CONF_NICKSERV_IDENT);
-    //  }
 
     /* Oper */
     irc_send("OPER %s", IRCItem->oper);
