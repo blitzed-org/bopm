@@ -227,6 +227,11 @@ void irc_send(char *data,...)
   vsnprintf(data2, 512, data, arglist);
   va_end(arglist);
 
+  if(OPT_DEBUG >= 2)
+   {
+       log("IRC SEND -> %s", data2);
+   }
+
   snprintf(tosend, 512 , "%s\n",data2);
 
   if(send(IRC_FD, tosend, strlen(tosend), 0) == -1) /* Return of -1 indicates error sending data; we reconnect. */
@@ -333,7 +338,11 @@ void irc_parse()
    int   i, h, len;
    time_t present;
 
- 
+   if(OPT_DEBUG >= 2)
+    {
+ 	log("IRC READ -> %s", IRC_RAW);
+    }
+
     /* Tokenize the first 16 words in the incoming data, we really don't need to worry
       about anything else and we don't need the original string for anything. */
 
