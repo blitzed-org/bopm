@@ -10,5 +10,6 @@ extern void dnsbl_report(struct scan_struct *ss);
 #define DNSBL_TYPE_SOCKS 2
 #define DNSBL_TYPE_HTTP 4
 #define DNSBL_TYPE_CISCO 8
+#define DNSBL_TYPE_HTTPPOST 16
 
 #endif
