@@ -42,12 +42,14 @@ along with this program; if not, write to the Free Software
 #include "options.h"
 
 void do_alarm(int);
+void do_int(int);
 
 int ALARMED = 0;
 
 int OPT_DEBUG = 0;
 
 struct sigaction ALARMACTION;
+struct sigaction INTACTION;
 
 int main(int argc, char **argv)
 {
@@ -126,12 +128,14 @@ int main(int argc, char **argv)
 
     config_load(LOGFILE);
 
-    /* Setup alarm */
+    /* Setup alarm & int handlers */
  
     ALARMACTION.sa_handler = &(do_alarm);  
     ALARMACTION.sa_flags = SA_RESTART;
- 
+    INTACTION.sa_handler = &(do_int);
+    
     sigaction(SIGALRM, &ALARMACTION, 0);
+    sigaction(SIGINT, &INTACTION, 0);
 
     /* Ignore SIGPIPE */
     signal(SIGPIPE, SIG_IGN);
@@ -163,3 +167,8 @@ void do_alarm(int notused)
    alarm(1);
 }
 
+void do_int(int notused)
+{
+   log("MAIN -> Caught SIGINT, bye!");
+   exit(0);
+}

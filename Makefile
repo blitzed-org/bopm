@@ -11,6 +11,7 @@ endif
 
 ifdef DEBUG_GPROF
 CFLAGS += -pg
+LDFLAGS += -pg
 endif
 
 objects = main.o config.o irc.o log.o misc.o scan.o stats.o opercmd.o

@@ -7,3 +7,4 @@ bopm.pid
 *.da
 *.dat
 *.gcov
+gmon.out
