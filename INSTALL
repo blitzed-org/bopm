@@ -30,14 +30,6 @@ Make
                         version).  At this stage Unreal also requires
                         patching, you can get that patch from our web site.
 
-    --with-select       Use select() instead of poll() even if your system
-                        has poll()
-
-    --enable-ipv6	Enable IPv6 features which allow BOPM to connect to
-                        IPv6 server addresses and scan clients who have
-			IPv6 addresses.  These features are still extremely
-			experiemental as of v2.4.
-
     configure has many other options, see ./configure --help for more
     details.
 
