@@ -93,8 +93,11 @@ whitespace             [ \t]*
                         }
 
 AWAY                    { return AWAY;         }
+BLACKLIST               { return BLACKLIST;    }
 CHANNEL                 { return CHANNEL;      }
 CONNREGEX               { return CONNREGEX;    }
+DNSBL_FROM              { return DNSBL_FROM;   }
+DNSBL_TO                { return DNSBL_TO;     }
 FD                      { return FD;           }
 IRC                     { return IRC;          }
 KEY                     { return KEY;          }
@@ -105,6 +108,7 @@ NAME                    { return NAME;         }
 NEGCACHE                { return NEGCACHE;     }
 NICK                    { return NICK;         }
 OPER                    { return OPER;         }
+OPM                     { return OPM;          }
 OPTIONS                 { return OPTIONS;      }
 PASSWORD                { return PASSWORD;     }
 PIDFILE                 { return PIDFILE;      }
@@ -112,6 +116,7 @@ PORT                    { return PORT;         }
 PROTOCOL                { return PROTOCOL;     }
 REALNAME                { return REALNAME;     }
 SCANNER                 { return SCANNER;      }
+SENDMAIL                { return SENDMAIL;     }
 SERVER                  { return SERVER;       }
 TARGET_IP               { return TARGET_IP;    }
 TARGET_PORT             { return TARGET_PORT;  }

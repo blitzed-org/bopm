@@ -47,6 +47,7 @@ along with this program; if not, write to the Free Software
 #include "negcache.h"
 #include "options.h"
 #include "malloc.h"
+#include "firedns.h"
 
 extern struct cnode *nc_head;
 
@@ -162,6 +163,8 @@ int main(int argc, char **argv)
     /* Initialise negative cache */
     if (OptionsItem->negcache > 0)
        nc_init(&nc_head);
+
+    firedns_init();
 
     //FIXME
     //	if (CONF_SCAN_WARNING)

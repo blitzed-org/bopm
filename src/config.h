@@ -78,9 +78,18 @@ struct ProtocolConf
    int port;
 };
 
+struct OpmConf
+{
+   list_t *blacklists;
+   char   *dnsbl_from;
+   char   *dnsbl_to;
+   char   *sendmail;
+};
+
 /* Extern to actual config data declared in config.c */
 extern struct IRCConf *IRCItem;
 extern struct OptionsConf *OptionsItem;
+extern struct OpmConf *OpmItem;
 extern list_t *UserItemList;
 extern list_t *ScannerItemList;
 

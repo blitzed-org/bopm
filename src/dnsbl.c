@@ -37,24 +37,88 @@ along with this program; if not, write to the Free Software
 #include <time.h>
 #include <errno.h>
 
-#include "irc.h"
-#include "opercmd.h"
-#include "scan.h"
-#include "dnsbl.h"
 #include "config.h"
+#include "dnsbl.h"
 #include "extern.h"
+#include "list.h"
 #include "log.h"
+#include "scan.h"
 
 
 /* FIXME
- * Check an ip address for presence in a DNS (black|block)list.  All we need
- * to do is reverse the octets, append the BL zone and then do a
- * gethostbyname.  If that gives us an answer, then it is on the BL.
+ * Work out the DNSBL zones and send the dns query
  */
-int dnsbl_check(const char *addr, const char *irc_nick,
-                const char *irc_user, char *irc_addr)
+#define DNSBL_LOOKUPLEN 82
+void dnsbl_add(struct scan_struct *ss)
 {
-    return(0);
+    struct in_addr in;
+    unsigned char a, b, c, d;
+    char lookup[DNSBL_LOOKUPLEN];
+    node_t *p;
+    int res;
+
+    if (!inet_aton(ss->ip, &in)) {
+	log("DNSBL -> Invalid address '%s', ignoring.", ss->ip);
+	return;
+    }
+
+    d = (unsigned char) (in.s_addr >> 24) & 0xFF;
+    c = (unsigned char) (in.s_addr >> 16) & 0xFF;
+    b = (unsigned char) (in.s_addr >> 8) & 0xFF;
+    a = (unsigned char) in.s_addr & 0xFF;
+
+    LIST_FOREACH(p, OpmItem->blacklists->head)
+    {
+#ifdef WORDS_BIGENDIAN
+        snprintf(lookup, DNSBL_LOOKUPLEN, "%d.%d.%d.%d.%s", a, b, c, d,
+		(char *) p->data);
+#else
+        snprintf(lookup, DNSBL_LOOKUPLEN, "%d.%d.%d.%d.%s", d, c, b, a,
+		(char *) p->data);
+#endif
+	
+	if(OPT_DEBUG)
+	   log("Passed '%s' to firedns", lookup);
+
+	res = firedns_getip4(lookup, (void *) ss);
+
+	if(res == -1)
+	    log("Error sending dns lookup '%s'", lookup);
+    }
+}
+
+void dnsbl_result(struct firedns_result *res)
+{
+    struct scan_struct *ss;
+
+    ss = (struct scan_struct *) res->info;
+   
+    if(OPT_DEBUG)
+       log("DNSBL -> Lookup result: %d.%d.%d.%d (%d)",
+	    (unsigned char)res->text[0],
+	    (unsigned char)res->text[1],
+	    (unsigned char)res->text[2],
+	    (unsigned char)res->text[3], fdns_errno);
+
+    /* Everything is OK */
+    if(res->text[0] == '\0' && fdns_errno == FDNS_ERR_NXDOMAIN)
+	return;
+
+    /* Either an error, or a positive lookup */
+
+    if(fdns_errno == FDNS_ERR_NONE)
+    {
+	log("DNSBL -> Positive lookup for %s!%s@%s", ss->irc_nick,
+		ss->irc_username, ss->irc_hostname);
+    }else
+    {
+	log("DNSBL -> Weird error! fdns_errno = %d", fdns_errno);
+    }
+}
+
+void dnsbl_cycle(void)
+{
+    firedns_cycle();
 }
 
 /* FIXME

@@ -86,6 +86,7 @@ static void m_invite(char **, unsigned int, char *, struct UserInfo *);
 static void m_privmsg(char **, unsigned int, char *, struct UserInfo *);
 static void m_notice(char **, unsigned int, char *, struct UserInfo *);
 static void m_perform(char **, unsigned int, char *, struct UserInfo *);
+static void m_versioncheck(char **, unsigned int, char *, struct UserInfo *);
 
 extern time_t LAST_REAP_TIME;
 extern struct cnode *nc_head;
@@ -126,6 +127,7 @@ struct CommandHash COMMAND_TABLE[] = {
    {"PING",                 m_ping    },
    {"INVITE",               m_invite  },
    {"001",                  m_perform },
+   {"002",                  m_versioncheck },
 };
 
 /* irc_cycle
@@ -792,6 +794,19 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
     }
 }
 
+
+/* m_versioncheck */
+static void m_versioncheck(char **parv, unsigned int parc, char *msg, struct UserInfo *notused)
+{
+#ifndef WITH_UNREAL
+    if(parc < 4)
+	return;
+
+    if(strstr(parv[3], "version Unreal") != NULL)
+	log("IRC -> BOPM appears to be connecting to an Unreal based IRCD, without unreal support enabled!");
+
+#endif
+}
 
 
 /* m_ping

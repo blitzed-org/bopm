@@ -34,8 +34,11 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %}
 
 %token AWAY
+%token BLACKLIST
 %token CHANNEL
 %token CONNREGEX
+%token DNSBL_FROM
+%token DNSBL_TO
 %token FD
 %token IRC
 %token KEY
@@ -46,6 +49,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token NEGCACHE
 %token NICK
 %token OPER
+%token OPM
 %token OPTIONS
 %token PIDFILE
 %token PASSWORD
@@ -54,6 +58,7 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token PROTOCOLTYPE
 %token REALNAME
 %token SCANNER
+%token SENDMAIL
 %token SERVER
 %token TARGET_IP
 %token TARGET_PORT
@@ -81,6 +86,7 @@ config:     /* empty */
 
 config_items: irc_entry     |
               options_entry |
+				  opm_entry     |
               user_entry    |
               scanner_entry;
 
@@ -389,6 +395,45 @@ scanner_protocol: PROTOCOL '=' PROTOCOLTYPE ':' NUMBER ';'
 
    node = node_create(item);
    list_add(item2->protocols, node);
+};
+
+/*************************** OPM BLOCK ***************************/
+
+opm_entry: OPM '{' opm_items  '}' ';' ;
+
+opm_items: opm_items opm_item |
+           opm_item;
+
+opm_item: opm_blacklist  |
+          opm_dnsbl_from |
+          opm_dnsbl_to   |
+          opm_sendmail   |
+          error;
+
+opm_blacklist: BLACKLIST '=' STRING ';'
+{
+   node_t *node;
+   node = node_create((void *) DupString($3));
+
+   list_add(OpmItem->blacklists, node);
+};
+
+opm_dnsbl_from: DNSBL_FROM '=' STRING ';'
+{
+   MyFree(OpmItem->dnsbl_from);
+   OpmItem->dnsbl_from = DupString($3);
+};
+
+opm_dnsbl_to: DNSBL_TO '=' STRING ';'
+{
+   MyFree(OpmItem->dnsbl_to);
+   OpmItem->dnsbl_to = DupString($3);
+};
+
+opm_sendmail: SENDMAIL '=' STRING ';'
+{
+   MyFree(OpmItem->sendmail);
+   OpmItem->sendmail = DupString($3);
 };
 
 %%

@@ -102,6 +102,8 @@ void scan_cycle()
    node_t *p;
    struct scanner_struct *scs;
 
+   /* Cycle through the blacklist first.. */
+   dnsbl_cycle();
 
    /* Cycle each scanner object */
    LIST_FOREACH(p, SCANNERS->head)
@@ -253,6 +255,9 @@ void scan_connect(char **user, char *msg)
 
    /* Store ss in the remote struct, so that in callbacks we have ss */
    ss->remote->data = ss;
+
+   if(LIST_SIZE(OpmItem->blacklists) > 0)
+      dnsbl_add(ss);
 
    /* Generate user mask */
    snprintf(mask, MSGLENMAX, "%s!%s@%s", ss->irc_nick, ss->irc_username, ss->irc_hostname);

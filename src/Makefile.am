@@ -8,6 +8,6 @@ bopm_SOURCES = compat.c compat.h config.c config.h config.tab.c config.tab.h \
     dlclist.c dlclist.h dnsbl.c dnsbl.h extern.h inet.c inet.h irc.c irc.h \
     log.c log.h main.c match.c match.h misc.c misc.h malloc.c malloc.h lex.yy.c \
     list.c list.h negcache.c negcache.h opercmd.c opercmd.h options.h scan.c \
-    scan.h scanwarn.c scanwarn.h setup.h stats.c stats.h
+    scan.h scanwarn.c scanwarn.h setup.h stats.c stats.h firedns.c firedns.h
 
 bopm_LDADD = libopm/src/.libs/libopm.a @LNSL@ @LSOCKET@

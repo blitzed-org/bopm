@@ -37,6 +37,7 @@ void config_init();
 
 struct OptionsConf *OptionsItem = NULL;
 struct IRCConf *IRCItem = NULL;
+struct OpmConf *OpmItem = NULL;
 list_t *UserItemList = NULL;
 list_t *ScannerItemList = NULL;
 
@@ -76,6 +77,11 @@ void config_init()
     OptionsItem = (struct OptionsConf *) MyMalloc(sizeof(struct OptionsConf));
     memset(OptionsItem, 0, sizeof(struct OptionsConf));
 
+    /* Init OPM block */
+    OpmItem = (struct OpmConf *) MyMalloc(sizeof(struct OpmConf));
+    memset(OpmItem, 0, sizeof(struct OpmConf));
+    OpmItem->blacklists = list_create();
+    
     /* Init list of User blocks */
     UserItemList = list_create();
 
@@ -105,6 +111,11 @@ void config_setup()
     /* Setup options block defaults */
     OptionsItem->negcache = 0;   /* 0 disabled negcache */
     OptionsItem->pidfile = DupString("bopm.pid");
+
+    /* Setup OPM block defaults */
+    OpmItem->sendmail = DupString("/usr/sbin/sendmail");
+    OpmItem->dnsbl_from = DupString("");
+    OpmItem->dnsbl_to = DupString("");
 }
 
 void yyerror(const char *str)
