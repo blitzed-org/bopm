@@ -79,6 +79,14 @@ IRC {
          */
 	server = "myserver.blitzed.org";
 
+
+        /*
+         * Password used to connect to the IRC server (PASS)
+         */
+         
+#       password = "secret";
+
+
         /*
          * Port of the above server to connect to.  This is what bopm uses to
          * get onto IRC itself, it is nothing to do with what ports/protocols

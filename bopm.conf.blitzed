@@ -18,6 +18,7 @@ IRC {
 	realname = "Blitzed Open Proxy Monitor";
 	username = "bopm";
 	server = "servername.blitzed.org";
+#       password = "secret";
 	port = 6667;
 	nickserv = "nickserv :identify bopm-nick-password";
 	oper = "bopm operpass";
