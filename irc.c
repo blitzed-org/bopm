@@ -35,8 +35,9 @@ along with this program; if not, write to the Free Software
 #include "config.h"
 #include "extern.h"
 
-int IRC_FD = -1;              /* File descriptor for IRC client */
-struct sockaddr_in IRC_SVR;
+int IRC_FD = -1;                /* File descriptor for IRC client */
+struct sockaddr_in  IRC_SVR;   /* Sock Address Struct for IRC server */
+struct hostent     *IRC_HOST;   /* Hostent struct for IRC server */
 
 
 void irc_cycle()
@@ -47,25 +48,34 @@ void irc_cycle()
 	{
              memset(&IRC_SVR, 0, sizeof(IRC_SVR));
 	     
-	     IRC_SVR.sin_family = AF_INET;
-	     IRC_SVR.sin_port = CONF_PORT;
-             IRC_SVR.sin_addr.s_addr = inet_addr(CONF_SERVER); 
+             /* Resolve IRC host */
+             if(!(IRC_HOST = gethostbyname(CONF_SERVER)))
+		 return;    /* Generate ERROR here */
+	     
+          	     
+	     IRC_SVR.sin_family      = AF_INET;
+	     IRC_SVR.sin_port        = CONF_PORT;
+             IRC_SVR.sin_addr.s_addr = inet_addr(IRC_HOST->h_addr_list[0]); 
              
 	     if(IRC_SVR.sin_addr.s_addr == INADDR_NONE)
 		  return;   /* Generate ERROR here */
 
              /* Request File Descriptor for Socket */
 	     
-	     IRC_FD = socket(PF_INET, SOCK_STREAM);
+	     IRC_FD = socket(PF_INET, SOCK_STREAM, 0);
 
 	     if(IRC_FD == -1)
 		  return;  /* Generate ERROR here */
 
 	     /* Connect to IRC Server */
 
-	     if(connect(IRC_FD, &IRC_SVR, sizeof(IRC_SVR)) == -1)
+	     if(connect(IRC_FD, (struct sockaddr *) &IRC_SVR , sizeof(IRC_SVR)) == -1)
 		  return; /* Generate ERROR here */
-	
+	     
+             /* for debug use only, will be removed later */	
+             send(IRC_FD, "NICK Bopm\n",10,0);
+	     send(IRC_FD, "USER Bopm Bopm Bopm :Bopm\n",26,0);
+	     
 	}
 }
 
