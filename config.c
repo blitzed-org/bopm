@@ -107,7 +107,7 @@ void config_load(char *filename)
     char *key;
     char *args;
 
-    string_list *list, *oldlist;
+    string_list *list, *oldlist, *nextlist;
 
     int i;
 
@@ -130,6 +130,18 @@ void config_load(char *filename)
               case TYPE_INT:
                   *(int *) hash[i].var = 0;
 		  break;
+              case TYPE_LIST:
+                  for(list = * (string_list **) hash[i].var;list;)
+                   {
+                       nextlist = list->next;
+                       free(list->text);
+                       free(list);
+                       list = nextlist;
+                   }
+                   list = 0;
+                   *(string_list **) hash[i].var = 0;
+ 
+                   break;
           }
          hash[i].reqmet = 0;
       }
@@ -246,5 +258,4 @@ void config_memfail()
      log("CONFIG -> Error allocating memory.");
      exit(1);
 }
-
 
