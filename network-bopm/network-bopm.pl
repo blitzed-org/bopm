@@ -29,11 +29,7 @@ use IO::Socket::INET;
 
 #Options
 my %BOPM    = (
-                 HOSTNAME  => 'bopm.scanner',     #Our bopm hostname
-                 IP        => '127.0.0.1',        #Our bopm's introduced IP
-
-                 PORT      => 5555,
-                 PASS      => 'bopm',             #Our bopm's password
+                 NICK  => 'bopm',            #Our bopm hostname
               );
 
 
@@ -60,30 +56,17 @@ my %NICKFORMAT = (
                     REALNAME => 10,
                  );
 
+###### END CONFIGURATION ######
 
 my %IRC_FUNCTIONS = (
-                     '001'     => \&m_perform,
-                     '302'     => \&m_userhostreply, 
                      'PING'    => \&m_ping,
-                     'PRIVMSG' => \&m_privmsg,
                      'NICK'    => \&m_nick,
-                     'KILL'    => \&m_kill,
                     );
 
-my %BOPM_FUNCTIONS = (
-                     'NICK'    => \&bopm_nick,
-                     'USER'    => \&bopm_user,
-                     );
 
 #Global Variables
 my $IRC_SOCKET;          #IRC Connection
 my $IRC_DATA;            #Data read from IRC
-
-my $BOPM_SOCKET;         #Bopm connection
-my $BOPM_DATA;           #Data read from BOPM
-my $BOPM_WAITING = 0;    #bool, waiting for data?
-my $BOPM_AUTH    = 0;    #Has bopm authenticated yet?
-my $BOPM_KILLED  = 0;    #Track if bopm was /killed, as to not send a QUIT
 
 my $SELECT = new IO::Select; 
 
@@ -97,8 +80,6 @@ main();
 sub main #()
 {
    my $read;
-
-   bopm_listen();
 
    irc_init();
    irc_connect();
@@ -162,13 +143,6 @@ sub irc_cycle #()
          irc_reconnect();
          next;
       }
-
-      if($handle == $BOPM_SOCKET)
-      {
-         do_log('BOPM -> BOPM socket has_error');
-         bopm_listen();
-         next;
-      }
    }
 
 
@@ -181,24 +155,6 @@ sub irc_cycle #()
       if($handle == $$IRC_SOCKET)
       {
          irc_read();
-         next;
-      }
-
-      #Connect to $BOPM_LISTEN
-      if(($handle == $BOPM_SOCKET) && $BOPM_WAITING)
-      {
-         do_log('BOPM -> Got connection');
-
-         $SELECT->remove($BOPM_SOCKET);
-         $BOPM_SOCKET =  $BOPM_SOCKET->accept();
-         $SELECT->add($BOPM_SOCKET);
-         $BOPM_WAITING = 0;
-         next
-      }
-
-      if($handle == $BOPM_SOCKET)
-      {
-         bopm_read();
          next;
       }
    }
@@ -370,36 +326,6 @@ sub m_ping # \@parv, \%source
    irc_send(sprintf('PONG :%s', $$parv[2]));  
 } 
 
-
-
-# m_perform
-#
-# Successfull connection (perform)
-#
-
-sub m_perform # \@parv, \%source
-{
-   my $parv = $_[0];
-}
-
-
-# m_privmsg
-#
-# privmsg to channel OR user
-#
-# parv[0] source
-# parv[1] PRIVMSG
-# parv[2] target
-# parv[3] message
-
-sub m_privmsg #\@parv, \%source
-{
-   my $parv = $_[0];
-   my $source = $_[1];
-
-   bopm_send(sprintf(':%s!user@host PRIVMSG %s :%s', $$parv[0], $$parv[2], $$parv[3]));
-}
-
 # m_nick
 #
 
@@ -414,226 +340,13 @@ sub m_nick
    }
    shift @$parv;
 
-   $conn = sprintf(':%s NOTICE %s :*** Notice -- Client connecting: %s (%s@%s) [%s] {class}',
-                   $IRC{HOST}, 
-                   $BOPM{NICK},
+   $conn = sprintf('*** Notice -- Client connecting: %s (%s@%s) [%s] {class}',
                    $$parv[$NICKFORMAT{NICK}],
                    $$parv[$NICKFORMAT{USERNAME}],
                    $$parv[$NICKFORMAT{HOSTNAME}],
                    inet_ntoa(pack("N", $$parv[$NICKFORMAT{IP}])),
                   );
+
    #send hybrid connection notice
-   bopm_send($conn);
-}
-
-# m_userhostreply
-#
-# parv[0] source
-# parv[1] 302
-# parv[2] nick
-# parv[3] reply
-
-sub m_userhostreply
-{
-   my $parv = $_[0];
-
-   bopm_send(sprintf(':%s 302 %s %s', $$parv[0], $$parv[2], $$parv[3]));
-}
-
-
-# m_kill
-#
-# parv[0] source
-# parv[1] KILL
-# parv[2] target
-# parv[3] path/reason
-
-sub m_kill
-{
-   my $parv = $_[0];
-
-   if($$parv[2] eq $BOPM{NICK})
-   {
-      bopm_send(sprintf(':%s KILL %s :%s', $$parv[0], $$parv[2], $$parv[3]));
-      $BOPM_KILLED = 1;
-      bopm_listen();
-   }
- 
-}
-
-########################################## BOPM #####################################################
-
-sub bopm_listen
-{
-
-   if($BOPM_SOCKET)
-   {
-      bopm_close();
-   }
-
-   $BOPM_SOCKET = new IO::Socket::INET( Proto     => "tcp",
-                                        Listen    => 1,
-                                        Reuse     => 1,
-                                        LocalPort => $BOPM{PORT}
-                                      );  
-   $SELECT->add($BOPM_SOCKET);
-
-   if(!$BOPM_SOCKET)
-   {
-      do_log(sprintf('BOPM -> Could not bind to port %d', $BOPM{PORT}));
-      exit;
-   }
-
-   $BOPM_WAITING = 1;
-   $BOPM_AUTH    = 0;
-}
-
-sub bopm_close
-{
-   $SELECT->remove($BOPM_SOCKET);
-   close($BOPM_SOCKET);
-
-   if(!$BOPM_KILLED)
-   {
-      irc_send(sprintf(':%s QUIT :Dead', $BOPM{NICK}));
-   }
-
-   $BOPM_KILLED = 0;
-}
-
-
-# bopm_read
-#
-# Read data from bopm
-#
-
-sub bopm_read #()
-{
-   my $data;
-   my $pos;
-   my $line;
-
-   if(sysread($BOPM_SOCKET, $data, 512) == 0)
-   {
-      do_log('BOPM -> Read error from bopm');
-      bopm_listen();
-      return;
-   }
-
-   $data = $BOPM_DATA . $data;
-
-   while(($pos = index($data, "\n")) != -1)
-   {
-      $line = substr($data, 0, $pos + 1, "");
-      chomp $line;
-      bopm_parse($line);
-   }
-   $BOPM_DATA = $data;
-}
-
-
-sub bopm_parse
-{
-   my $line = $_[0];
-
-   my @parv;
-   my $command;
-   my $message;
-   my %source;
-
-   $line =~ s/[\r\n]+//g;
-
-   do_log(sprintf('BOPM READ -> %s', $line));
-
-
-   if(index($line, ':') != -1)
-   {
-      @parv = split(/\s+/, substr($line, 0, index($line, ':')));
-      $message = substr($line, index($line, ':') + 1, length($line));
-      push @parv, $message;
-   }
-   else
-   {
-      @parv = split(/\s+/, $line);
-   }
-   #check if this is an auth
-   if($parv[0] eq 'PASS')
-   {
-      if($parv[1] eq $BOPM{PASS})
-      {
-         $BOPM_AUTH = 1;
-      }
-      else
-      {
-         bopm_listen();
-      }
-      return;
-   }
-
-   if(exists($BOPM_FUNCTIONS{$parv[0]}))
-   {
-      $BOPM_FUNCTIONS{$parv[0]}(\@parv);
-   }
-   else
-   {
-      return if(!$BOPM_AUTH);
-      irc_send(sprintf(':%s %s', $BOPM{NICK}, $line));
-   } 
-}
-
-# bopm_send
-#
-# Send data to bopm
-
-sub bopm_send #($data)
-{
-   my $data = $_[0];
-
-   #don't send any data to listening sockets or bopms that havn't PASSed yet
-   return if($BOPM_WAITING || !$BOPM_AUTH);
-
-   do_log(sprintf('BOPM SEND -> %s', $data));
-
-   $data .= "\n\n";
-
-   if(!send($BOPM_SOCKET, $data, 0))
-   {
-      do_log(sprintf('BOPM -> send() error: %s', $!));
-      bopm_listen();
-   }
-}
-
-sub bopm_introduce
-{
-   my $nick;
-
-   #Form NICK line
-   $nick = $PROTOCOL{NICK};
-  
-   $nick =~ s/\{nick\}/$BOPM{NICK}/g;
-   $nick =~ s/\{username\}/$BOPM{USERNAME}/g;
-   $nick =~ s/\{hostname\}/$BOPM{HOSTNAME}/g;
-   $nick =~ s/\{server\}/$IRC{NAME}/g;
-   $nick =~ s/\{ip\}/69/g;
-   $nick =~ s/\{realname\}/$BOPM{REALNAME}/g;
-   $nick =~ s/\{ts\}/1/g;
-
-   irc_send(sprintf('NICK %s', $nick));
-}
-
-
-sub bopm_nick
-{
-   my $parv = $_[0];
-   $BOPM{NICK} = $$parv[1];
-}
-
-sub bopm_user
-{
-   my $parv = $_[0];
-
-   $BOPM{USERNAME} = $$parv[1];
-   $BOPM{REALNAME} = $$parv[4];
-   bopm_introduce();   
-   bopm_send("001 Welcome to BOPM!");
+   irc_send(sprintf(':%s NOTICE %s :%s', $IRC{NAME}, $BOPM{NICK}, $conn)); 
 }
