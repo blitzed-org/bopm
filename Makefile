@@ -18,7 +18,7 @@ config.o: config.h log.h
 irc.o:    config.h extern.h irc.h   log.h    scan.h
 log.o:    extern.h log.h
 main.o:   extern.h irc.h    log.h   scan.h   stats.h
-scan.o:   irc.h    extern.h log.h   config.h scan.h
+scan.o:   irc.h    extern.h log.h   config.h scan.h  stats.h
 stats.o:  irc.h    extern.h stats.h
 
 bopm: $(objects)

@@ -30,12 +30,22 @@ along with this program; if not, write to the Free Software
 void do_stats_init()
 {
    STAT_START_TIME = time(NULL);
+   STAT_NUM_CONNECTS = 0;
 }
 
 void do_stats(const char *target)
 {
    irc_send("PRIVMSG %s :Uptime: %s", target,
 	    dissect_time(time(NULL) - STAT_START_TIME));
+   irc_send("PRIVMSG %s :Found %u WinGates, %u open", target,
+	    STAT_NUM_WINGATE, STAT_NUM_WINGATE_OPEN);
+   irc_send("PRIVMSG %s :Found %u SOCKS4 servers, %u open", target,
+	    STAT_NUM_SOCKS4, STAT_NUM_SOCKS4_OPEN);
+   irc_send("PRIVMSG %s :Found %u SOCKS5 servers, %u open", target,
+	    STAT_NUM_SOCKS5, STAT_NUM_SOCKS5_OPEN);
+   irc_send("PRIVMSG %s :Found %u HTTP proxies, %u open", target,
+	    STAT_NUM_HTTP, STAT_NUM_HTTP_OPEN);
+   irc_send("PRIVMSG %s :Number of connects: %u", target, STAT_NUM_CONNECTS);
    return;
 }
 

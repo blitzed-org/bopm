@@ -534,6 +534,8 @@ void irc_parse()
 
           if(!strcmp(token[7], "connecting:"))
             { 
+		 STAT_NUM_CONNECTS++;
+
                  /* Token 11 is the IP of the remote host 
                   * enclosed in [ ]. We need to remove it from
                   * [ ] and pass it to the scanner. */

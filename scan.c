@@ -38,6 +38,7 @@ along with this program; if not, write to the Free Software
 #include "log.h"
 #include "config.h"
 #include "scan.h"
+#include "stats.h"
 #include "extern.h"
 
 
@@ -412,16 +413,22 @@ int scan_r_squid(struct scan_struct *ss)
 
   int len;
 
+
   len = recv(ss->fd, RECVBUFF, 512, 0);
 
   if(len <= 0)
     return 0;
 
+  STAT_NUM_HTTP++;
+
   RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
  	
   
-  if(!strncasecmp(RECVBUFF, "HTTP/1.0 200", 12))   
+  if(!strncasecmp(RECVBUFF, "HTTP/1.0 200", 12))
+   {
+	STAT_NUM_HTTP_OPEN++;
         return 1;
+   }
    
   return 0;
 }
@@ -505,9 +512,13 @@ int scan_r_socks4(struct scan_struct *ss)
 
    RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
    
+   STAT_NUM_SOCKS4++;
   
    if(RECVBUFF[0] == 0 && RECVBUFF[1] == 90)
+    {
+       STAT_NUM_SOCKS4_OPEN++;
        return 1; 
+    }
 
    return 0;
 }
@@ -566,11 +577,16 @@ int scan_r_socks5(struct scan_struct *ss)
    if(len <= 0)
       return 0;
 
+   STAT_NUM_SOCKS5++;
+  
    RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
 
    /* Version is 5 and method is 0 (no auth) */
    if(RECVBUFF[0] == 5 && RECVBUFF[1] == 0)
-       return 1;
+    {
+      STAT_NUM_SOCKS5_OPEN++;
+      return 1;
+    }
 
    return 0;
 }
@@ -603,11 +619,16 @@ int scan_r_wingate(struct scan_struct *ss)
    if(len <= 0)
       return 0;
 
+   STAT_NUM_WINGATE++;
+  
    RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
    
    if(!strncasecmp(RECVBUFF, "WinGate>", 8) ||
       !strncasecmp(RECVBUFF, "Too many connected users - try again later", 42))
+    {
+     STAT_NUM_WINGATE_OPEN++;
      return 1;
+    }
 
    return 0;
 }
