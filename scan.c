@@ -482,7 +482,7 @@ int scan_r_socks4(struct scan_struct *ss)
 
    len = recv(ss->fd, RECVBUFF, 512, 0);
 
-   if(len <= 8)
+   if(len < 8)
        return 0;
 
    RECVBUFF[len] = 0; /* Make sure data is \0 terminated */
