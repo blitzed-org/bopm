@@ -105,10 +105,8 @@ void config_load(char *filename)
                         {
                             case TYPE_STRING:
                                  if(( *(char**) hash[i].var))
-                                   {
                                     free(*(char**)hash[i].var);
-                                    printf("FREE!\n");
-                                   }
+                                   
                                  *(char**) hash[i].var = strdup(args);
                                  break;
                             case TYPE_INT:
