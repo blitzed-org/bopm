@@ -46,6 +46,7 @@ along with this program; if not, write to the Free Software
 #include "log.h"
 
 extern unsigned int STAT_DNSBL_MATCHES;
+extern unsigned int STAT_DNSBL_REPORTS;
 
 /*
  * Check an ip address for presence in a DNS (black|block)list.  All we need
@@ -187,5 +188,7 @@ void dnsbl_report(struct scan_struct *ss)
 
 	fputs(buf, fp);
 	pclose(fp);
+
 	log("DNSBL -> Sent report to %s", CONF_DNSBL_TO);
+	STAT_DNSBL_REPORTS++;
 }

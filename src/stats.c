@@ -43,6 +43,7 @@ along with this program; if not, write to the Free Software
 time_t STAT_START_TIME;
 unsigned int STAT_NUM_CONNECTS;
 unsigned int STAT_DNSBL_MATCHES;
+unsigned int STAT_DNSBL_REPORTS;
 
 extern protocol_hash SCAN_PROTOCOLS[];
 extern size_t SCAN_NUMPROTOCOLS;
@@ -70,6 +71,14 @@ void do_stats(const char *target)
 		irc_send("PRIVMSG %s :DNSBL: %u successful lookup%s from "
 		    "zone %s", target, STAT_DNSBL_MATCHES,
 		    STAT_DNSBL_MATCHES == 1 ? "" : "s", CONF_DNSBL_ZONE);
+	}
+
+	if(CONF_DNSBL_FROM && CONF_DNSBL_TO && CONF_SENDMAIL) {
+		irc_send("PRIVMSG %s :DNSBL: %u report%s sent",
+		    target, STAT_DNSBL_REPORTS,
+		    STAT_DNSBL_REPORTS == 1 ? "" : "s");
+	} else {
+		irc_send("PRIVMSG %s :DNSBL: reporting is disabled", target);
 	}
 	
 	for(i = 0; i < SCAN_NUMPROTOCOLS; i++) {
