@@ -38,3 +38,15 @@ along with this program; if not, write to the Free Software
 #include "scan.h"
 #include "extern.h"
 
+
+protocol_hash SCAN_PROTOCOLS[] = {
+
+       {"OpenSquid", 80, scan_squid }
+
+};
+
+
+int scan_squid(int fd)
+{
+
+}

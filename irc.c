@@ -283,25 +283,25 @@ void irc_read()
 void irc_parse()
 {
 
-   /* This function will be rewritten with better
-    * structure later on. 
-    */
+   
+   char *token[16];
+   int   tokens = 0;
 
-    char *cmd;   
-    char *second; 
+    /* Tokenize the first 16 words in the incoming data, we really don't need to worry
+      about anything else and we don't need the original string for anything. */
 
-    printf("%s\n", IRC_RAW);      /* Will be removed */
+    token[tokens] = strtok(IRC_RAW, " ");
 
-    cmd = strtok(IRC_RAW, " ");   /* Parse First Token */
-    second = strtok(NULL, " ");   /* Parse Second Token */
+    while(++tokens < 16 && (token[tokens] = strtok(NULL, " "))); 
 
-    if(!strcasecmp(cmd, "PING"))
+   
+    if(!strcasecmp(token[0], "PING"))
        {
-            irc_send("PONG %s", second);
+            irc_send("PONG %s", token[1]);
 	    return;
        }
 
-    if(!strcasecmp(second, "001"))
+    if(!strcasecmp(token[1], "001"))
      { 
        irc_send("OPER %s", CONF_OPER);
        irc_send("MODE %s +c", CONF_NICK);      
