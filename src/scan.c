@@ -246,6 +246,7 @@ void scan_connect(char **user, char *msg)
          if(OPT_DEBUG)
             log("SCAN -> Passing %s to scanner [%s]", mask, scs->name);
 
+         ss->scans++;  /* Increase scan count */
          opm_scan(scs->scanner, ss->remote);
       }
    }
@@ -284,6 +285,7 @@ struct scan_struct *scan_create(char **user, char *msg)
    ss->proof = (char *) DupString(msg);
 
    ss->remote = opm_remote_create(ss->ip);
+   ss->scans = 0;
 
    assert(ss->remote);
    return ss;
