@@ -395,8 +395,7 @@ void scan_timer()
       {
           if(((present - ss->create_time) >= 30) || (ss->state == STATE_CLOSED)) /* State closed or timed out, remove */ 
             {
-
-                if(ss->verbose)
+                if(ss->verbose && (ss->state != STATE_CLOSED))
                  {
                          irc_send("PRIVMSG %s :%s (%d): Connection "
                                         "to %s timed out.", CONF_CHANNELS,
