@@ -167,10 +167,6 @@ void dnsbl_report(struct scan_struct *ss)
 	if (!ss || !ss->addr)
 		return;
 
-	/* XXX: Don't report HTTP Post */
-	if(strcmp(ss->protocol->type, "HTTP Post"))
-	    return;
-
 	snprintf(cmdbuf, sizeof(cmdbuf), "%s -t", CONF_SENDMAIL);
 	snprintf(buf, sizeof(buf),
 	    "From: %s <%s>\n"
