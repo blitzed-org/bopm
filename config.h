@@ -32,5 +32,7 @@
        int param_reason(char *args);
        int param_scanip(char *args);
        int param_scanport(char *args);
+       int param_bindirc(char *args);
+       int param_bindscan(char *args);
 
 #endif

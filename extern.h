@@ -11,6 +11,8 @@
     extern char *CONF_OPER;
     extern char *CONF_REASON;
     extern char *CONF_SCANIP;
+    extern char *CONF_BINDIRC;
+    extern char *CONF_BINDSCAN;
 
     extern int   CONF_PORT;
     extern int   CONF_SCANPORT;

@@ -37,6 +37,8 @@ char *CONF_NICK            = 0;
 char *CONF_OPER            = 0;
 char *CONF_REASON          = 0;
 char *CONF_SCANIP          = 0;
+char *CONF_BINDIRC         = 0;
+char *CONF_BINDSCAN        = 0;
 
 int  CONF_SCANPORT         = 0;
 int  CONF_PORT             = 0;
@@ -55,6 +57,8 @@ config_hash hash[] = {
        {"REASON",   &(param_reason)   },
        {"SCANIP",   &(param_scanip)   },
        {"SCANPORT", &(param_scanport) },
+       {"BINDIRC",  &(param_bindirc)  },
+       {"BINDSCAN", &(param_bindscan) },
 };
 
 
@@ -159,6 +163,33 @@ int param_user(char *args)
 	     config_memfail();
 	
 	return 1;
+}
+
+int param_bindirc(char *args)
+{
+        if(CONF_BINDIRC)
+            free(CONF_BINDIRC);
+
+        CONF_USER = strdup(args);
+
+        if(!CONF_BINDIRC)
+             config_memfail();
+
+        return 1;
+}
+
+
+int param_bindscan(char *args)
+{
+        if(CONF_BINDSCAN)
+            free(CONF_BINDSCAN);
+
+        CONF_BINDSCAN = strdup(args);
+
+        if(!CONF_BINDSCAN)
+             config_memfail();
+
+        return 1;
 }
 
 int param_nick(char *args)

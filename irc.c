@@ -52,6 +52,7 @@ int                 IRC_RAW_LEN = 0;  /* Position of IRC_RAW                   *
 
 int                 IRC_FD = -1;      /* File descriptor for IRC client        */
 struct sockaddr_in  IRC_SVR;          /* Sock Address Struct for IRC server    */
+struct sockaddr_in  IRC_LOCAL;        /* Sock Address Struct for Bind          */
 struct hostent     *IRC_HOST;         /* Hostent struct for IRC server         */
 fd_set              IRC_FDSET;        /* fd_set for IRC data for select()      */
 
@@ -111,6 +112,7 @@ void irc_init()
 
 
        memset(&IRC_SVR, 0, sizeof(IRC_SVR));
+       memset(&IRC_LOCAL, 0, sizeof(IRC_LOCAL));
 
        /* Resolve IRC host */
        if(!(IRC_HOST = gethostbyname(CONF_SERVER)))
@@ -134,6 +136,36 @@ void irc_init()
                               log("IRC -> gethostbyname(): Unknown error resolving (%s)", CONF_SERVER);
                               exit(1);
                 }
+
+       if(CONF_BINDIRC)
+         {
+                if(!inet_aton(CONF_BINDIRC, &(IRC_LOCAL.sin_addr)))
+                   {
+                       log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
+                   }
+
+                IRC_LOCAL.sin_family = AF_INET;
+                IRC_LOCAL.sin_port = 0;                                        
+                            
+                if(bind(IRC_FD, (struct sockaddr *)&IRC_LOCAL, sizeof(struct sockaddr_in)) == -1)
+                  {      
+              
+                      switch(errno)
+                        {
+                               case EACCES:
+                                 log("IRC -> bind(): No access to bind to %s", CONF_BINDIRC);
+                                 exit(1);
+                               default:
+                                 log("IRC -> bind(): Error binding to %s", CONF_BINDIRC);
+                                 exit(1);
+    
+                        }
+
+
+                  }
+      
+         }
+
 
 
        IRC_SVR.sin_family      = AF_INET;
