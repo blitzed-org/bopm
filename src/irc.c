@@ -895,6 +895,7 @@ static void m_invite(char **parv, unsigned int parc, char *msg, struct UserInfo 
 static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo *source_p)
 {
    struct ChannelConf *channel;
+   size_t nick_len;
 
    if(source_p == NULL)
       return;
@@ -914,8 +915,13 @@ static void m_privmsg(char **parv, unsigned int parc, char *msg, struct UserInfo
    if((channel = get_channel(parv[2])) == NULL)
       return;
 
+   /* Find a suitable length to compare with */
+   nick_len = strcspn(parv[3], " :,");
+   if(nick_len < 3 && strlen(IRCItem->nick) >= 3)
+      nick_len = 3;
+   
    /* message is a command */
-   if(strncasecmp(parv[3], IRCItem->nick, 3) == 0  ||
+   if(strncasecmp(parv[3], IRCItem->nick, nick_len) == 0  ||
          strcasecmp(msg, "!all") == 0)
    {
       /* XXX command_parse will alter parv[3]. */
