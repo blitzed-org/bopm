@@ -81,7 +81,10 @@ void config_load(char *filename)
     int i;
 
     if(!(in = fopen(filename, "r")))
-	return;
+     {
+	log("CONFIG -> No config file found, aborting.");
+	exit(1);
+     }
     
     while(fgets(line,1023, in))  
       {
