@@ -745,7 +745,8 @@ int scan_w_cisco(struct scan_struct *conn)
 
    int len;
    len = snprintf(SENDBUFF, 512, "cisco\ntelnet %s %d", CONF_SCANIP, CONF_SCANPORT);
-   
+   send(conn->fd, SENDBUFF, len, 0); 
+  
    return 1;
 }
 
