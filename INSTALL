@@ -1,6 +1,8 @@
 Make
 ----
 
+    Edit options.h (compile options) and define as needed.
+
     Compilation of BOPM requires GNU Make.  No configuration scripts are
 neccessary, just 'make' (gmake on BSD systems) to compile the bot.
 
