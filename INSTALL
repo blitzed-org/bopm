@@ -7,14 +7,14 @@ Make
     2. make
     3. make install
     4. cd $HOME/bopm
-    5. edit etc/bopm.conf to suit
-    6. bin/bopm
+    5. edit $HOME/bopm/etc/bopm.conf to suit
+    6. $HOME/bopm/bin/bopm
 
     In detail:
 
     ./configure has a few options which you might need:
 
-    --prefix            Sets the root of bopm's install.  By default this
+    --prefix            Sets the root of BOPM's install.  By default this
                         is $HOME/bopm, with binaries going in
 			$HOME/bopm/bin, config in $HOME/bopm/etc and logs
 			in $HOME/bopm/var.
@@ -33,6 +33,11 @@ Make
     --with-select       Use select() instead of poll() even if your system
                         has poll()
 
+    --enable-ipv6	Enable IPv6 features which allow BOPM to connect to
+                        IPv6 server addresses and scan clients who have
+			IPv6 addresses.  These features are still extremely
+			experiemental as of v2.4.
+
     configure has many other options, see ./configure --help for more
     details.
 
@@ -50,7 +55,7 @@ Configuration
 
     Please take note of the TARGET_STRING, this is new in version 2 and may be
     different for your ircd.  Because we now check that we really have
-    connected back onto IRC, bopm needs to be told what your ircd says during
+    connected back onto IRC, BOPM needs to be told what your ircd says during
     the first part of a connection.  If you're not sure, the best thing to do
     is telnet to your ircd from your shell, e.g.:
 
@@ -89,18 +94,18 @@ Configuration
 Execution
 ---------
 
-    You can run bopm from any directory, the path to its config file is
+    You can run BOPM from any directory, the path to its config file is
     compiled into it.  The bot will fork and connect to the IRC server
     immediately.  Any errors and debug information can be found in
     $PREFIX/var/bopm.log.
 
-    You can tell bopm to use a different config file with the -c argument,
+    You can tell BOPM to use a different config file with the -c argument,
     this works the same way that wgmon's -c argument does, just give the name
     of the config file not including the ".conf".  This also affects the log
     and PID files i.e. ./bopm -c myserver will read from myserver.conf, log to
     myserver.log and write PID to myserver.pid.  If you do not use -c, the
     files bopm.conf, bopm.log and bopm.pid will be used by default.  This can
-    be altered in options.h.  This is useful for running multiple bopm on
+    be altered in options.h.  This is useful for running multiple BOPM on
     the same host.
 
     Further debugging can be enabled by using one or more -d switches.  One or
