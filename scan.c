@@ -82,7 +82,7 @@ protocol_hash SCAN_PROTOCOLS[] = {
 
        {"HTTP"      , 8080, &(scan_w_squid),    0 ,0 },
 /*     {"HTTP"      , 8001, &(scan_w_squid),    0 ,0 },    */
-       {"HTTP"      , 8000, &(scan_w_squid),    0 ,0 },
+/*     {"HTTP"      , 8000, &(scan_w_squid),    0 ,0 },    */
        {"HTTP"      , 3128, &(scan_w_squid),    0 ,0 },
        {"HTTP"      ,   80, &(scan_w_squid),    0 ,0 },
        {"Socks4"    , 1080, &(scan_w_socks4),   0 ,0 },
