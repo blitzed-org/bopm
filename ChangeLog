@@ -4,13 +4,6 @@
 
 	Added code to free TYPE_LIST in config.c (someone forgot this!)
 	
-2002-02-16 03:23  andy
-
-	* ChangeLog:
-
-	ChangeLog:
-		Updated for next release.
-	
 2002-02-15 23:21  andy
 
 	* bopm.conf.sample:
@@ -312,13 +305,6 @@
 	stats.c:
 		Added simple connects/minute reading.
 	
-2002-02-01 06:17  andy
-
-	* ChangeLog:
-
-	ChangeLog:
-		Updated for next realese.
-	
 2002-02-01 06:16  andy
 
 	* README:
@@ -369,13 +355,6 @@
 		Some ircd's (Xnet and others?) don't send +c notices with the server as
 		the source.
 	
-2002-01-29 17:33  andy
-
-	* ChangeLog:
-
-	ChangeLog:
-		Updated for next release.
-	
 2002-01-29 17:31  andy
 
 	* config.c:
@@ -390,13 +369,6 @@
 
 	README: Added codebase specific compatibility (those tested)
 	
-2002-01-29 01:46  andy
-
-	* ChangeLog:
-
-	ChangeLog:
-		Missed a late commit.
-	
 2002-01-29 01:45  andy
 
 	* bopm.conf.sample:
@@ -404,13 +376,6 @@
 	bopm.conf.sample:
 		Added suggestion from Sotiris Tsimbonis to make ti a bit more
 		obvious that a temporary KLINE should be used.
-	
-2002-01-29 01:25  andy
-
-	* ChangeLog:
-
-	ChangeLog:
-		Updated ChangeLog for 1.1 release.
 	
 2002-01-29 01:21  strtok
 
@@ -581,21 +546,9 @@
 	
 	bopchecker now takes the -c option also, in the same way as bopm.
 	
-2002-01-23 04:58  strtok
-
-	* ChangeLog:
-
-	ChangeLog: It's 2002!
-	
 2002-01-22 21:44  strtok
 
 	* bopm.conf.sample:
 
 	bopm.conf.sample: Fixed typo
-	
-2002-01-22 19:09  strtok
-
-	* ChangeLog:
-
-	ChangeLog: Added changelog
 	
