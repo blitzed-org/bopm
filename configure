@@ -842,6 +842,7 @@ Optional Packages:
   --with-select           use select() instead of poll()
   --with-unreal           you need this if you are using Unreal ircd (any
                           version)
+  --with-extra-fascism    Add extra gcc3-specific warning flags
 
 Some influential environment variables:
   CC          C compiler command
@@ -1639,6 +1640,13 @@ if test "${with_unreal+set}" = set; then
 else
   with_unreal="no"
 fi;
+
+# Check whether --with-extra-fascism or --without-extra-fascism was given.
+if test "${with_extra_fascism+set}" = set; then
+  withval="$with_extra_fascism"
+  CFLAGS="$CFLAGS -g -ggdb -O0 -W -Wfloat-equal -Wbad-function-cast -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs"
+fi;
+
 
 # Check whether --enable-ipv6 or --disable-ipv6 was given.
 if test "${enable_ipv6+set}" = set; then
