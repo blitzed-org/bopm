@@ -355,6 +355,10 @@ scanner {
 	protocol = HTTP:80;
 	protocol = HTTP:8080;
 	protocol = HTTP:3128;
+        protocol = HTTP:6588;
+#       protocol = HTTP:4480;
+#       protocol = HTTP:8000;
+#       protocol = HTTP:8001;
 
         /*
          * SOCKS4/5 - well known proxy protocols, probably the second most
