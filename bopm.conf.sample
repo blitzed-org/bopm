@@ -284,7 +284,7 @@ OPM {
 	 * scanned.
 	 *
 	 * If you DO intend to send reports, please contact us first at
-	 * opm@lists.blitzed.org and let us know what you have set for
+	 * opm-bopm@blitzed.org and let us know what you have set for
 	 * "dnsbl_from" and your server name (or network name if you're
 	 * reporting for a whole network).  Until you do, all reports will be
 	 * bounced.
