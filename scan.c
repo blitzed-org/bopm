@@ -651,7 +651,7 @@ void scan_timer()
 			}
 		}
 
-		if (((present - ss->create_time) >= 30) ||
+		if (((present - ss->create_time) >= CONF_TIMEOUT) ||
 		    (ss->state == STATE_CLOSED)) {
 			/* State closed or timed out, remove */ 
 			if (ss->verbose && (ss->state != STATE_CLOSED)) {

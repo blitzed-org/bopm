@@ -143,6 +143,19 @@ SCANIP 127.0.0.1
 SCANPORT 6667
 
 
+
+
+# TIMEOUT <seconds> : Number of seconds before a particular scan on a client
+#                     will timeout. The higher this is set, the more chance of
+#                     slower proxies being caught. However a higher value also means
+#                     more demand for file descriptors at any one time. 
+#                     A default value of 30 is recommended.                  
+
+TIMEOUT 30
+
+
+
+
 # TARGET_STRING <string> : Target string we test for in the data read by the scanner,
 #                          this should be a string within the data that your ircd usually
 #                          sends on connect. The default should work on most bahamut 

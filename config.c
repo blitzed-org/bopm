@@ -71,6 +71,7 @@ string_list *CONF_EXCLUDE  = 0;
 unsigned int  CONF_SCANPORT         = 0;
 unsigned int  CONF_PORT             = 0;
 unsigned int  CONF_FDLIMIT          = 0;
+unsigned int  CONF_TIMEOUT          = 0;
 
 /* Configuration Hash , Hashes Config Params to their Function Handlers*/
 /*      NAME                  , TYPE   , REQ, REQMET, PTR TO VAR        */
@@ -101,6 +102,7 @@ config_hash hash[] = {
        {"AWAY",                TYPE_STRING, 1,0,    &CONF_AWAY               },
        {"TARGET_STRING",       TYPE_STRING, 1,0,    &CONF_TARGET_STRING      },
        {"EXCLUDE",             TYPE_LIST,   0,0,    &CONF_EXCLUDE            },
+       {"TIMEOUT",             TYPE_INT,    1,0,    &CONF_TIMEOUT            },
        {0,                     0,           0,0,    0                        },
 };
 

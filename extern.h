@@ -31,6 +31,7 @@ extern string_list *CONF_EXCLUDE;
 extern unsigned int CONF_PORT;
 extern unsigned int CONF_SCANPORT;
 extern unsigned int CONF_FDLIMIT;
+extern unsigned int CONF_TIMEOUT;
 
 extern unsigned int OPT_DEBUG;
  
