@@ -379,11 +379,6 @@ void irc_read()
 
 void irc_parse()
 {
-
-   char *addr;           /* IP of remote host in connection notices */
-   char *irc_addr;       /* IRC host address of the remote host     */
-   char *irc_user;     
-   char *irc_nick;
    char *irc_channel; 
 
    char *token[16];
@@ -391,9 +386,7 @@ void irc_parse()
    int   i, h, len;
    time_t present;
 
-
    time(&IRC_LAST); /*     Update timeout tracking    */ 
-
 
    if(OPT_DEBUG >= 2)
     {
@@ -600,46 +593,12 @@ void irc_parse()
      }
 
     /* Search for +c notices */
-    /* Xnet (and others?) looks like this:
-     *  NOTICE BopmMirage :*** Notice -- Client connecting: Iain (iain@modem-449.gacked.dialup.pol.co.uk) [62.25.241.193] {1} (6667)
-     */
+    /* some ircd (just xnet/df?) don't send a server name */
     if(tokens >= 11 &&
        strcasecmp(token[0], "NOTICE") == 0 &&
        strcasecmp(token[6], "connecting:") == 0)
-     {
-	  char conn_notice[MSGLENMAX];
-	  STAT_NUM_CONNECTS++;
+	    do_xnet_connect(tokens, token);
 
-	  /* take a copy of the original connect notice now in case
-	   * we need it for evidence later */
-	  snprintf(conn_notice, sizeof(conn_notice),
-		   "%s %s %s %s %s %s %s %s %s %s %s", token[0],
-		   token[1], token[2], token[3], token[4], token[5],
-		   token[6], token[7], token[8], token[9], token[10]);
-
-	  /* make sure it is null terminated */
-	  conn_notice[MSGLENMAX - 1] = '\0';
-	  
-	  /* Token 9 is the IP of the remote host 
-	   * enclosed in [ ]. We need to remove it from
-	   * [ ] and pass it to the scanner. */
-	  addr = token[9] + 1;			/* Shift over 1 byte to pass over [ */
-          addr = strtok(addr, "]");		/* Replace ] with a /0              */
-
-          /* Token 7 is the nickname of the connecting client */
-          irc_nick = token[7];
-
-          /* Token 8 is (user@host), we want to parse the user/host out
-           * for future reference in case we need to kline the host */
-
-          irc_user = token[8] + 1;          /* Shift one byte over to discard '(' */
-          irc_user = strtok(irc_user, "@"); /* username is everything before the '@' */
-
-          irc_addr = strtok(NULL , ")");    /* irc_addr is everything between '@' and closing ')' */
-
-          do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
-     } 
-    
     if(token[0][0] == ':')
      {
           /* Toss any notices NOT from a server */
@@ -647,49 +606,10 @@ void irc_parse()
           if(strchr(token[0], '@'))
                return ;
 
-          /* Notice is too short to be a connect notice, 
-           * toss it to save on execution time */
-
-          if(tokens < 11)
-                return;
-             
-
-
-          if(!strcmp(token[7], "connecting:"))
-            { 
-		 char conn_notice[MSGLENMAX];
-		 STAT_NUM_CONNECTS++;
-
-		 /* take a copy of the original connect notice now in case
-		  * we need it for evidence later */
-		 snprintf(conn_notice, sizeof(conn_notice),
-			  "%s %s %s %s %s %s %s %s %s %s %s", token[0],
-			  token[1], token[2], token[3], token[4], token[5],
-			  token[6], token[7], token[8], token[9], token[10]);
-
-		 /* make sure it is null terminated */
-		 conn_notice[MSGLENMAX - 1] = '\0';
-
-                 /* Token 11 is the IP of the remote host 
-                  * enclosed in [ ]. We need to remove it from
-                  * [ ] and pass it to the scanner. */
-
-                  addr = token[10] + 1;          /* Shift over 1 byte to pass over [ */
-                  addr = strtok(addr, "]");        /* Replace ] with a /0              */
-
-
-                  /* Token 8 is the nickname of the connecting client */
-                  irc_nick = token[8];
-
-                 /* Token 9 is (user@host), we want to parse the user/host out
-                  * for future reference in case we need to kline the host */
-                  
-                  irc_user = token[9] + 1;          /* Shift one byte over to discard '(' */
-                  irc_user = strtok(irc_user, "@"); /* username is everything before the '@' */
-                     
-                  irc_addr = strtok(NULL , ")");    /* irc_addr is everything between '@' and closing ')' */
-		  do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
-            }
+          if(tokens >= 11 && !strcmp(token[7], "connecting:"))
+		  do_hybrid_connect(tokens, token);
+	  else if(tokens >= 9 && !strcmp(token[4], "connecting:"))
+		  do_trircd_connect(tokens, token);
      }
 
 
@@ -762,3 +682,140 @@ void do_connect(char *addr, char *irc_nick, char *irc_user, char *irc_addr,
 
    scan_connect(addr, irc_addr, irc_nick, irc_user, 0, conn_notice);
 }
+
+/*
+ * :porkscratchings.pa.us.blitzed.org NOTICE grifferz :*** Notice -- Client connecting: griff (goats@pc-62-30-219-54-pb.blueyonder.co.uk) [62.30.219.54] {1}
+ */
+void do_hybrid_connect(int tokens, char **token)
+{
+	char *addr;	/* IP of remote host in connection notices */
+	char *irc_addr;	/* IRC host address of the remote host     */
+	char *irc_user;     
+	char *irc_nick;
+	char conn_notice[MSGLENMAX];
+
+	STAT_NUM_CONNECTS++;
+
+	/* take a copy of the original connect notice now in case we need it
+	 * for evidence later */
+	snprintf(conn_notice, sizeof(conn_notice),
+		 "%s %s %s %s %s %s %s %s %s %s %s", token[0], token[1],
+		 token[2], token[3], token[4], token[5], token[6],
+		 token[7], token[8], token[9], token[10]);
+
+	/* make sure it is null terminated */
+	conn_notice[MSGLENMAX - 1] = '\0';
+
+	/* Token 11 is the IP of the remote host enclosed in [ ]. We need
+	 * to remove it from [ ] and pass it to the scanner. */
+
+	/* Shift over 1 byte to pass over [ */
+	addr = token[10] + 1;
+        /* Replace ] with a /0 */
+	addr = strtok(addr, "]");
+
+	/* Token 8 is the nickname of the connecting client */
+	irc_nick = token[8];
+
+	/* Token 9 is (user@host), we want to parse the user/host out for
+	 * future reference in case we need to kline the host */
+        /* Shift one byte over to discard '(' */
+	irc_user = token[9] + 1;
+	/* username is everything before the '@' */
+	irc_user = strtok(irc_user, "@");
+	/* irc_addr is everything between '@' and closing ')' */
+	irc_addr = strtok(NULL , ")");
+	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
+}
+
+/*
+ * :test.teklan.com.tr NOTICE &CONNECTS :Client connecting: griff (andy@pc-62-30-219-54-pb.blueyonder.co.uk) [62.30.219.54] {1}
+ */
+void do_trircd_connect(int tokens, char **token)
+{
+	char *addr;	/* IP of remote host in connection notices */
+	char *irc_addr;	/* IRC host address of the remote host     */
+	char *irc_user;     
+	char *irc_nick;
+	char conn_notice[MSGLENMAX];
+
+	STAT_NUM_CONNECTS++;
+
+	/* take a copy of the original connect notice now in case we need it
+	 * for evidence later */
+	snprintf(conn_notice, sizeof(conn_notice),
+		 "%s %s %s %s %s %s %s %s %s", token[0], token[1],
+		 token[2], token[3], token[4], token[5], token[6],
+		 token[7], token[8]);
+
+	/* make sure it is null terminated */
+	conn_notice[MSGLENMAX - 1] = '\0';
+
+	/* Token 8 is the IP of the remote host enclosed in [ ]. We need
+	 * to remove it from [ ] and pass it to the scanner. */
+
+	/* Shift over 1 byte to pass over [ */
+	addr = token[7] + 1;
+        /* Replace ] with a /0 */
+	addr = strtok(addr, "]");
+
+	/* Token 6 is the nickname of the connecting client */
+	irc_nick = token[5];
+
+	/* Token 7 is (user@host), we want to parse the user/host out for
+	 * future reference in case we need to kline the host */
+        /* Shift one byte over to discard '(' */
+	irc_user = token[6] + 1;
+	/* username is everything before the '@' */
+	irc_user = strtok(irc_user, "@");
+	/* irc_addr is everything between '@' and closing ')' */
+	irc_addr = strtok(NULL , ")");
+	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
+}
+
+
+/*
+ * NOTICE BopmMirage :*** Notice -- Client connecting: Iain (iain@modem-449.gacked.dialup.pol.co.uk) [62.25.241.193] {1} (6667)
+ */
+void do_xnet_connect(int tokens, char **token)
+{
+	char *addr;	/* IP of remote host in connection notices */
+	char *irc_addr;	/* IRC host address of the remote host     */
+	char *irc_user;     
+	char *irc_nick;
+	char conn_notice[MSGLENMAX];
+
+	STAT_NUM_CONNECTS++;
+
+	/* take a copy of the original connect notice now in case we need
+	 * it for evidence later */
+	snprintf(conn_notice, sizeof(conn_notice),
+		 "%s %s %s %s %s %s %s %s %s %s %s", token[0], token[1],
+		 token[2], token[3], token[4], token[5], token[6],
+		 token[7], token[8], token[9], token[10]);
+
+	/* make sure it is null terminated */
+	conn_notice[MSGLENMAX - 1] = '\0';
+	  
+	/* Token 9 is the IP of the remote host enclosed in [ ]. We need to
+	 * remove it from [ ] and pass it to the scanner. */
+	/* Shift over 1 byte to pass over [ */
+	addr = token[9] + 1;
+	/* Replace ] with a /0 */
+        addr = strtok(addr, "]");
+
+	/* Token 7 is the nickname of the connecting client */
+	irc_nick = token[7];
+
+	/* Token 8 is (user@host), we want to parse the user/host out for
+	 * future reference in case we need to kline the host */
+
+	/* Shift one byte over to discard '(' */
+	irc_user = token[8] + 1;
+	/* username is everything before the '@' */
+	irc_user = strtok(irc_user, "@");
+	/* irc_addr is everything between '@' and closing ')' */
+	irc_addr = strtok(NULL , ")");
+
+	do_connect(addr, irc_nick, irc_user, irc_addr, conn_notice);
+} 
