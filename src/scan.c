@@ -185,6 +185,9 @@ void scan_init()
                   ms = (struct mask_struct *) MyMalloc(sizeof(struct mask_struct));
                   ms->mask = (char *) DupString(mask);
                   ms->scs = scs;
+
+                  node = node_create(ms);
+                  list_add(MASKS, node);
                }
             }            
          } 
@@ -211,19 +214,41 @@ void scan_init()
 
 void scan_connect(char **user, char *msg)
 {
-
+ 
+   node_t *p;
    struct scan_struct *ss;
    struct scanner_struct *scs;
    struct mask_struct *ms;
+   
+   /* Have to use MSGLENMAX here because it is unknown what the max size of username/hostname can be.
+      Some ircds use really mad values for these */
+   static char mask[MSGLENMAX];
 
-   //FIXME: Check negcache here before any scanning
+   /* FIXME: Check negcache here before any scanning */
    
 
-   //create scan_struct
+   /* create scan_struct */
    ss = scan_create(user, msg);
 
-   // Added ss->remote to all matching scanners
+   /* Store ss in the remote struct, so that in callbacks we have ss */
+   ss->remote->data = ss;
 
+   /* Generate user mask */
+   snprintf(mask, MSGLENMAX, "%s!%s@%s", ss->irc_nick, ss->irc_username, ss->irc_hostname);
+
+   /* Add ss->remote to all matching scanners */
+   LIST_FOREACH(p, MASKS->head)
+   {
+      ms = (struct mask_struct *) p->data;
+      if(match(ms->mask, mask))
+      {
+         scs = ms->scs;
+         if(OPT_DEBUG)
+            log("SCAN -> Passing %s to scanner [%s]", mask, scs->name);
+
+         opm_scan(scs->scanner, ss->remote);
+      }
+   }
 }
 
 
@@ -261,6 +286,7 @@ struct scan_struct *scan_create(char **user, char *msg)
    ss->remote = opm_remote_create(ss->ip);
 
    assert(ss->remote);
+   return ss;
 }
 
 
@@ -391,6 +417,7 @@ void scan_handle_error(OPM_T *scanner, OPM_REMOTE_T *remote, int err, void *data
       case OPM_ERR_NOFD:
          break;
       default:   /* Unknown Error! */
+         break;
    }
 }
 
