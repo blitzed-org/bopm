@@ -20,14 +20,20 @@ along with this program; if not, write to the Free Software
 
 */
 
+#include "setup.h"
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#ifdef STDC_HEADERS
 #include <stdlib.h>
 #include <string.h>
+#endif
+
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
