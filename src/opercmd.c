@@ -307,7 +307,10 @@ void command_userhost(char *reply)
       oper = 1;
 
    /* Null terminate it so tmp = the oper's nick */
-   *(--tmp) = '\0';
+  if(oper) 
+     *(--tmp) = '\0';
+  else
+     *(tmp) = '\0';
 
    /* Find any queued commands that match this user */
    LIST_FOREACH_SAFE(node, next, COMMANDS->head)
