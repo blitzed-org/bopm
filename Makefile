@@ -1,4 +1,4 @@
-CFLAGS= -Wall -g
+CFLAGS= -Wall -g -O3
 CC= gcc
 
 ifdef DEBUG_GCOV
