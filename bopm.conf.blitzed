@@ -73,7 +73,7 @@ IRC {
     *
     * You're required to use the following kline_command:
     */
-   kline = "KLINE *@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
+   kline = "PRIVMSG OperServ :BOPMAKILL ADD +4h *@%h Open Proxy found on your host. Please visit http://opm.blitzed.org/%i";
 };
 
 
@@ -93,22 +93,6 @@ OPM {
       };
    };
 
-   /*
-    * Use of NJABL is STRONGLY SUGGESTED, but not required.
-    *
-    * If you want to know more about it, see http://www.njabl.org/use.html or
-    * comment out if you decide you don't like it.
-    */
-   blacklist {
-      name = "dnsbl.njabl.org";
-      type = "A record reply";
-      reply {
-         9 = "Open proxy";
-      };
-      ban_unknown = no;
-      kline = "KLINE *@%h :Open proxy found on your host, please visit www.njabl.org/cgi-bin/lookup.cgi?query=%i";
-   };
-   
    /* You must use a real email address below (that you actually read). */
    dnsbl_from = "yournick@blitzed.org";
 
@@ -130,15 +114,25 @@ scanner {
     * If you want to add more, ask the OPM people for some sensible
     * suggestions.
     */
-   protocol = SOCKS4:1080;
-   protocol = SOCKS5:1080;
+   protocol = HTTP:80;
+   protocol = HTTP:3128;
+   protocol = HTTP:4480;
    protocol = HTTP:6588;
    protocol = HTTP:8080;
-   protocol = HTTP:5490;
-   protocol = SOCKS5:1075;
+   protocol = HTTP:2282;
+   protocol = HTTP:3802;
+   protocol = HTTP:7441;
+   protocol = HTTP:3332;
+   protocol = HTTP:65506;
+
+   protocol = SOCKS4:1080;
+   protocol = SOCKS5:1080;
+
    protocol = HTTPPOST:80;
-   protocol = HTTP:808;
+   protocol = HTTPPOST:3128;
    protocol = HTTPPOST:8080;
+   protocol = HTTPPOST:808;
+
    protocol = WINGATE:23;
 
    /*
@@ -172,37 +166,29 @@ scanner {
    name = "extra";
 
    protocol = WINGATE:1181;
-   protocol = SOCKS5:1180;
-   protocol = HTTPPOST:3128;
-   protocol = HTTP:3128;
-   protocol = HTTP:80;
-   protocol = ROUTER:23;
-   protocol = HTTPPOST:555;
-   protocol = HTTP:1182;
-   protocol = HTTPPOST:6588;
-   protocol = SOCKS5:1813;
-   protocol = HTTP:4480;
-   protocol = HTTP:8000;
-   protocol = HTTP:9778;
-   protocol = HTTP:25318;
-   protocol = SOCKS5:25791;
-   protocol = HTTPPOST:8000;
-   protocol = SOCKS5:5104;
+
    protocol = HTTP:81;
-   protocol = HTTP:2282;
-   protocol = SOCKS5:5262;
-   protocol = HTTPPOST:5121;
-   protocol = SOCKS5:8814;
-   protocol = SOCKS5:6552;
-   protocol = SOCKS5:4438;
+   protocol = HTTP:8000;
+   protocol = HTTP:8001;
+   protocol = HTTP:8081;
+   protocol = HTTP:5748;
+
    protocol = HTTPPOST:81;
-   protocol = SOCKS5:8148;
-   protocol = SOCKS5:4044;
-   protocol = HTTPPOST:4480;
-   protocol = SOCKS5:9186;
-   protocol = SOCKS5:8130;
-   protocol = HTTPPOST:8548;
-   protocol = SOCKS5:5634;
+   protocol = HTTPPOST:6588;
+   protocol = HTTPPOST:8000;
+   protocol = HTTPPOST:8001;
+   protocol = HTTPPOST:8081;
+
+   protocol = SOCKS5:1978;
+   protocol = SOCKS5:10001;
+   protocol = SOCKS5:30021;
+   protocol = SOCKS5:30022;
+   protocol = SOCKS5:38994;
+   protocol = SOCKS5:15859;
+   protocol = SOCKS5:1027;
+   protocol = SOCKS5:2425
+
+   protocol = ROUTER:23;
 
    /* Less fds are given to this scanner */
    fd = 400;
