@@ -1,3 +1,393 @@
+2002-05-05 02:54  andy
+
+	* main.c:
+
+	main.c:
+		Apparently using _exit is the correct thing to do.
+	
+2002-05-04 19:48  strtok
+
+	* bopm.conf.sample, config.c, extern.h, scan.c:
+
+	
+	scan.c, config.c, extern.h, bopm.conf.sample: Added CONF_TIMEOUT and TIMEOUT
+	          directive to allow for configurable scan timeouts (suggested by lilo).
+	
+2002-05-01 18:44  andy
+
+	* irc.c, bopm.conf.sample, config.c, extern.h:
+
+	irc.c, config.c, extern.h:
+		Added config option REALNAME which allows bopm's IRC "realname" to
+		be configured.
+	
+	bopm.conf.sample:
+		Sample REALNAME
+	
+2002-05-01 17:58  andy
+
+	* stats.c, stats.h:
+
+	stats.c, stats.h:
+		Reformatiing
+	
+2002-05-01 05:01  andy
+
+	* scan.c, scan.h:
+
+	scan.c, scan.h:
+		Reformatting.
+	
+2002-05-01 00:24  andy
+
+	* irc.c, opercmd.c, opercmd.h:
+
+	opercmd.c:
+		Reformatting.
+	opercmd.h:
+		Reformatting, moved some global variable declarations to opercmd.c
+	irc.c:
+		Needed an extern to get access to LAST_REAP_TIME.
+	
+2002-04-30 23:41  andy
+
+	* misc.c, misc.h:
+
+	misc.c, misc.h:
+		Reformatting.
+	
+2002-04-30 22:53  andy
+
+	* main.c:
+
+	main.c:
+		Reformatting.
+	
+2002-04-30 21:14  andy
+
+	* log.c, log.h:
+
+	log.c, log.h:
+		Reformatting.
+	
+2002-04-30 04:01  andy
+
+	* irc.c, irc.h:
+
+	irc.c:
+		Code cleanups.  Added check_channel() function to check if a given
+		channel is one of our configured reporting channels.  Made a bunch
+		of irc.c private fucntions have static linkage.
+	irc.h:
+		Code cleanups.
+	
+2002-04-30 01:37  andy
+
+	* dnsbl.c, extern.h, log.c, misc.c, opercmd.c, stats.c:
+
+	extern.h:
+		Code format cleanup.  Move include of config.h to files that need
+		it.
+	
+	dnsbl.c, log.c, misc.c, opercmd.c, stats.c:
+		Add include for config.h.
+	
+2002-04-29 18:10  strtok
+
+	* bopm.conf.sample:
+
+	
+	bopm.conf.sample: Fixed TARGET_STRING sample
+	
+2002-04-29 17:17  andy
+
+	* dnsbl.c, dnsbl.h:
+
+	dnsbl.c:
+		Formatting cleanup & added more descriptive error message when
+		gethostbyname() fails (is man page wrong?)
+	
+	dnsbl.h:
+		Formatting cleanup.
+	
+2002-04-29 15:20  andy
+
+	* config.c:
+
+	config.c:
+		Doh, KEYS is not required for normal operation.
+	
+2002-04-29 15:18  andy
+
+	* bopchecker.h:
+
+	bopchecker.h:
+		Open cisco router bit mask.
+	
+2002-04-29 15:15  andy
+
+	* config.c, config.h:
+
+	config.c:
+		Tidied up indentation.
+	
+		Added static linkage for all private config functions.
+	
+		Added add_to_list() to simplify adding values to configuration
+		lists.
+	
+		Added free_list() to simplify clearing out each config list at
+		startup/rehash.
+	
+		Added add_to_config() to simplify adding a key/value pair to our
+		config hash.
+	
+	config.h:
+		Neater indentation, some prototypes moved to config.c.
+	
+2002-04-29 06:57  strtok
+
+	* scan.c:
+
+	
+	scan.c: Uncommented CISCO from scan table as efnet reports it is working
+	        properly
+	
+2002-04-28 19:20  andy
+
+	* bopchecker.c, bopchecker.h:
+
+	Code clean up.
+	
+2002-04-28 18:35  andy
+
+	* bopchecker.c, config.c, extern.h, irc.c, main.c, misc.c,
+	opercmd.c, opercmd.h, scan.c, stats.c:
+
+	bopchecker.c:
+		Hacks to avoid unused variable warnings.
+	config.c:
+		Code cleanups.
+	extern.h:
+		Code cleanups.
+	irc.c:
+		Code cleanups.
+	main.c:
+		Merged singal handlers into one function, code cleanups.
+	misc.c:
+		Code cleanups.
+	opercmd.c, opercmd.h:
+		2nd parameter of checkoper was never used.
+	scan.c:
+		Code cleanups.
+	stats.c:
+		Code cleanups.
+	
+2002-04-26 23:20  andy
+
+	* bopm.conf.sample:
+
+	bopm.conf.sample:
+		Better example config suggestion from Erik / Andrew Church.
+	
+2002-04-26 22:32  andy
+
+	* bopm.conf.sample, config.c, extern.h, irc.c:
+
+	config.c, bopm.conf.sample:
+		Added KEYS config parameter.
+	
+	irc.c:
+		Added support for channel keys, plus helper function get_chan_key()
+		which looks up the correct key for a given channel.
+	
+2002-04-25 22:27  strtok
+
+	* scan.c:
+
+	
+	scan.c: Commented HTTP 8000 out of the scan table, those who wish to scan
+	        on this port can easily uncomment it.
+	
+2002-04-25 07:24  strtok
+
+	* scan.c:
+
+	
+	scan.c: Removed use of scan_del() where STATE_CLOSED should have been set
+	        instead.
+	
+2002-04-25 05:41  strtok
+
+	* options.h, scan.c:
+
+	
+	scan.c/options.h: Added MAXREAD (default 4096), max amount of bytes read from
+	         any port before the connection is considered a flood and failed.
+	
+2002-04-25 05:17  strtok
+
+	* scan.c:
+
+	
+	scan.c: Fixed bug which caused freezing if data was virtually endless (reported
+	       by qurve/qeast
+	
+2002-04-25 03:42  strtok
+
+	* scan.c:
+
+	
+	scan.c: Fixed scan_struct data bug where it tried to free data even if
+	it wasn't malloc yet.
+	
+	scan.c: Commented out cisco and http port 8001 scanning, because servers will
+	be using this commit live.
+	
+2002-04-24 12:43  andy
+
+	* bopm.conf.sample:
+
+	bopm.conf.sample:
+		Less Blitzed-like pages from Tom Gilder <tom@blitzed.org>
+	
+2002-04-23 17:56  andy
+
+	* irc.c, irc.h:
+
+	irc.c:
+		Here's support for ultimate ircd.
+	
+2002-04-18 00:25  andy
+
+	* README, main.c, options.h:
+
+	main.c, options.h:
+		-v option from Harald Skoglund <harald@hekta.stud.iet.hist.no>
+	
+	README:
+		Documentation of command line options.
+	
+2002-04-17 23:16  andy
+
+	* bopm.conf.sample:
+
+	README:
+		Again some notes added for SCANPORT because lots of people are having a
+		hard time understanding what this is for.
+	
+2002-04-14 12:03  dgl
+
+	* README:
+
+	typo, the hybrid team didn't write math.[ch] :)
+	
+2002-04-11 05:56  andy
+
+	* scan.c:
+
+	scan.c:
+		So much call for HTTP scanning on ports 8000, 8001.  Well, let's
+		try it for a while and see.
+	
+2002-04-04 03:32  andy
+
+	* bopm.conf.sample:
+
+	bopm.conf.sample:
+		Many people appear to be getting confused over this.
+	
+2002-03-31 20:33  andy
+
+	* README:
+
+	Strange Unrealism.
+	
+2002-03-31 06:31  andy
+
+	* README:
+
+	Mailman moved to a slightly simpler URL.
+	
+2002-03-21 17:23  andy
+
+	* README:
+
+	More IRCu notes from wunix <wu@wunix.org>
+	
+2002-03-19 13:25  andy
+
+	* README:
+
+	README:
+		Some compatibility notes from Erik Fears <strtok@softhome.net>
+	
+2002-03-03 21:49  andy
+
+	* configure, configure.in:
+
+	configure.in:
+		Added DNSBL begging text
+	
+2002-02-26 05:07  strtok
+
+	* scan.c:
+
+	scan.c: Moved Cisco up in hash table so that it is tried before wingate,
+	because cisco routers only allow 4 connections at once (pointed out by JPayne)
+	
+2002-02-25 07:16  strtok
+
+	* scan.c:
+
+	
+	scan.c: Cisco scanning now works
+	
+2002-02-25 07:08  strtok
+
+	* version.h:
+
+	version.h: Incremented version to 2.2 so we can identify any bopms that have cvs updated
+	
+2002-02-25 07:07  strtok
+
+	* scan.c:
+
+	scan.c: Actually send() data for cisco check now (oops)
+	
+2002-02-25 06:57  strtok
+
+	* scan.c, scan.h:
+
+	scan.c/scan.h: Added open cisco router scanning
+	
+2002-02-22 11:06  andy
+
+	* README:
+
+	README:
+		Credits for Collide.
+	
+2002-02-22 11:05  andy
+
+	* irc.c, irc.h:
+
+	irc.c:
+		Added three new functions, do_hybrid_connect(), do_xnet_connect()
+		and do_trircd_connect().  This could be modularised further but for
+		now this gets rid of some duplication.  Each function is for
+		processing the connect notices of different classes of ircd.
+	
+		do_trircd_connect() adds support for tr-ircd, which has a &connects
+		channel instead of a +c umode.
+	
+2002-02-19 23:29  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Update dfor next release
+	
 2002-02-19 23:10  andy
 
 	* configure, configure.in:
@@ -47,6 +437,12 @@
 	README:
 		Some credits we missed, oops.
 	
+2002-02-17 03:52  andy
+
+	* ChangeLog:
+
+	[no log message]
+	
 2002-02-17 02:35  andy
 
 	* irc.c:
@@ -55,12 +451,24 @@
 		Doh!  Need to check we have enough tokens before blindly accessing
 		tokens[6].
 	
+2002-02-16 18:44  andy
+
+	* ChangeLog:
+
+	[no log message]
+	
 2002-02-16 18:43  andy
 
 	* configure, configure.in:
 
 	configure.in:
 		Added a bit about using GNU Make.
+	
+2002-02-16 18:37  andy
+
+	* ChangeLog:
+
+	[no log message]
 	
 2002-02-16 18:36  strtok
 
@@ -74,11 +482,32 @@
 
 	config.c: DEBUG level 3 now also prints out LISTS with other config elements
 	
+2002-02-16 18:17  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Idea - let's remove changes to the changelog, from the changelog. :)
+	
+2002-02-16 18:16  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Updated again..
+	
 2002-02-16 06:18  strtok
 
 	* config.c:
 
 	Added code to free TYPE_LIST in config.c (someone forgot this!)
+	
+2002-02-16 03:23  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Updated for next release.
 	
 2002-02-15 23:21  andy
 
@@ -381,6 +810,13 @@
 	stats.c:
 		Added simple connects/minute reading.
 	
+2002-02-01 06:17  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Updated for next realese.
+	
 2002-02-01 06:16  andy
 
 	* README:
@@ -431,6 +867,13 @@
 		Some ircd's (Xnet and others?) don't send +c notices with the server as
 		the source.
 	
+2002-01-29 17:33  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Updated for next release.
+	
 2002-01-29 17:31  andy
 
 	* config.c:
@@ -445,6 +888,13 @@
 
 	README: Added codebase specific compatibility (those tested)
 	
+2002-01-29 01:46  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Missed a late commit.
+	
 2002-01-29 01:45  andy
 
 	* bopm.conf.sample:
@@ -452,6 +902,13 @@
 	bopm.conf.sample:
 		Added suggestion from Sotiris Tsimbonis to make ti a bit more
 		obvious that a temporary KLINE should be used.
+	
+2002-01-29 01:25  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Updated ChangeLog for 1.1 release.
 	
 2002-01-29 01:21  strtok
 
@@ -622,9 +1079,21 @@
 	
 	bopchecker now takes the -c option also, in the same way as bopm.
 	
+2002-01-23 04:58  strtok
+
+	* ChangeLog:
+
+	ChangeLog: It's 2002!
+	
 2002-01-22 21:44  strtok
 
 	* bopm.conf.sample:
 
 	bopm.conf.sample: Fixed typo
+	
+2002-01-22 19:09  strtok
+
+	* ChangeLog:
+
+	ChangeLog: Added changelog
 	
