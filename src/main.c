@@ -147,7 +147,6 @@ int main(int argc, char **argv)
     log("MAIN -> Reading configuration file...");
 
     config_load(CONFFILE);
-    scan_init();
  
     pid = getpid();
 

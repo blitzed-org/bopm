@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <assert.h>
 
 #ifdef STDC_HEADERS
 # include <stdlib.h>
@@ -59,7 +60,7 @@
 #include "extern.h"
 #include "options.h"
 #include "negcache.h"
-
+#include "malloc.h"
 
 /* Libopm */
 
@@ -69,10 +70,25 @@
 #include "libopm/src/opm_types.h"
 
 
+
+
+
 /* GLOBAL LISTS */
 
 static list_t *SCANNERS = NULL;   /* List of OPM_T */
 static list_t *MASKS    = NULL;   /* Associative list of masks->scanners */
+
+
+
+
+
+/* Function declarations */
+
+struct scan_struct *scan_create(char **, char *);
+void scan_free(struct scan_struct *);
+
+
+
 
 
 /* scan_init
@@ -94,7 +110,7 @@ void scan_init()
    struct ScannerConf *sc;
    struct ProtocolConf *pc;
 
-   struct scanner_struct *ss;
+   struct scanner_struct *scs;
    struct mask_struct    *ms;
 
    char *mask;
@@ -109,31 +125,31 @@ void scan_init()
    LIST_FOREACH(p, ScannerItemList->head)
    {
       sc = (struct ScannerConf *) p->data;
-      ss = (struct scanner_struct *) MyMalloc(sizeof(struct scanner_struct));
+      scs = (struct scanner_struct *) MyMalloc(sizeof(struct scanner_struct));
 
       if(OPT_DEBUG)
          log("SCAN -> Setting up scanner [%s]", sc->name);
 
       /* Build the scanner */
-      ss->scanner = opm_create();
-      ss->name = (char *) DupString(sc->name);
+      scs->scanner = opm_create();
+      scs->name = (char *) DupString(sc->name);
 
       /* Setup configuration */
-      opm_config(ss->scanner, OPM_CONFIG_FD_LIMIT, &(sc->fd));
-      opm_config(ss->scanner, OPM_CONFIG_SCAN_IP, sc->target_ip);
-      opm_config(ss->scanner, OPM_CONFIG_SCAN_PORT, &(sc->target_port));
-      opm_config(ss->scanner, OPM_CONFIG_TIMEOUT, &(sc->timeout));
-      opm_config(ss->scanner, OPM_CONFIG_MAX_READ, &(sc->max_read));
-      opm_config(ss->scanner, OPM_CONFIG_TARGET_STRING, sc->target_string);
+      opm_config(scs->scanner, OPM_CONFIG_FD_LIMIT, &(sc->fd));
+      opm_config(scs->scanner, OPM_CONFIG_SCAN_IP, sc->target_ip);
+      opm_config(scs->scanner, OPM_CONFIG_SCAN_PORT, &(sc->target_port));
+      opm_config(scs->scanner, OPM_CONFIG_TIMEOUT, &(sc->timeout));
+      opm_config(scs->scanner, OPM_CONFIG_MAX_READ, &(sc->max_read));
+      opm_config(scs->scanner, OPM_CONFIG_TARGET_STRING, sc->target_string);
 
       /* Setup the protocols */
       LIST_FOREACH(p1, sc->protocols->head)
       {
          pc = (struct ProtocolConf *) p1->data;
-         opm_addtype(ss->scanner, pc->type, pc->port);
+         opm_addtype(scs->scanner, pc->type, pc->port);
       }
      
-      node = node_create(ss);
+      node = node_create(scs);
       list_add(SCANNERS, node);
    }
 
@@ -150,15 +166,15 @@ void scan_init()
             scannername = (char *) p2->data;
             LIST_FOREACH(p3, SCANNERS->head)
             {
-               ss = (struct scanner_struct *) p3->data;
-               if(strcasecmp(scannername, ss->name) == 0)
+               scs = (struct scanner_struct *) p3->data;
+               if(strcasecmp(scannername, scs->name) == 0)
                {
                   if(OPT_DEBUG)
                      log("SCAN -> Linking the mask [%s] to scanner [%s]", mask, scannername);
 
                   ms = (struct mask_struct *) MyMalloc(sizeof(struct mask_struct));
                   ms->mask = (char *) DupString(mask);
-                  ms->ss = ss;
+                  ms->scs = scs;
                }
             }            
          } 
@@ -185,4 +201,77 @@ void scan_init()
 
 void scan_connect(char **user, char *msg)
 {
+
+   struct scan_struct *ss;
+
+   //FIXME: Check negcache here before any scanning
+   
+
+   //create scan_struct
+   ss = scan_create(user, msg);   
+}
+
+
+
+
+/* scan_create
+ *
+ *    Allocate scan struct, including user information and REMOTE 
+ *    for LIBOPM.
+ *
+ * Parameters:
+ *    user: Parsed items from the connection notice:
+ *          user[0] = connecting users nickname
+ *          user[1] = connecting users username
+ *          user[2] = connecting users hostname
+ *          user[3] = connecting users IP
+ *          msg     = Original connect notice (used as PROOF)
+ *
+ * Return: Pointer to new scan_struct
+ *
+ */
+
+struct scan_struct *scan_create(char **user, char *msg)
+{
+   struct scan_struct *ss;
+
+   ss = (struct scan_struct *) MyMalloc(sizeof(struct scan_struct));
+
+   ss->irc_nick = (char *) DupString(user[0]);
+   ss->irc_username = (char *) DupString(user[1]);
+   ss->irc_hostname = (char *) DupString(user[2]);
+   ss->ip = (char *) DupString(user[3]);
+   ss->proof = (char *) DupString(msg);
+
+   ss->remote = opm_remote_create(ss->ip);
+
+   assert(ss->remote);
+}
+
+
+
+
+/* scan_free
+ *
+ *    Free a scan_struct. This should only be done if the scan struct has no scans left!
+ *
+ * Parameters:
+ *    ss: scan_struct to free
+ * 
+ * Return: NONE
+ *
+ */
+
+void scan_free(struct scan_struct *ss)
+{
+   if(ss == NULL)
+      return;
+
+   MyFree(ss->irc_nick);
+   MyFree(ss->irc_username);
+   MyFree(ss->irc_hostname);
+   MyFree(ss->ip);
+   MyFree(ss->proof);
+   
+   opm_remote_free(ss->remote);
 }

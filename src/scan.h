@@ -10,7 +10,8 @@ struct scan_struct
    char *irc_hostname;
 
    char *ip;
-   /* OPM_REMOTE_T *remote; */
+   char *proof;
+   OPM_REMOTE_T *remote; 
 
    unsigned short scans;
 };
@@ -19,7 +20,7 @@ struct scan_struct
 struct mask_struct
 {
    char  *mask;
-   struct scanner_struct *ss;   
+   struct scanner_struct *scs;   
 };
 
 struct scanner_struct

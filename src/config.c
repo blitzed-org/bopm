@@ -26,6 +26,7 @@
 #include "config.h"
 #include "malloc.h"
 #include "log.h"
+#include "scan.h"
 
 void config_setup();
 void config_init();
@@ -59,6 +60,8 @@ void config_load(const char *filename)
     }
 
     yyparse();
+
+    scan_init();       /* Initialize the scanners once we have the configuration */
 }
 
 /* Malloc and initialize configuration data to NULL */
