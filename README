@@ -22,3 +22,17 @@ Operator Channel Commands
 
 botnick <check> <host>  -- Manually scan host for insecure proxies and output all errors.
 botnick stats           -- Output scan stats, uptime and client connection count.
+
+
+Credits
+-------
+
+   Erik Fears <strtok@blitzed.org>
+         Main Developer
+
+   Andy Smith <andy@blitzed.org>
+         Developed operator interface, interface to DNSbl, makefile trickery, debugging.
+ 
+   David Leadbeater <dg@blitzed.org> 
+         Developer perl script for testing BOPM's support for scanning many clients
+         at once
