@@ -23,6 +23,9 @@
 /* Timeout of commands (in seconds) */
 #define COMMANDTIMEOUT 180
 
+/* Interval in how often we try to reconnect (in seconds) */
+#define RECONNECTINTERVAL 30
+
 /* How long (in seconds) between rebuilds of the negative cache.  The negcache
  * is only rebuilt to free up memory used by entries that are too old.  You
  * probably don't need to tweak this unless you have huge amounts of people

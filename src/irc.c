@@ -114,7 +114,7 @@ fd_set               IRC_READ_FDSET;             /* fd_set for IRC (read) data f
 struct timeval       IRC_TIMEOUT;                /* timeval struct for select() timeout   */
 
 time_t               IRC_LAST = 0;               /* Last full line of data from irc server*/
-
+time_t               IRC_LASTRECONNECT = 0;      /* Time of last reconnection */
 /* Table should be ordered with most occuring (or priority)
    commands at the top of the list. */
 
@@ -156,7 +156,9 @@ void irc_cycle(void)
 
       /* Connect to remote host. */
       irc_connect();
-   }
+
+      return;      /* In case connect() immediately failed */ 
+  }
 
    IRC_TIMEOUT.tv_sec  = 0;
    /* Block .025 seconds to avoid excessive CPU use on select(). */
@@ -435,7 +437,9 @@ static void irc_connect(void)
             if (OPT_DEBUG >= 1)
                log(strerror(errno));
       }
-      exit(EXIT_FAILURE);
+      /* Try to connect again */
+      irc_reconnect();
+      return;
    }
 
    irc_send("NICK %s", IRCItem->nick);
@@ -461,13 +465,27 @@ static void irc_connect(void)
 static void irc_reconnect(void)
 {
 
+   time_t present;
+   
+   time(&present);
+  
+   /* Only try to reconnect every RECONNECT_INTERVAL seconds */ 
+   if((present - IRC_LASTRECONNECT) < RECONNECTINTERVAL)
+   {
+      /* Sleep to avoid excessive CPU */
+      sleep(1);
+      return;
+   }
+
+   time(&IRC_LASTRECONNECT);
+
    if(IRC_FD > 0)
       close(IRC_FD);
 
    /* Set IRC_FD 0 for reconnection on next irc_cycle(). */
    IRC_FD = 0;
 
-   log("IRC -> Connection to (%s) lost, reconnecting.", IRCItem->server);
+   log("IRC -> Connection to (%s) failed, reconnecting.", IRCItem->server);
 }
 
 
@@ -507,9 +525,8 @@ static void irc_read(void)
          IRC_RAW[IRC_RAW_LEN++] = c;
    }
 
-   if(len == -1 && errno != EAGAIN)
+   if((len <= 0) && (errno != EAGAIN))
    {
-      log("IRC -> Read error.");
       irc_reconnect();
       IRC_RAW_LEN = 0;
       return;
