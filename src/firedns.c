@@ -613,7 +613,7 @@ void firedns_cycle(void) {
    t = 0;
    prev = NULL;
 
-   for(p = connection_head; p != NULL; p = p->next)
+   for(p = connection_head; p != NULL; p != NULL && (p = p->next))
    {
       if(p->fd < 0)
 	  continue;
@@ -632,7 +632,7 @@ void firedns_cycle(void) {
 
 	 firedns_close(p->fd);
 	 fdns_fdinuse--;
-	 free(p);
+	 MyFree(p);
 
          fdns_errno = FDNS_ERR_TIMEOUT;
 

@@ -125,10 +125,11 @@ void dnsbl_result(struct firedns_result *res)
    ss->scans--; /* We will have finished with this when we return */
 
    if(OPT_DEBUG)
-      log("DNSBL -> Lookup result: %s!%s@%s %d.%d.%d.%d (%d)",
+      log("DNSBL -> Lookup result for %s!%s@%s (%s) %d.%d.%d.%d (error: %d)",
           ss->irc_nick,
           ss->irc_username,
           ss->irc_hostname,
+	  res->lookup,
           (unsigned char)res->text[0],
           (unsigned char)res->text[1],
           (unsigned char)res->text[2],
