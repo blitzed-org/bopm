@@ -25,7 +25,7 @@
     extern char *CONF_SENDMAIL;
     extern char *CONF_HELP_EMAIL;
     extern char *CONF_AWAY;
-
+    extern char *CONF_TARGET_STRING;
 
     extern int   CONF_PORT;
     extern int   CONF_SCANPORT;

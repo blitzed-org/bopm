@@ -201,7 +201,11 @@ void scan_establish(scan_struct *conn)
      time(&(conn->create_time));                             /* Log create time of connection for timeouts */
      conn->state = STATE_ESTABLISHED;                        /* Flag conn established (for write)          */
      fcntl(conn->fd, F_SETFL, O_NONBLOCK);                   /* Set socket non blocking                    */
-     connect(conn->fd, (struct sockaddr *) &(conn->sockaddr), sizeof(conn->sockaddr));  /* Connect !   */
+     connect(conn->fd, (struct sockaddr *) &(conn->sockaddr), sizeof(conn->sockaddr));  /* Connect !       */
+
+     conn->data = malloc(SCANBUFFER * sizeof(char));         /* Allocate memory for the scan buffer        */
+     conn->datasize = 0;
+
      FD_USE++;                                               /* Increase global FD Use counter             */      
 }
 
@@ -388,44 +392,85 @@ void scan_negfail(scan_struct *conn)
 
 void scan_readready(scan_struct *conn)
 {
-        scan_struct *ss;
+        char c;
 
-        if((*conn->protocol->r_handler)(conn)) /* If read returns true, flag socket for closed and kline*/
-          {
-              irc_kline(conn->irc_addr, conn->addr);
+        while(1)
+         {
+             switch(read(conn->fd, &c, 1))
+              {
 
-              if(CONF_DNSBL_FROM && CONF_DNSBL_TO && CONF_SENDMAIL && !conn->verbose)                
-                    dnsbl_report(conn);
-                
-              log("SCAN -> %s: %s!%s@%s (%d)", conn->protocol->type , conn->irc_nick, conn->irc_user,
-                             conn->irc_addr, conn->protocol->port);
+                   case  0:
+                   case -1:
+                          return;
 
-              irc_send("PRIVMSG %s :%s (%d): OPEN PROXY -> "
-                            "%s!%s@%s", CONF_CHANNELS,
-                            conn->protocol->type, conn->protocol->port,
-                            conn->irc_nick, conn->irc_user,
-                            conn->irc_addr);
+                   default:
+                          if(c == 0 || c == '\r')
+                               continue;
+                          
+                          if(c == '\n')
+                           {
+                               conn->data[conn->datasize] = 0;
+                               conn->datasize = 0;
+                               scan_read(conn);              
+                               continue;
+                           }
 
-              conn->protocol->stat_numopen++; /* Increase number OPEN (insecure) of this type */
+                          if(conn->datasize < SCANBUFFER)
+                               conn->data[++(conn->datasize) - 1] = c;
+              }
 
-              conn->state = STATE_CLOSED;
-
-              /* Flag connections with the same addr CLOSED aswell (if not verbose */
-              if(!conn->verbose)
-                {
-                    for(ss = CONNECTIONS;ss;ss = ss->next)
-                      {
-                         if(!strcmp(conn->irc_addr, ss->irc_addr))
-                                     ss->state = STATE_CLOSED;
-                       }
-                }
-
-            }
-         else
-           scan_negfail(conn);
-             
-           
+         }
               
+}
+
+/*  Read one line in from remote, check line against 
+ *  target line.
+ */
+
+void scan_read(scan_struct *conn)
+{
+   if(OPT_DEBUG >= 3)
+        log("SCAN -> Checking data from %s [%s:%d] against TARGET_STRING: %s", conn->addr, 
+                                      conn->protocol->type, conn->protocol->port, conn->data);
+   if(strstr(conn->data, CONF_TARGET_STRING))
+      scan_openproxy(conn);
+}
+
+/*   Test proved positive for open proxy
+ *
+ */
+
+void scan_openproxy(scan_struct *conn)
+{
+     scan_struct *ss;
+
+     irc_kline(conn->irc_addr, conn->addr);
+
+     if(CONF_DNSBL_FROM && CONF_DNSBL_TO && CONF_SENDMAIL && !conn->verbose)                
+         dnsbl_report(conn);
+                
+     log("SCAN -> %s: %s!%s@%s (%d)", conn->protocol->type , conn->irc_nick, conn->irc_user,
+                  conn->irc_addr, conn->protocol->port);
+
+     irc_send("PRIVMSG %s :%s (%d): OPEN PROXY -> "
+                  "%s!%s@%s", CONF_CHANNELS,
+                  conn->protocol->type, conn->protocol->port,
+                  conn->irc_nick, conn->irc_user,
+                  conn->irc_addr);
+
+     conn->protocol->stat_numopen++; /* Increase number OPEN (insecure) of this type */
+
+     conn->state = STATE_CLOSED;
+
+     /* Flag connections with the same addr CLOSED aswell (if not verbose */
+     if(!conn->verbose)
+       {
+            for(ss = CONNECTIONS;ss;ss = ss->next)
+              {
+                  if(!strcmp(conn->irc_addr, ss->irc_addr))
+                  ss->state = STATE_CLOSED;
+              }
+       }
 }
 
 /* Poll or select returned back that this connect 
@@ -482,6 +527,9 @@ void scan_del(scan_struct *delconn)
 
      close(delconn->fd);
      FD_USE--;            /* 1 file descriptor freed up for use */
+
+     if(delconn->state != STATE_UNESTABLISHED)  /* If it's established, free the scan buffer */
+          free(delconn->data); 
 
      lastss = 0;
 

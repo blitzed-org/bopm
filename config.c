@@ -53,6 +53,7 @@ char *CONF_DNSBL_TO        = 0;
 char *CONF_SENDMAIL        = 0;
 char *CONF_HELP_EMAIL      = 0;
 char *CONF_AWAY            = 0;
+char *CONF_TARGET_STRING   = 0;
 
 int  CONF_SCANPORT         = 0;
 int  CONF_PORT             = 0;
@@ -83,6 +84,7 @@ config_hash hash[] = {
        {"SENDMAIL",            TYPE_STRING, 0,0,    &CONF_SENDMAIL           },
        {"HELP_EMAIL",          TYPE_STRING, 1,0,    &CONF_HELP_EMAIL         },
        {"AWAY",                TYPE_STRING, 1,0,    &CONF_AWAY               },
+       {"TARGET_STRING",       TYPE_STRING, 1,0,    &CONF_TARGET_STRING      },
        {0,                     0,           0,0,    0                        },
 };
 

@@ -29,6 +29,10 @@
           char *irc_user;              /* Username of user on IRC (for logging)            */
 	  char *conn_notice;           /* original server notice for this connect, used
 					* for evidence                                     */
+ 
+          char *data;                  /* Buffered data                                    */
+          int  datasize;               /* Length of buffered data                          */
+
           int fd;                      /* File descriptor of socket                        */
           struct sockaddr_in sockaddr; /* holds information about remote host for socket() */
           time_t create_time;          /* Creation time, for timeout                       */         
@@ -45,13 +49,13 @@
      void scan_del(scan_struct *ss);
      void scan_cycle();
      void scan_check();
+     void scan_read(scan_struct *conn);
      void scan_timer();    
-     void scan_readready();
-     void scan_writeready();
-     void scan_negfail();
- 
-     int scan_listsize();
-    
+     void scan_readready(scan_struct *conn);
+     void scan_writeready(scan_struct *conn);
+     void scan_negfail(scan_struct *conn);
+     void scan_openproxy(scan_struct *conn);
+     
      int scan_w_squid(scan_struct *ss);
      int scan_r_squid(scan_struct *ss);
      
