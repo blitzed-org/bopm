@@ -22,7 +22,10 @@ BOPM 3.0.x:
          - Whitespace/String parsing in config-parser.y
 
   Joshua Kwan
-         - Minor fixed and cleanups for Debian/gcc3
+         - Minor fixes and cleanups for Debian/gcc3
+
+  Christopher Bongaarts <cab@tc.umn.edu>
+         - Portability fixes for Sun Forte compiler
 
 
 
