@@ -142,9 +142,8 @@ int main(int argc, char **argv)
 
 	if (pidout) {
 		fwrite(spid, sizeof(char), strlen(spid), pidout);
+		fclose(pidout);
 	}
-
-	fclose(pidout);
 
 	/* Setup alarm & int handlers. */
  
