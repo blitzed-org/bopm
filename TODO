@@ -2,3 +2,9 @@ Retain ops with chanserv (grifferz)
 Dynamic configuration of protocols/ports (lilo)
 IRIX Compatibility (irc.gr)
 asynchronous DNS for dnsbl resolution (erik/strtok)
+Handling "nick in use" situations:
+	- Connect with random nick
+	- oper
+	- kill user holding nick
+	- ID to services / join channels
+	- Suggested by Simorgh <simorgh@dataphone.se>
