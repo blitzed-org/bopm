@@ -87,15 +87,11 @@ node_t *list_remove(list_t *list, node_t *node)
          node->next->prev = NULL;
       else
          list->tail = NULL;
-
-      return node;
    }
    else if(node == list->tail)
    {
       list->tail = list->tail->prev;
       list->tail->next = NULL;
-
-      return node;
    }
    else
    {
@@ -105,7 +101,6 @@ node_t *list_remove(list_t *list, node_t *node)
 
    list->elements--;
    return node;
-
 }
 
 void list_free(list_t *list)
