@@ -1,3 +1,18 @@
+2002-01-29 01:45  andy
+
+	* bopm.conf.sample:
+
+	bopm.conf.sample:
+		Added suggestion from Sotiris Tsimbonis to make ti a bit more
+		obvious that a temporary KLINE should be used.
+	
+2002-01-29 01:25  andy
+
+	* ChangeLog:
+
+	ChangeLog:
+		Updated ChangeLog for 1.1 release.
+	
 2002-01-29 01:21  strtok
 
 	* version.h:
