@@ -56,9 +56,10 @@ static void cmd_stat(char *, char *, struct ChannelConf *);
 static struct OperCommandHash COMMAND_TABLE[] =
    {
       {"CHECK",  cmd_check},
-      {"SCAN", cmd_check},
-      {"STAT", cmd_stat},
-      {"STATS", cmd_stat}
+      {"SCAN",   cmd_check},
+      {"STAT",   cmd_stat },
+      {"STATS",  cmd_stat },
+      {"STATUS", cmd_stat }
    };
 
 

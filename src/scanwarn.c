@@ -35,7 +35,6 @@ along with this program; if not, write to:
 #include <string.h>
 
 #include "setup.h"
-#include "dlclist.h"
 #include "irc.h"
 #include "config.h"
 #include "options.h"
