@@ -53,9 +53,11 @@ void do_stats_init()
 void do_stats(const char *target)
 {
    int i;
+   time_t now = time(NULL);
+   time_t uptime = now - STAT_START_TIME;
  
    irc_send("PRIVMSG %s :Uptime: %s", target,
-	    dissect_time(time(NULL) - STAT_START_TIME));
+	    dissect_time(uptime));
 
    if(CONF_DNSBL_ZONE)
       irc_send("PRIVMSG %s :DNSBL: %u successful lookup%s from zone %s",
@@ -67,7 +69,9 @@ void do_stats(const char *target)
                SCAN_PROTOCOLS[i].stat_num, SCAN_PROTOCOLS[i].type,
                SCAN_PROTOCOLS[i].port,SCAN_PROTOCOLS[i].stat_numopen);
         
-   irc_send("PRIVMSG %s :Number of connects: %u", target, STAT_NUM_CONNECTS);      
+   irc_send("PRIVMSG %s :Number of connects: %u (%.2f/minute)", target,
+	    STAT_NUM_CONNECTS, STAT_NUM_CONNECTS ?
+	    (float)STAT_NUM_CONNECTS / ((float)uptime / 60.0) : 0.0);
 
    return;
 }
