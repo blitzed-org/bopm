@@ -45,28 +45,58 @@ CHANSERV_INVITE CHANSERV :INVITE %s
 
 
 
-# BINDIRC <ip> : IP to bind to for IRC connection
+# BINDIRC <ip> : IP to bind to for IRC connection.  You only need to use
+#                this if you need to control which interface BOPM will
+#                bind to when it connects to IRC.  Most people can leave
+#                this commented.
 #
 
 #BINDIRC 127.0.0.1
 
 
+# BINDIRC6 <ipv6> : IPv6 interface to bind to for IRC connection.  If you
+#                   want to bind to an IPv6 interface then use this
+#                   directive instead of BINDIRC above.  If this makes no
+#                   sense then you will be safe leaving this commented out.
+#
+
+# BINDIRC6 ::1
 
 
-# BINDSCAN <ip> : IP to bind to for scan connections
+# BINDSCAN <ip> : IP to bind to for scan connections.  You only need to use
+#                 this if you need to control which interface BOPM will
+#                 bind to when scanning clients.  Most people can leave
+#                 this commented.
 #
 
 #BINDSCAN 127.0.0.1
 
 
+# BINDSCAN6 <ipv6> : IPv6 interface to bind to for scanning clients.  If
+#                    you want to bind to an IPv6 interface then use this
+#                    directive instead of BINDSCAN above.  If this makes no
+#                    sense then you will be safe leaving this commented out.
+#
 
+#BINDSCAN6 ::1
 
-# SERVER <servername> : IRC host BOPM will be monitoring connections on.
-#                       This is what bopm will connect to, so please make
-#                       sure it works.
+# SERVER <hostname/IP> : IRC host BOPM will be monitoring connections on.
+#                        This is what bopm will connect to, so please make
+#                        sure it works.
 #
 
 SERVER myserver.blitzed.org
+
+
+# SERVER6 <hostname/IPv6> : Use this directive instead of SERVER above if
+#                           you need BOPM to connect to an IPv6 address.
+#                           You would only need to use this if your IRC
+#                           server does not listen on any IPv4 addresses,
+#                           or there were some reason why you did not wish
+#                           to connect to them.  Most people will leave
+#                           this commented and use SERVER, above.
+
+#SERVER6 ipv6-server.blitzed.org
 
 
 # PASSWORD <password> : If you need a password to connect to your server,
@@ -111,14 +141,17 @@ CHANNELS #bopm,#wg
 # OPER <user> <pass> : Username and Password of O line BOPM will be using
 #
 
-OPER bopm operpss
+OPER bopm operpass
 
 
 # OPER_MODES <modes> : Mode string to set on itself as soon as it opers up.
 #                      This should include whatever mode enables connect
 #                      notices (usually +c), and often a good idea to disable
 #                      helper modes so that users don't try to talk to the
-#                      bopm
+#                      bopm.
+#
+#                      REMEMBER THAT IRCU AND LATER VERSIONS OF UNREAL DO
+#                      NOT USE A SIMPLE +c !!
 
 OPER_MODES +c-h
 
@@ -204,6 +237,13 @@ TARGET_STRING *** Looking up your hostname...
 #
 #                           Here's a GLINE example for ircU:
 # KLINE_COMMAND GLINE +*@%s 1800 :Open proxy found on your host. Please visit www.blitzed.org/proxy?ip=%s for more information.
+#
+#                           There's also an index3.phtml which is even more
+#                           plain, useful if you are trying to process our
+#                           pages in order to make your own web interface
+#                           (but if you've got some XML knowledge and want
+#                           to do this properly, come and talk to us, we
+#                           can help you).
 
 KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%s for more information.
 
