@@ -65,6 +65,7 @@ void config_load(const char *filename)
 
    scan_init();       /* Initialize the scanners once we have the configuration */
    command_init();    /* Initialize the command queue */
+   stats_init();      /* Initialize stats (UPTIME) */
 }
 
 /* Malloc and initialize configuration data to NULL */
@@ -74,6 +75,7 @@ void config_init()
    IRCItem = (struct IRCConf *) MyMalloc(sizeof(struct IRCConf));
    memset(IRCItem, 0, sizeof(struct IRCConf));
    IRCItem->channels = list_create();
+   IRCItem->performs = list_create();
 
    /* Init Options block */
    OptionsItem = (struct OptionsConf *) MyMalloc(sizeof(struct OptionsConf));

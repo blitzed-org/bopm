@@ -56,8 +56,9 @@ void *tmp;        /* Variable to temporarily hold nodes before insertion to list
 %token OPER
 %token OPM
 %token OPTIONS
-%token PIDFILE
 %token PASSWORD
+%token PERFORM
+%token PIDFILE
 %token PORT
 %token PROTOCOL
 %token PROTOCOLTYPE
@@ -145,6 +146,7 @@ irc_item: irc_away      |
           irc_server    |
           irc_username  |
           irc_vhost     |
+          irc_perform   |
           channel_entry |
           error;
 
@@ -188,6 +190,14 @@ irc_password: PASSWORD '=' STRING ';'
 {
    MyFree(IRCItem->password);
    IRCItem->password = DupString($3);
+};
+
+irc_perform: PERFORM '=' STRING ';'
+{
+   node_t *node;
+   node = node_create(DupString($3));
+
+   list_add(IRCItem->performs, node);
 };
 
 irc_port: PORT '=' NUMBER ';'

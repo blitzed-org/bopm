@@ -122,6 +122,9 @@ void dnsbl_log_positive(struct scan_struct *ss, char *lookup, unsigned char type
     else /* Manual scan */
        irc_send("PRIVMSG %s :DNSBL -> %s appears in BL zone %s (%s)", 
                    ss->manual_target->name, ss->ip, lookup, text_type); 
+
+    /* record stat */
+    stats_dnsblrecv();
 }
 
 void dnsbl_result(struct firedns_result *res)
@@ -213,4 +216,6 @@ void dnsbl_report(struct scan_struct *ss)
    pclose(fp);
  
    log("DNSBL -> Sent report to %s [%s]", OpmItem->dnsbl_to, ss->ip);
+   /* record send in stats */
+   stats_dnsblsend();
 } 

@@ -116,6 +116,7 @@ OPER                    { return OPER;         }
 OPM                     { return OPM;          }
 OPTIONS                 { return OPTIONS;      }
 PASSWORD                { return PASSWORD;     }
+PERFORM                 { return PERFORM;      }
 PIDFILE                 { return PIDFILE;      }
 PORT                    { return PORT;         }
 PROTOCOL                { return PROTOCOL;     }

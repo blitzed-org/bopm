@@ -39,4 +39,145 @@ along with this program; if not, write to the Free Software
 #include "opercmd.h"
 #include "scan.h"
 #include "stats.h"
+#include "libopm/src/opm_types.h"
 
+static time_t STATS_UPTIME;
+static unsigned int STATS_CONNECTIONS;
+static unsigned int STATS_DNSBLRECV;
+static unsigned int STATS_DNSBLSENT;
+
+static struct StatsHash STATS_PROXIES[] = 
+{
+     {OPM_TYPE_HTTP,     0, "HTTP"     },
+     {OPM_TYPE_HTTPPOST, 0, "HTTPPOST" },
+     {OPM_TYPE_SOCKS4,   0, "SOCKS4"   },
+     {OPM_TYPE_SOCKS5,   0, "SOCKS5"   },
+     {OPM_TYPE_ROUTER,   0, "ROUTER"   },
+     {OPM_TYPE_WINGATE,  0, "WINGATE"  }
+};
+
+
+/* stats_init
+ *
+ *    Perform initialization of bopm stats 
+ *
+ * Parameters: NONE
+ * Return: NONE
+ * 
+ */
+
+void stats_init()
+{
+   time(&STATS_UPTIME);
+}
+
+
+
+
+/* stats_openproxy
+ *
+ *    Record open proxy.
+ *
+ *
+ * Parameters: NONE
+ * Return: NONE
+ * 
+ */
+
+void stats_openproxy(int type)
+{
+   int i;
+
+   for(i = 0; i < (sizeof(STATS_PROXIES) / sizeof(struct StatsHash)); i++)
+      if(STATS_PROXIES[i].type == type)
+         STATS_PROXIES[i].count++;
+}
+
+
+
+/* stats_connect
+ *
+ *    Record IRC connect.
+ *
+ *
+ * Parameters: NONE
+ * Return: NONE
+ * 
+ */
+
+
+void stats_connect()
+{
+   STATS_CONNECTIONS++;
+}
+
+
+
+/* stats_dnsblrecv
+ *
+ *    Record that a user was found in the blacklist.
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
+ */
+
+void stats_dnsblrecv()
+{
+   STATS_DNSBLRECV++;
+}
+
+
+
+
+/* stats_dnsblsend
+ *
+ *    Record a sent report
+ *
+ * Parameters: NONE
+ * Return: NONE
+ *
+ */
+
+void stats_dnsblsend()
+{
+   STATS_DNSBLSENT++;
+}
+
+/* stats_output
+ *
+ *    Output stats to target via privmsg
+ *
+ *
+ * Parameters: NONE
+ * Return: NONE
+ * 
+ */
+
+void stats_output(char *target)
+{
+   int i;
+   time_t present;
+   time_t uptime;
+
+   time(&present);
+   uptime = present - STATS_UPTIME;
+
+   irc_send("PRIVMSG %s :Uptime: %s", target, dissect_time(uptime));    
+
+   if(STATS_DNSBLRECV > 0)
+      irc_send("PRIVMSG %s :DNSBL: %u successful lookups from blacklists", target, STATS_DNSBLRECV);
+
+   if(STATS_DNSBLSENT > 0)
+      irc_send("PRIVMSG %s :DNSBL: %u reports sent", target, STATS_DNSBLSENT);
+
+   for(i = 0; i < (sizeof(STATS_PROXIES) / sizeof(struct StatsHash)); i++)
+      if(STATS_PROXIES[i].count > 0)
+         irc_send("PRIVMSG %s :Found %u (%s) open.", target, STATS_PROXIES[i].count, STATS_PROXIES[i].name);
+
+   irc_send("PRIVMSG %s :Number of connects: %u (%.2f/minute)",
+             target, STATS_CONNECTIONS, STATS_CONNECTIONS ?
+             (float)STATS_CONNECTIONS / ((float)uptime / 60.0) : 0.0);
+
+
+}

@@ -369,7 +369,7 @@ void irc_send_channels(char *data, ...)
 
    snprintf(tosend, MSGLENMAX, "PRIVMSG %s :%s", IRC_CHANNELS, data2);
 
-   irc_send(tosend);
+   irc_send("%s", tosend);
 }
 
 
@@ -414,10 +414,6 @@ static void irc_connect(void)
       }
       exit(EXIT_FAILURE);
    }
-
-#ifdef WITH_UNREAL
-   irc_send("PROTOCTL HCN");
-#endif /* WITH_UNREAL */
 
    irc_send("NICK %s", IRCItem->nick);
 
@@ -741,6 +737,10 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
    /* Set Away */
    irc_send("AWAY :%s", IRCItem->away);
 
+   /* Perform */
+   LIST_FOREACH(node, IRCItem->performs->head)
+      irc_send("%s", (char *) node->data);
+
    /* Join all listed channels. */
    LIST_FOREACH(node, IRCItem->channels->head)
    {
@@ -949,11 +949,13 @@ static void m_notice(char **parv, unsigned int parc, char *msg, struct UserInfo 
           user[0], user[1], user[2], user[3]);
 
    /*FIXME (reminder) In the case of any rehash to the regex, preg MUST be freed first.
-   regfree(preg);
+       regfree(preg);
    */
 
    /* Pass this information off to scan.c */
    scan_connect(user, msg);
+   /* Record the connect for stats purposes */
+   stats_connect();
 }
 
 /* m_userhost

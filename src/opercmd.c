@@ -51,10 +51,14 @@ static struct Command *command_create(unsigned short type, char *param, char *ir
 static void command_free(struct Command *);
 
 static void cmd_check(char *, char *, struct ChannelConf *);
+static void cmd_stat(char *, char *, struct ChannelConf *);
 
 static struct OperCommandHash COMMAND_TABLE[] = 
 {
-   {"CHECK",  cmd_check}
+   {"CHECK",  cmd_check},
+   {"SCAN", cmd_check},
+   {"STAT", cmd_stat},
+   {"STATS", cmd_stat}
 };
 
 
@@ -325,3 +329,21 @@ static void cmd_check(char *param, char *source, struct ChannelConf *target)
 {
    scan_manual(param, target);
 }
+
+
+
+/* cmd_stat
+ *
+ *   Send output of stats to channel.
+ *
+ * Parameters:
+ *    param: Any parameters to the command
+ *    channel: Channel the command was sent to
+ *    source_p: Who sent the command
+ */
+
+static void cmd_stat(char *param, char *source, struct ChannelConf *target)
+{
+   stats_output(target->name);
+}
+
