@@ -52,9 +52,9 @@ extern char *CONFFILE;
  * so global scope is given */
 
 
-char                IRC_RAW[513];     /* Buffer to read data into              */
-char                IRC_SENDBUFF[513];/* Send buffer                           */
-int                 IRC_RAW_LEN = 0;  /* Position of IRC_RAW                   */
+char                IRC_RAW[MSGLENMAX];      /* Buffer to read data into              */
+char                IRC_SENDBUFF[MSGLENMAX]; /* Send buffer                           */
+int                 IRC_RAW_LEN = 0;         /* Position of IRC_RAW                   */
 
 int                 IRC_FD = -1;      /* File descriptor for IRC client        */
 struct sockaddr_in  IRC_SVR;          /* Sock Address Struct for IRC server    */
@@ -227,11 +227,11 @@ void irc_send(char *data,...)
 {
 
   va_list         arglist;
-  char            data2[513];
-  char            tosend[513];
+  char            data2[MSGLENMAX];
+  char            tosend[MSGLENMAX];
  
   va_start(arglist, data);
-  vsnprintf(data2, 512, data, arglist);
+  vsnprintf(data2, MSGLENMAX - 1, data, arglist);
   va_end(arglist);
 
   if(OPT_DEBUG >= 2)
@@ -239,7 +239,7 @@ void irc_send(char *data,...)
        log("IRC SEND -> %s", data2);
    }
 
-  snprintf(tosend, 512 , "%s\n",data2);
+  snprintf(tosend, MSGLENMAX - 1, "%s\n", data2);
 
   if(send(IRC_FD, tosend, strlen(tosend), 0) == -1) /* Return of -1 indicates error sending data; we reconnect. */
       irc_reconnect();
@@ -590,7 +590,7 @@ void irc_parse()
     if(strcasecmp(token[0], "NOTICE") == 0 &&
        strcasecmp(token[6], "connecting:") == 0)
      {
-	  char conn_notice[513];
+	  char conn_notice[MSGLENMAX];
 	  STAT_NUM_CONNECTS++;
 
 	  /* take a copy of the original connect notice now in case
@@ -601,7 +601,7 @@ void irc_parse()
 		   token[6], token[7], token[8], token[9], token[10]);
 
 	  /* make sure it is null terminated */
-	  conn_notice[512] = '\0';
+	  conn_notice[MSGLENMAX - 1] = '\0';
 	  
 	  /* Token 9 is the IP of the remote host 
 	   * enclosed in [ ]. We need to remove it from
@@ -642,7 +642,7 @@ void irc_parse()
 
           if(!strcmp(token[7], "connecting:"))
             { 
-		 char conn_notice[513];
+		 char conn_notice[MSGLENMAX];
 		 STAT_NUM_CONNECTS++;
 
 		 /* take a copy of the original connect notice now in case
@@ -653,7 +653,7 @@ void irc_parse()
 			  token[6], token[7], token[8], token[9], token[10]);
 
 		 /* make sure it is null terminated */
-		 conn_notice[512] = '\0';
+		 conn_notice[MSGLENMAX - 1] = '\0';
 
                  /* Token 11 is the IP of the remote host 
                   * enclosed in [ ]. We need to remove it from

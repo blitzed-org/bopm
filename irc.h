@@ -2,6 +2,7 @@
 #define IRC_H
 
 #define NICKMAX 32
+#define MSGLENMAX 513
       
       void irc_cycle();
       void irc_init();
