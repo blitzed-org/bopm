@@ -305,9 +305,9 @@ void irc_connect()
 
        /* for debug use only, will be removed later */
 
-#ifdef UNREAL
+#ifdef WITH_UNREAL
        irc_send("PROTOCTL HCN");
-#endif /* UNREAL */
+#endif /* WITH_UNREAL */
 
        irc_send("NICK %s",CONF_NICK);
        if(CONF_PASSWORD)

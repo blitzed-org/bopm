@@ -18,11 +18,6 @@
  * (default 15 min) */
 #define NODATA_TIMEOUT 900
 
-/* If defined, BOPM will force an Unreal server to use Hybrid style
- * +c notices (PROTOCTL HCN) */
-
-#undef UNREAL
-
 #define MAX_POLL 1024
 
 /* Client buffer size for scan 

@@ -28,6 +28,9 @@
 /* Force use of select() even when poll() may be present */
 #undef WITH_SELECT
 
+/* Are you using Unreal ircd (any version) ? */
+#undef WITH_UNREAL
+
 /* Define if you have the select function.  */
 #undef HAVE_SELECT
 
@@ -42,9 +45,6 @@
 
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
-
-/* Define if you have the <sys/poll.h> header file.  */
-#undef HAVE_SYS_POLL_H
 
 /* Define if you have the <sys/time.h> header file.  */
 #undef HAVE_SYS_TIME_H

@@ -5,6 +5,8 @@ AC_CONFIG_HEADER(setup.h)
 
 AC_ARG_WITH(select, \
 [  --with-select           use select() instead of poll()], with_select=yes, with_select=no)
+AC_ARG_WITH(unreal, \
+[  --with-unreal           you need this if you are using Unreal ircd (any version)], with_unreal=yes, with_unreal=no)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -19,6 +21,11 @@ if test "$with_select" = "yes"; then
  AC_DEFINE(WITH_SELECT)
 else
  AC_CHECK_HEADER(sys/poll.h, have_poll_sys_h=yes, have_sys_poll_h=no)
+fi
+
+if test "$with_unreal" = "yes"; then
+ echo "configuring for Unreal ircd"
+ AC_DEFINE(WITH_UNREAL)
 fi
 
 AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h)
