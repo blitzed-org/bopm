@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#/usr/bin/perl
 #Copyright (C) 2002  Erik Fears
 #
 #This program is free software; you can redistribute it and/or
@@ -67,6 +67,7 @@ my %IRC_FUNCTIONS = (
                      'PING'    => \&m_ping,
                      'PRIVMSG' => \&m_privmsg,
                      'NICK'    => \&m_nick,
+                     'KILL'    => \&m_kill,
                     );
 
 my %BOPM_FUNCTIONS = (
@@ -82,6 +83,7 @@ my $BOPM_SOCKET;         #Bopm connection
 my $BOPM_DATA;           #Data read from BOPM
 my $BOPM_WAITING = 0;    #bool, waiting for data?
 my $BOPM_AUTH    = 0;    #Has bopm authenticated yet?
+my $BOPM_KILLED  = 0;    #Track if bopm was /killed, as to not send a QUIT
 
 my $SELECT = new IO::Select; 
 
@@ -424,9 +426,7 @@ sub m_nick
    bopm_send($conn);
 }
 
-# m_privmsg
-#
-# privmsg to channel OR user
+# m_userhostreply
 #
 # parv[0] source
 # parv[1] 302
@@ -438,6 +438,27 @@ sub m_userhostreply
    my $parv = $_[0];
 
    bopm_send(sprintf(':%s 302 %s %s', $$parv[0], $$parv[2], $$parv[3]));
+}
+
+
+# m_kill
+#
+# parv[0] source
+# parv[1] KILL
+# parv[2] target
+# parv[3] path/reason
+
+sub m_kill
+{
+   my $parv = $_[0];
+
+   if($$parv[2] eq $BOPM{NICK})
+   {
+      bopm_send(sprintf(':%s KILL %s :%s', $$parv[0], $$parv[2], $$parv[3]));
+      $BOPM_KILLED = 1;
+      bopm_listen();
+   }
+ 
 }
 
 ########################################## BOPM #####################################################
@@ -472,7 +493,12 @@ sub bopm_close
    $SELECT->remove($BOPM_SOCKET);
    close($BOPM_SOCKET);
 
-   irc_send(sprintf(':%s QUIT :Dead', $BOPM{NICK}))
+   if(!$BOPM_KILLED)
+   {
+      irc_send(sprintf(':%s QUIT :Dead', $BOPM{NICK}));
+   }
+
+   $BOPM_KILLED = 0;
 }
 
 
@@ -541,6 +567,7 @@ sub bopm_parse
       {
          bopm_listen();
       }
+      return;
    }
 
    if(exists($BOPM_FUNCTIONS{$parv[0]}))
