@@ -32,6 +32,7 @@ along with this program; if not, write to the Free Software
 #include "config.h"
 #include "extern.h"
 
+
 /*
  * Split a time_t into an English-language explanation of how
  * much time it represents, e.g. "2 hours 45 minutes 8 seconds"
@@ -116,27 +117,31 @@ char *clean(char *str)
 {
 	size_t i;
 	/* Position of last non space. */
-	int lastnon;
+	int ln;
 	/* Position of first non space. */
-	int firstnon;
+	int fn;
+        int gf;
 
-	lastnon = 0;
-	firstnon = 0;
+	ln = 0;
+	fn = 0;
+        gf = 0;
 
 	/* Dont need to deal with 1 character */ 
 	if (strlen(str) <= 1)
 		return str;
 
 	for (i = 0; i < strlen(str); i++) {
-		if (firstnon == 0 && str[i] != ' ')           
-			firstnon = i;
+		if (fn == 0 && str[i] != ' ' && !gf) {           
+			fn = i;
+                        gf = 1;
+                }
 		if (str[i] != ' ')
-			lastnon = i;  
+			ln = i;  
 	}
 
 	/* Null terminate before the tailing spaces. */ 
-	str[lastnon + 1] = 0;
+	str[ln + 1] = 0;
 	
 	/* Return pointer to point after leading spaces. */
-	return(str + (firstnon - 1));
+	return(str + (fn));
 }
