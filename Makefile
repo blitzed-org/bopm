@@ -1,18 +1,20 @@
 CCFLAGS= -g -Wall -fno-exceptions -fno-rtti -O3
 CC= gcc
 
-all: object bopm
+objects = main.o config.o irc.o log.o scan.o
 
-object: 
-	$(CC) $(CCFLAGS) -o main.o -c main.c
-	$(CC) $(CCFLAGS) -o config.o -c config.c
-	$(CC) $(CCFLAGS) -o irc.o -c irc.c
-	$(CC) $(CCFLAGS) -o log.o -c log.c
-	$(CC) $(CCFLAGS) -o scan.o -c scan.c
+all: bopm
 
-bopm: 
-	$(CC) -o bopm main.o config.o irc.o log.o scan.o
+config.o:	extern.h	config.h
+irc.o:		extern.h	irc.h
+log.o:		extern.h	log.h
+main.o:		extern.h
+scan.o:		extern.h	scan.h
 
+bopm: $(objects)
+	$(CC) -o bopm $(objects)
+
+.PHONY: clean
 clean: 
 	rm -f *.o bopm
 
