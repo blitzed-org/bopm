@@ -362,7 +362,6 @@ void irc_send(char *data, ...)
 
    if (send(IRC_FD, tosend, strlen(tosend), 0) == -1)
    {
-
       /* Return of -1 indicates error sending data; we reconnect. */
       log("IRC -> Error sending data to server\n");
       irc_reconnect();
@@ -826,7 +825,7 @@ static void m_perform(char **parv, unsigned int parc, char *msg, struct UserInfo
 
    /* Perform */
    LIST_FOREACH(node, IRCItem->performs->head)
-   irc_send("%s", (char *) node->data);
+      irc_send("%s", (char *) node->data);
 
    /* Join all listed channels. */
    LIST_FOREACH(node, IRCItem->channels->head)
