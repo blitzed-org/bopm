@@ -11,7 +11,7 @@ options {
 	negcache = 3600;
 
 	/* Amount of file descriptors to allocate to asynchronous DNS */
-	dns_fdlimit = 5;
+	dns_fdlimit = 64;
 };
 
 
@@ -30,11 +30,11 @@ IRC {
 	#nickserv = "privmsg nickserv :identify password";
 
 	oper = "bopm operpass";
-
  
+
 	mode = "+cs";
-	/* Bahamut +F */
-	#mode = "+Fcs";      
+	#mode = "+Fcs"; /* Bahamut +F */     
+
 
 	away = "I'm a bot, don't message me.";
 
@@ -82,16 +82,29 @@ IRC {
 };
 
 
+/* OPM Block defines blacklists and information required to report
+   new proxies to a dns blacklist.   */
+
 OPM {
        /* Blacklist zones to check IPs against */
 	blacklist = "opm.blitzed.org";
 	#blacklist = "opm.myhost.org";
 
+        /* Information required to report new proxies to a blacklist */
 	#dnsbl_from = "mybopm@myserver.org";
 	#dnsbl_to = "reports@somehost.org";
-	#sendmail = "/path/to/sendmail";
+	#sendmail = "/usr/sbin/sendmail";
 };
 
+
+/* Scanner defines a virtual scanner. For each user being scanner, a scanner will use 
+   a file descriptor (and subsequent connection) for each protocol. Once connecting it
+   will negotiate the proxy to connect to target_ip:target_port (target_ip MUST be an IP).
+
+   Once connected, any data passed through the proxy will be checked to see if target_string
+   is contained within that data. If it is the proxy is considered open. If the connection
+   is closed at any point before target_string is matched, or if at least max_read bytes are
+   read from the connection, the negotiation is considered failed.  */
 
 scanner {
 
@@ -170,6 +183,11 @@ scanner {
         target_string = "Looking up your hostname...";
 };
 
+
+
+/* User blocks define what scanners will be used to scan which hostmasks. When a user connects they will
+   be scanned on every scanner that matches their host. */
+
 user {
 	mask = "*!*@*";
 	scanner = "default";
@@ -180,6 +198,11 @@ user {
 	mask = "*!*@*www*";
 	scanner = "extended";
 };
+
+
+/* Exempt defines any masks exempt from all hosting. Note that bopm will not know the
+   connection between IP and hostnames. For instance if only *!*@127.0.0.1 is listed
+   as an exempt but the user's mask is nick!user@localhost, it will not match the exemption */
 
 exempt {
 	mask = "*!*@localhost";
