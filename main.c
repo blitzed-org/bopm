@@ -20,6 +20,8 @@ along with this program; if not, write to the Free Software
 
 */
 
+#include "setup.h"
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -42,8 +44,8 @@ along with this program; if not, write to the Free Software
 #include "options.h"
 #include "version.h"
 
-void do_alarm(int);
-void do_int(int);
+RETSIGTYPE do_alarm(int);
+RETSIGTYPE do_int(int);
 
 int ALARMED = 0;
 
