@@ -356,9 +356,6 @@ scanner {
 	protocol = HTTP:8080;
 	protocol = HTTP:3128;
         protocol = HTTP:6588;
-#       protocol = HTTP:4480;
-#       protocol = HTTP:8000;
-#       protocol = HTTP:8001;
 
         /*
          * SOCKS4/5 - well known proxy protocols, probably the second most
@@ -477,11 +474,22 @@ scanner {
 
 scanner {
         name = "extended";
-        protocol = HTTP:8001;
-        protocol = HTTP:8002;
-        protocol = HTTPPOST:8080;
-        protocol = HTTPPOST:3128;
         #vhost = "127.0.0.1";
+
+        protocol = HTTP:81;
+        protocol = HTTP:8000;
+        protocol = HTTP:8001;
+        protocol = HTTP:8081;
+
+        protocol = HTTPPOST:81;
+        protocol = HTTPPOST:6588;
+#       protocol = HTTPPOST:4480;
+        protocol = HTTPPOST:8000;
+        protocol = HTTPPOST:8001;
+        protocol = HTTPPOST:8080;
+        protocol = HTTPPOST:8081;
+
+
         fd = 128;
         target_ip     = "127.0.0.1";   /* !!! CHANGE ME !!! */
         target_port   = 6667;
@@ -506,8 +514,18 @@ user {
 };
 
 user {
-	mask = "*!*@*proxy*";
-	mask = "*!*@*www*";
+        /* Connections without ident will match on a vast number of connections
+         * very few proxies run ident though */
+#       mask = "*!~*@*";
+        mask = "*!squid@*";
+        mask = "*!nobody@*";
+        mask = "*!www-data@*";
+        mask = "*!cache@*";
+        mask = "*!CacheFlowS@*";
+        mask = "*!*@*www*";
+        mask = "*!*@*proxy*";
+        mask = "*!*@*cache*";
+
 	scanner = "extended";
 };
 
