@@ -163,17 +163,17 @@ void irc_cycle(void)
 
 static void irc_init(void)
 {
-    struct bopm_sockaddr bsadr;
+	struct bopm_sockaddr bsadr;
 
-    ssize = sizeof(struct bopm_sockaddr);
-    isize = sizeof(struct bopm_ircaddr);
+	ssize = sizeof(struct bopm_sockaddr);
+	isize = sizeof(struct bopm_ircaddr);
 
-    if (IRC_FD)
-        close(IRC_FD);
+	if (IRC_FD)
+		close(IRC_FD);
 
-    memset(&IRC_SVR, 0, ssize);
-    memset(&IRC_LOCAL, 0, isize);
-    memset(&bsadr, 0, sizeof(struct bopm_sockaddr));
+	memset(&IRC_SVR, 0, ssize);
+	memset(&IRC_LOCAL, 0, isize);
+	memset(&bsadr, 0, sizeof(struct bopm_sockaddr));
 
 	/* Resolve IRC host. */
 	if (!(IRC_HOST = bopm_gethostbyname(CONF_SERVER))) {
@@ -204,35 +204,45 @@ static void irc_init(void)
 	}
 
 #ifdef IPV6
-    if (remote_is_ipv6) {
-        IRC_SVR.sas.sa6.sin6_family = AF_INET6;
-        IRC_SVR.sas.sa6.sin6_port = htons(CONF_PORT);
-        IRC_SVR.sas.sa6.sin6_addr = *((struct in6_addr *) IRC_HOST->h_addr_list[0]);
-        if (IN6_ARE_ADDR_EQUAL(&(IRC_SVR.sas.sa6.sin6_addr), &in6addr_any)) {
-            log("IRC -> Unknown error resolving remote host (%s)", CONF_SERVER);
-            exit(1);
-        }
-    } else {
-        IRC_SVR.sas.sa4.sin_family = AF_INET;
-        IRC_SVR.sas.sa4.sin_port = htons(CONF_PORT);
-        IRC_SVR.sas.sa4.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
-        if (IRC_SVR.sas.sa4.sin_addr.s_addr == INADDR_NONE) {
-            log("IRC -> Unknown error resolving remote host (%s)", CONF_SERVER);
-            exit(1);
-        }
-    }
+	if (remote_is_ipv6) {
+		IRC_SVR.sas.sa6.sin6_family = AF_INET6;
+		IRC_SVR.sas.sa6.sin6_port = htons(CONF_PORT);
+		IRC_SVR.sas.sa6.sin6_addr =
+		    *((struct in6_addr *) IRC_HOST->h_addr_list[0]);
+
+		if (IN6_ARE_ADDR_EQUAL(&(IRC_SVR.sas.sa6.sin6_addr),
+		    &in6addr_any)) {
+			log("IRC -> Unknown error resolving remote host (%s)",
+			    CONF_SERVER);
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		IRC_SVR.sas.sa4.sin_family = AF_INET;
+		IRC_SVR.sas.sa4.sin_port = htons(CONF_PORT);
+		IRC_SVR.sas.sa4.sin_addr =
+		    *((struct in_addr *) IRC_HOST->h_addr);
+
+		if (IRC_SVR.sas.sa4.sin_addr.s_addr == INADDR_NONE) {
+			log("IRC -> Unknown error resolving remote host (%s)",
+			    CONF_SERVER);
+			exit(EXIT_FAILURE);
+		}
+	}
 #else
-    IRC_SVR.sas.sa4.sin_family = AF_INET;
-    IRC_SVR.sas.sa4.sin_port = htons(CONF_PORT);
-    IRC_SVR.sas.sa4.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
-    if (IRC_SVR.sas.sa4.sin_addr.s_addr == INADDR_NONE) {
-        log("IRC -> Unknown error resolving remote host (%s)", CONF_SERVER);
-        exit(1);
-    }
+	IRC_SVR.sas.sa4.sin_family = AF_INET;
+	IRC_SVR.sas.sa4.sin_port = htons(CONF_PORT);
+	IRC_SVR.sas.sa4.sin_addr = *((struct in_addr *) IRC_HOST->h_addr);
+
+	if (IRC_SVR.sas.sa4.sin_addr.s_addr == INADDR_NONE) {
+		log("IRC -> Unknown error resolving remote host (%s)",
+		    CONF_SERVER);
+		exit(EXIT_FAILURE);
+	}
 #endif
 
-    IRC_FD = socket(remote_is_ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, 0);
-                /* Request file desc for IRC client socket */
+	IRC_FD = socket(remote_is_ipv6 ? AF_INET6 : AF_INET, SOCK_STREAM, 0);
+
+	/* Request file desc for IRC client socket */
 
 	if (IRC_FD == -1) {
 		switch(errno) {
@@ -266,19 +276,27 @@ static void irc_init(void)
 	}
 
 	if (CONF_BINDIRC) {
+#ifdef IPV6
         	if (bindto_ipv6) {
             		if (!inetpton(AF_INET6, CONF_BINDIRC, &(IRC_LOCAL.ins.in6.s6_addr))) {
                 		log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
-                 		exit(1);
+                 		exit(EXIT_FAILURE);
             		}   
+			copy_s_addr(bsadr.sas.sa6.sin6_addr.s6_addr,
+			    IRC_LOCAL.ins.in6.s6_addr);
         	} else {
+#endif
             		if (!inetpton(AF_INET, CONF_BINDIRC, &(IRC_LOCAL.ins.in4.s_addr))) {
                 		log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
-                 		exit(1);
+                 		exit(EXIT_FAILURE);
             		}
+			bsadr.sas.sa4.sin_addr.s_addr = IRC_LOCAL.ins.in4.s_addr;
+#ifdef IPV6
         	}
-		copy_s_addr(bsadr.sas.sa6.sin6_addr.s6_addr, IRC_LOCAL.ins.in6.s6_addr);
-		if (bind(IRC_FD, (struct sockaddr *)&bsadr, sizeof(struct bopm_sockaddr))) {
+#endif
+
+		if (bind(IRC_FD, (struct sockaddr *)&bsadr,
+		    sizeof(struct bopm_sockaddr))) {
 			switch(errno) {
 			case EACCES:
 				log("IRC -> bind(): No access to bind to %s",

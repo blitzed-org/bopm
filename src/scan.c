@@ -216,18 +216,30 @@ static void scan_establish(scan_struct *conn)
 
 	/* Setup SCAN_LOCAL for local bind() */
 	if (CONF_BINDSCAN) {
-        if (bindto_ipv6) {
-            if (!inetpton(AF_INET6, CONF_BINDSCAN, &(SCAN_LOCAL.ins.in6.s6_addr))) {
-                log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
-                 exit(1);
-            }
-        } else {
-            if (!inetpton(AF_INET, CONF_BINDSCAN, &(SCAN_LOCAL.ins.in4.s_addr))) {
-                log("IRC -> bind(): %s is an invalid address", CONF_BINDIRC);
-                 exit(1);
-            }
-        }
+#ifdef IPV6
+		if (bindto_ipv6) {
+			if (!inetpton(AF_INET6, CONF_BINDSCAN,
+			    &(SCAN_LOCAL.ins.in6.s6_addr))) {
+				log("IRC -> bind(): %s is an invalid address",
+				    CONF_BINDIRC);
+				exit(EXIT_FAILURE);
+			}
+			copy_s_addr(bsadr.sas.sa6.sin6_addr.s6_addr,
+			    SCAN_LOCAL.ins.in6.s6_addr);
+		} else {
+#endif
+			if (!inetpton(AF_INET, CONF_BINDSCAN,
+			    &(SCAN_LOCAL.ins.in4.s_addr))) {
+				log("IRC -> bind(): %s is an invalid address",
+				    CONF_BINDIRC);
+				exit(EXIT_FAILURE);
+			}
+			bsadr.sas.sa4.sin_addr.s_addr =
+			    SCAN_LOCAL.ins.in4.s_addr;
+		}
+#ifdef IPV6
 	}
+#endif
 
 	/* Request file descriptor for socket. */
 	conn->fd = socket(conn->aftype, SOCK_STREAM, 0);
@@ -244,7 +256,6 @@ static void scan_establish(scan_struct *conn)
 
 	/* Bind to specific interface designated in conf file. */
 	if (CONF_BINDSCAN) {
-		copy_s_addr(bsadr.sas.sa6.sin6_addr.s6_addr, SCAN_LOCAL.ins.in6.s6_addr);
 		if (bind(conn->fd, (struct sockaddr *)&bsadr, sizeof(bsadr)) == -1) {
 			switch (errno) {
 			case EACCES:
