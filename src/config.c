@@ -50,8 +50,7 @@ void config_load(const char *filename)
     config_init();
     config_setup(); /* Setup/clear current configuration */
 
-    if(OPT_DEBUG >= 2)
-       log("CONFIG -> Loading %s", filename);
+    log("CONFIG -> Loading %s", filename);
 
     if((yyin = fopen(filename, "r")) == NULL)
     {

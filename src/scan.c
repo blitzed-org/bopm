@@ -111,7 +111,7 @@ void scan_init()
       sc = (struct ScannerConf *) p->data;
       ss = (struct scanner_struct *) MyMalloc(sizeof(struct scanner_struct));
 
-      if(OPT_DEBUG >= 2)
+      if(OPT_DEBUG)
          log("SCAN -> Setting up scanner [%s]", sc->name);
 
       /* Build the scanner */
@@ -153,7 +153,7 @@ void scan_init()
                ss = (struct scanner_struct *) p3->data;
                if(strcasecmp(scannername, ss->name) == 0)
                {
-                  if(OPT_DEBUG >= 2)
+                  if(OPT_DEBUG)
                      log("SCAN -> Linking the mask [%s] to scanner [%s]", mask, scannername);
 
                   ms = (struct mask_struct *) MyMalloc(sizeof(struct mask_struct));
