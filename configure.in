@@ -28,7 +28,7 @@ if test "$with_unreal" = "yes"; then
  AC_DEFINE(WITH_UNREAL, 1, [Define if you are using Unreal ircd (any version)])
 fi
 
-AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h)
+AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h strings.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

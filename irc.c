@@ -30,6 +30,10 @@ along with this program; if not, write to the Free Software
 # include <string.h>
 #endif
 
+#ifdef HAVE_STRINGS_H
+# include <strings.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
