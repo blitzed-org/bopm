@@ -13,5 +13,4 @@
 
 	void do_stats_init();
 	void do_stats(const char *target);
-	char *dissect_time(time_t time);
 #endif

@@ -38,6 +38,7 @@ along with this program; if not, write to the Free Software
 #include "irc.h"
 #include "log.h"
 #include "config.h"
+#include "opercmd.h"
 #include "scan.h"
 #include "stats.h"
 #include "extern.h"
@@ -514,7 +515,16 @@ void irc_parse()
 		   do_stats(target);
 		   return;
 		}
+
+	       /* otherwise it might be an oper command */
+	       do_oper_cmd(nick, token[4], token[5], target);
 	   }
+     }
+
+    if(!strcasecmp(token[1], "302"))
+     {
+          check_userhost(token[3]);
+	  return;
      }
 
     /* Search for +c notices */
@@ -595,4 +605,11 @@ void irc_timer()
          IRC_FD = 0;      /* Set FD to 0, cycle will catch this and init/reconnct */
          time(&IRC_LAST); /* Make sure we dont do this again for another 5 minutes */
      }
+
+   /* get rid of old command structures */
+   if((present - LAST_REAP_TIME) >= 120)
+     {
+	 reap_commands(present);
+	 time(&LAST_REAP_TIME);
+     } 
 }
