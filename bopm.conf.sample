@@ -106,3 +106,26 @@ KLINE_COMMAND KLINE *@%s :Open Proxy found on your host. Please visit www.blitze
 #                     commented, no check will be done.
 
 DNSBL_ZONE opm.blitzed.org
+
+
+# DNSBL_TO <email> : Email address that reports of open proxies should be
+#                    sent to.  For Blitzed it should be
+#                    proxy-report@blitzed.org.  If this is not set, proxies
+#                    will not be reported by email.
+
+DNSBL_TO proxy-report@blitzed.org
+
+
+# DNSBL_FROM <email> : Email address that your bopm will use to communicate
+#                      with DNSBL_TO, above.  The Blitzed DNSBL requires
+#                      that this email address be received by a real person,
+#                      i.e. you.  If this is not set, proxies will not be
+#                      reported by email.
+
+DNSBL_FROM email@example.com
+
+
+# SENDMAIL <path> : Absolute path to your sendmail binary.  If this is not
+#                   set, proxies will not be reported by email.
+
+SENDMAIL /usr/sbin/sendmail
