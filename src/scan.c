@@ -356,8 +356,11 @@ void scan_free(struct scan_struct *ss)
 
 void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 {
+   struct scan_struct *ss;
    struct scanner_struct *scs;
+
    scs = (struct scanner_struct *) data;
+   ss = (struct scan_struct *) remote->data;
 
    log("SCAN -> Open proxy %s:%d (%s) [%s]", remote->ip, remote->port,
              scan_gettype(remote->protocol), scs->name);   
@@ -380,8 +383,11 @@ void scan_open_proxy(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *da
 
 void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 {
+   struct scan_struct *ss;
    struct scanner_struct *scs;
+
    scs = (struct scanner_struct *) data;
+   ss = (struct scan_struct *) remote->data;
 
    if(OPT_DEBUG)
       log("SCAN -> Negotiation failed %s:%d (%s) [%s]", remote->ip, remote->port, 
@@ -404,8 +410,11 @@ void scan_negotiation_failed(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, 
 
 void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 {
+   struct scan_struct *ss;
    struct scanner_struct *scs;
+
    scs = (struct scanner_struct *) data;
+   ss = (struct scan_struct *) remote->data;
 
    if(OPT_DEBUG)
       log("SCAN -> Negotiation timed out %s:%d (%s) [%s]", remote->ip, remote->port,
@@ -428,11 +437,16 @@ void scan_timeout(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 
 void scan_end(OPM_T *scanner, OPM_REMOTE_T *remote, int notused, void *data)
 {
+   struct scan_struct *ss;
    struct scanner_struct *scs;
+
    scs = (struct scanner_struct *) data;
+   ss = (struct scan_struct *) remote->data;
 
    if(OPT_DEBUG)
       log("SCAN -> Scan completed %s [%s]", remote->ip, scs->name);
+
+   ss->scans--;
 }
 
 /* scan_handle_error CALLBACK
