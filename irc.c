@@ -207,6 +207,15 @@ void irc_send(char *data,...)
 
 }
 
+/*   kline given ip for given reason
+ * 
+ */
+
+void irc_kline(char *ip, char *reason)
+{
+     irc_send("KLINE *@%s :%s",ip,reason);
+}
+
 /* Create socket and connect to IRC server
  * specificied in config file (CONF_SERVER)
  * with port CONF_PORT
@@ -283,7 +292,9 @@ void irc_read()
 void irc_parse()
 {
 
-   char *ip;           /* IP of remote host in connection notices */
+   char *addr;           /* IP of remote host in connection notices */
+   char *irc_addr;       /* IRC host address of the remote host     */
+
    char *token[16];
    int   tokens = 0;
 
@@ -343,10 +354,16 @@ void irc_parse()
                   * enclosed in [ ]. We need to remove it from
                   * [ ] and pass it to the scanner. */
 
-                  ip = token[10] + 1;          /* Shift over 1 byte to pass over [ */
-                  ip = strtok(ip, "]");        /* Replace ] with a /0              */
-                  printf("Connecting IP: %s\n", ip);
-                  scan_connect(ip);
+                  addr = token[10] + 1;          /* Shift over 1 byte to pass over [ */
+                  addr = strtok(addr, "]");        /* Replace ] with a /0              */
+
+
+                 /* Token 10 is (user@host), we want to parse the host out
+                  * for future reference in case we need to kline the host */
+
+                  irc_addr = strtok((strchr(token[9], '@') + 1) , ")"); 
+                                
+                  scan_connect(addr, irc_addr);
             }
      }
 

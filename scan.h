@@ -21,17 +21,19 @@
     struct scan_struct
      {
           scan_struct *next;   
-          char *addr;                  /* Address of remote host (IP) */ 
-          int fd;                      /* File descriptor of socket   */
+          char *addr;                  /* Address of remote host (IP)                      */
+          char *irc_addr;              /* Hostname of user on IRC (for kline)              */ 
+          int fd;                      /* File descriptor of socket                        */
           struct sockaddr_in sockaddr; /* holds information about remote host for socket() */
-          time_t create_time;          /* Creation time, for timeout  */         
-          int state;                   /* Status of scan */
-          protocol_hash *protocol;     /* Pointer to protocol type    */
+          time_t create_time;          /* Creation time, for timeout                       */         
+          int state;                   /* Status of scan                                   */
+          protocol_hash *protocol;     /* Pointer to protocol type                         */
      };
 
 
-     void scan_connect(char *ip);
-     void scan_add(scan_struct *newconn);
+     void scan_connect(char *addr, char *irc_addr);
+     void scan_add(scan_struct *newcon);
+     void scan_del(scan_struct *ss);
      void scan_cycle();
      void scan_check();
     

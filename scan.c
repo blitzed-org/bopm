@@ -70,7 +70,7 @@ void scan_memfail()
  * with the connecting IP, where we will begin
  * to establish the proxy testing */
 
-void scan_connect(char *ip)
+void scan_connect(char *addr, char *irc_addr)
 {
 
       int i;                
@@ -87,7 +87,9 @@ void scan_connect(char *ip)
             if(!newconn)
                scan_memfail();               
 
-            newconn->addr = strdup(ip);                 
+            newconn->addr = strdup(addr);
+            newconn->irc_addr = strdup(irc_addr);
+                 
             newconn->protocol = &(SCAN_PROTOCOLS[i]); /* Give struct a link to information about the protocol
                                                          it will be handling. */
 
@@ -95,7 +97,7 @@ void scan_connect(char *ip)
 
             newconn->sockaddr.sin_family = AF_INET;                       /* Fill in sockaddr with information about remote host */
             newconn->sockaddr.sin_port = htons(newconn->protocol->port); 
-            newconn->sockaddr.sin_addr.s_addr = inet_addr(ip);
+            newconn->sockaddr.sin_addr.s_addr = inet_addr(addr);
       
             newconn->fd = socket(PF_INET, SOCK_STREAM, 0);                /* Request file descriptor for socket */
 
@@ -228,15 +230,74 @@ void scan_add(scan_struct *newconn)
 }
 
 
+/* Unlink struct from connection list and 
+ * free its memory */
+
+void scan_del(scan_struct *delconn)
+{
+
+     scan_struct *ss;
+     scan_struct *lastss;
+
+
+     close(delconn->fd);
+
+     lastss = 0;
+
+     for(ss = CONNECTIONS; ss; ss = ss->next)
+       {
+             if(ss == delconn)
+               {     
+                        /* Removing the head */
+                   if(lastss == 0)
+                     {
+                         CONNECTIONS = ss->next;
+                         free(ss->addr);
+                         free(ss->irc_addr);
+                         free(ss);
+                     }
+                   else
+                     {
+                         lastss->next = ss->next;
+                         free(ss->addr);
+                         free(ss->irc_addr);
+                         free(ss);
+                     }
+               }
+
+             lastss = ss;
+       }
+ 
+}
+
 
 /* Functions for handling open http data */
 
 void scan_w_squid(struct scan_struct *ss)
 {
-    printf("WRITE READY FOR HOST (%s) PORT (%d)\n", ss->addr, ss->protocol->port);
+    char sendbuff[128];
+
+    snprintf(sendbuff, 128, "CONNECT %s:%d HTTP/1.0\n\n", CONF_SERVER, CONF_PORT);
+    send(ss->fd, sendbuff, strlen(sendbuff), 0);
+
+    ss->state = STATE_SENT;
 }
 
 void scan_r_squid(struct scan_struct *ss)
 {
-   printf("READ DATA FROM HOST\n");
+
+  int len;
+  char readbuff[128];
+
+  if(ss->protocol->port != 8080)
+     return;
+
+  len = recv(ss->fd, readbuff, 512, 0);
+  readbuff[len] = 0; /* Make sure data is \0 terminated */
+ 
+  if(!strncasecmp(readbuff, "HTTP/1.0", 8))
+       irc_kline(ss->irc_addr, "Insert open http proxy message here");
+
+  scan_del(ss);  /* Remove from connection list */
+ 
 }
