@@ -155,6 +155,8 @@ void command_parse(char *command, char *msg, struct ChannelConf *target,
    struct Command *cs;
    node_t *node;
 
+   USE_VAR(msg);
+
    if(OPT_DEBUG)
    {
       log_printf("COMMAND -> Parsing command (%s) from %s [%s]", command,
@@ -209,8 +211,6 @@ void command_parse(char *command, char *msg, struct ChannelConf *target,
    }
 
    irc_send("USERHOST %s", source_p->irc_nick);
-
-   USE_VAR(msg);
 }
 
 
@@ -343,9 +343,9 @@ void command_userhost(char *reply)
 
 static void cmd_check(char *param, char *source, struct ChannelConf *target)
 {
-   scan_manual(param, target);
-
    USE_VAR(source);
+
+   scan_manual(param, target);
 }
 
 
@@ -362,10 +362,10 @@ static void cmd_check(char *param, char *source, struct ChannelConf *target)
 
 static void cmd_stat(char *param, char *source, struct ChannelConf *target)
 {
-   stats_output(target->name);
-
    USE_VAR(param);
    USE_VAR(source);
+
+   stats_output(target->name);
 }
 
 
@@ -381,10 +381,10 @@ static void cmd_stat(char *param, char *source, struct ChannelConf *target)
 
 static void cmd_fdstat(char *param, char *source, struct ChannelConf *target)
 {
-   fdstats_output(target->name);
-
    USE_VAR(param);
    USE_VAR(source);
+
+   fdstats_output(target->name);
 }
 
 
