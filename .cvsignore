@@ -6,3 +6,4 @@ bopm.log
 bopm.pid
 *.da
 *.dat
+*.gcov

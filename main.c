@@ -28,7 +28,6 @@ along with this program; if not, write to the Free Software
 #include <netdb.h>
 #include <signal.h>
 #include <unistd.h>
-#include <getopt.h>
 
 #include "config.h"
 #include "extern.h"
@@ -53,14 +52,7 @@ int main(int argc, char **argv)
 
    while(1)
     {
-       int opt_index = 0;
-       static struct option long_options[] =
-        {
-	       {"debug", 0, NULL, 'd'},
-           {0, 0, 0, 0}
-    	};
-
-       c = getopt_long(argc, argv, "d", long_options, &opt_index);
+       c = getopt(argc, argv, "d");
 
        if(c == -1)
            break;
@@ -68,10 +60,11 @@ int main(int argc, char **argv)
        switch(c)
         {
            case 'd':
-               OPT_DEBUG = 1;
+               OPT_DEBUG++;
                break;
+           case '?':
            default:
-               /* unknown arg, guess just do nothing for now */
+               /* unknown arg, guess we'll just do nothing for now */
                break;
         }
     }	
@@ -93,6 +86,10 @@ int main(int argc, char **argv)
            exit(0);
         }
        log_open("bopm.log"); 
+    }
+   else
+    {
+       log("MAIN -> Debug level %d", OPT_DEBUG);
     }
 
     log("MAIN -> BOPM started.");
