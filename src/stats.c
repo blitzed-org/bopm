@@ -204,7 +204,7 @@ void fdstats_output(char *target)
 {
    unsigned total_fd_use;
    struct rlimit rlim;
-   int i;
+   int i, ret;
 
    /* Get file descriptor ceiling */
    if(getrlimit(RLIMIT_NOFILE, &rlim) == -1)
@@ -219,8 +219,8 @@ void fdstats_output(char *target)
    total_fd_use = 0;
    for(i = 0; i < rlim.rlim_cur; i++)
    {
-      fcntl(i,F_GETFD,0);
-      if(errno != EBADF)
+      ret = fcntl(i,F_GETFD,0);
+      if((errno != EBADF) && (ret != -1))
          total_fd_use++;
    }
 
