@@ -31,7 +31,7 @@ use IO::Socket::INET;
 my %BOPM    = (
                  NICK     => 'bopm',            #Our bopm hostname
                  TS_GRACE => 30,                #Delta allowed above LAST_SCAN in seconds
-                 LAST     => time,                 #TS of last scan
+                 LAST     => time,              #TS of last scan
               );
 
 
@@ -45,7 +45,6 @@ my %IRC =     (
 
 #Bahamut
 my %PROTOCOL = (
-                  NICK         => '{nick} 1 {ts} +o {username} {hostname} {server} 0 {ip} :{realname}',
                   CAPAB        => 'TS3 NOQUIT SSJOIN BURST UNCONNECT NICKIP TSMODE',
                );
 
