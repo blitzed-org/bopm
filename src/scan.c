@@ -165,14 +165,12 @@ void scan_timer()
 
 void scan_init()
 {
-   node_t *p, *p1, *p2, *p3, *node;
+   node_t *p, *p2, *p3, *p4, *node;
 
    struct UserConf *uc;
    struct ScannerConf *sc;
    struct ProtocolConf *pc;
-
    struct scanner_struct *scs;
-   struct mask_struct    *ms;
 
    char *mask;
    char *scannername;
@@ -194,7 +192,8 @@ void scan_init()
       /* Build the scanner */
       scs->scanner = opm_create();
       scs->name = (char *) DupString(sc->name);
-
+      scs->masks = list_create();
+ 
       /* Setup configuration */
       opm_config(scs->scanner, OPM_CONFIG_FD_LIMIT, &(sc->fd));
       opm_config(scs->scanner, OPM_CONFIG_SCAN_IP, sc->target_ip);
@@ -203,9 +202,8 @@ void scan_init()
       opm_config(scs->scanner, OPM_CONFIG_MAX_READ, &(sc->max_read));
 
       /* add target strings */
-      LIST_FOREACH(p1, sc->target_string->head)
-      opm_config(scs->scanner, OPM_CONFIG_TARGET_STRING, (char *) p1->data);
-
+      LIST_FOREACH(p2, sc->target_string->head)
+         opm_config(scs->scanner, OPM_CONFIG_TARGET_STRING, (char *) p2->data);
 
       /* Setup callbacks */
       opm_callback(scs->scanner, OPM_CALLBACK_OPENPROXY, &scan_open_proxy, scs);
@@ -216,9 +214,9 @@ void scan_init()
 
 
       /* Setup the protocols */
-      LIST_FOREACH(p1, sc->protocols->head)
+      LIST_FOREACH(p2, sc->protocols->head)
       {
-         pc = (struct ProtocolConf *) p1->data;
+         pc = (struct ProtocolConf *) p2->data;
 
          if(OPT_DEBUG >= 2)
             log("SCAN -> Adding protocol %s:%d to scanner [%s]", scan_gettype(pc->type), pc->port,
@@ -234,31 +232,31 @@ void scan_init()
    }
 
 
-   /* Link masks to scanners */
-   LIST_FOREACH(p, UserItemList->head)
+   /* Give scanners a list of masks they scan */
+   LIST_FOREACH(p, SCANNERS->head)
    {
-      uc = (struct UserConf *) p->data;
-      LIST_FOREACH(p1, uc->masks->head)
+      scs = (struct scanner_struct *) p->data;
+
+      LIST_FOREACH(p2, UserItemList->head)
       {
-         mask = (char *) p1->data;
-         LIST_FOREACH(p2, uc->scanners->head)
+         uc = (struct UserConf *) p2->data;
+         LIST_FOREACH(p3, uc->scanners->head)
          {
-            scannername = (char *) p2->data;
-            LIST_FOREACH(p3, SCANNERS->head)
+            scannername = (char *) p3->data;
+            /* Add all these masks to scanner */
+            if(strcasecmp(scannername, scs->name) == 0)
             {
-               scs = (struct scanner_struct *) p3->data;
-               if(strcasecmp(scannername, scs->name) == 0)
+               LIST_FOREACH(p4, uc->masks->head)
                {
+                  mask = (char *) p4->data;
+
                   if(OPT_DEBUG)
-                     log("SCAN -> Linking the mask [%s] to scanner [%s]", mask, scannername);
+                     log("SCAN -> Linking the mask [%s] to scanner [%s]", mask, scannername);                  
 
-                  ms = (struct mask_struct *) MyMalloc(sizeof(struct mask_struct));
-                  ms->mask = (char *) DupString(mask);
-                  ms->scs = scs;
-
-                  node = node_create(ms);
-                  list_add(MASKS, node);
+                  node = node_create(DupString(mask));
+                  list_add(scs->masks, node);
                }
+               break;
             }
          }
       }
@@ -295,10 +293,10 @@ void scan_connect(char **user, char *msg)
 
    struct bopm_sockaddr ip;
 
-   node_t *p;
+   node_t *p, *p2;
    struct scan_struct *ss;
    struct scanner_struct *scs;
-   struct mask_struct *ms;
+   char *scsmask;
    int ret;
 
    /* Have to use MSGLENMAX here because it is unknown what the max size of username/hostname can be.
@@ -348,32 +346,37 @@ void scan_connect(char **user, char *msg)
       dnsbl_add(ss);
 
    /* Add ss->remote to all matching scanners */
-   LIST_FOREACH(p, MASKS->head)
+   LIST_FOREACH(p, SCANNERS->head)
    {
-      ms = (struct mask_struct *) p->data;
-      if(match(ms->mask, mask))
+      scs = (struct scanner_struct *) p->data;
+      LIST_FOREACH(p2, scs->masks->head)
       {
-         scs = ms->scs;
-         if(OPT_DEBUG)
-            log("SCAN -> Passing %s to scanner [%s]", mask, scs->name);
-
-         if((ret = opm_scan(scs->scanner, ss->remote)) != OPM_SUCCESS)
+         scsmask = (char *) p2->data;
+         if(match(scsmask, mask))
          {
-            switch(ret)
+            if(OPT_DEBUG)
+               log("SCAN -> Passing %s to scanner [%s]", mask, scs->name);
+
+           if((ret = opm_scan(scs->scanner, ss->remote)) != OPM_SUCCESS)
             {
-               case OPM_ERR_NOPROTOCOLS:
-                  continue;
-                  break;
-               case OPM_ERR_BADADDR:
-                  log("OPM -> Bad address %s.", ss->manual_target->name, ss->ip);
-                  break;
-               default:
-                  log("OPM -> Unknown error %s.", ss->manual_target->name, ss->ip);
-                  break;
+               switch(ret)
+               {
+                  case OPM_ERR_NOPROTOCOLS:
+                     continue;
+                     break;
+                  case OPM_ERR_BADADDR:
+                     log("OPM -> Bad address %s.", ss->manual_target->name, ss->ip);
+                     break;
+                  default:
+                     log("OPM -> Unknown error %s.", ss->manual_target->name, ss->ip);
+                     break;
+               }
             }
+            else
+               ss->scans++; /* Increase scan count only if OPM_SUCCESS */
+
+            break; /* Continue to next scanner */
          }
-         else
-            ss->scans++; /* Increase scan count only if OPM_SUCCESS */
       }
    }
 }

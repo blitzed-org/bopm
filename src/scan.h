@@ -20,16 +20,11 @@ struct scan_struct
 };
 
 
-struct mask_struct
-{
-   char  *mask;
-   struct scanner_struct *scs;
-};
-
 struct scanner_struct
 {
    char *name;
    OPM_T *scanner;
+   list_t *masks;
 };
 
 struct protocol_assoc
