@@ -603,7 +603,8 @@ void irc_parse()
     /* Xnet (and others?) looks like this:
      *  NOTICE BopmMirage :*** Notice -- Client connecting: Iain (iain@modem-449.gacked.dialup.pol.co.uk) [62.25.241.193] {1} (6667)
      */
-    if(strcasecmp(token[0], "NOTICE") == 0 &&
+    if(tokens >= 11 &&
+       strcasecmp(token[0], "NOTICE") == 0 &&
        strcasecmp(token[6], "connecting:") == 0)
      {
 	  char conn_notice[MSGLENMAX];
