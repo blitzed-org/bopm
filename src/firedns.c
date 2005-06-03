@@ -625,9 +625,11 @@ struct firedns_result *firedns_getresult(const int fd)
       goto cleanup;
    }
    h.ancount = ntohs(h.ancount);
-   if (h.ancount < 1)
+   if (h.ancount < 1) {
+      fdns_errno = FDNS_ERR_NXDOMAIN;
    /* no sense going on if we don't have any answers */
       goto cleanup;
+   }
    /* skip queries */
    i = 0;
    q = 0;
