@@ -1,4 +1,4 @@
-#/usr/bin/perl
+#!/usr/bin/perl
 #Copyright (C) 2003  Erik Fears
 #
 #This program is free software; you can redistribute it and/or
