@@ -184,7 +184,7 @@ IRC {
 	 *
 	 * !!! NOTE !!! If a connregex for your ircd does not appear here and the
 	 * hybrid connregex does not appear to work, check the BOPM FAQ at 
-	 * http://blitzed.org/bopm/faq.phtml before contacting our lists for help.
+	 * http://wiki.blitzed.org/BOPM before contacting our lists for help.
 	 *
 	 */
 
@@ -210,15 +210,11 @@ IRC {
 	 * We suggest applying a temporary (no more than a few hours) KLINE on the host.
 	 *
 	 * <WARNING>
-	 * Please note that if you are matching against our DNSBL
-	 * opm.blitzed.org (see further below), then you will need some way to
-	 * let users know how they can be removed from this DNSBL.  That is
-	 * the purpose of the blitzed.org URL in the example message, so
-	 * please do not remove it unless you also disable DNSBL lookups (or
-	 * if you use a different DNSBL).
+         * Make sure if you need to change this string you also change the
+         * kline command for every DNSBL you enable below.
 	 *
-	 * Also note that you cannot include ':' characters actually inside
-	 * the KLINE message (e.g. for a http:// address).
+         * Also note that some servers do not allow you to include ':' characters
+         * inside the KLINE message (e.g. for a http:// address).
 	 *
 	 * Users rewriting this message into something that isn't even a valid
 	 * IRC command is the single most common cause of support requests and
@@ -237,18 +233,14 @@ IRC {
 	 */
 	kline = "KLINE *@%h :Open Proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
 
-	/*
-	 * If you would prefer very plain pages then try this one.  There's
-	 * also an index3.phtml which is even more plain, useful for parsing
-	 * via your own pages if you are trying to make your own interface to
-	 * it.  If you know XML though, talk to webmaster@blitzed.org about
-	 * use of the XML interface to it.
-	 */
-#       kline = "KLINE *@%h :Open Proxy found on your host. Please visit www.blitzed.org/opm/index2.phtml?ip=%i for more information.";
-
 	/* A GLINE example for IRCu: */
 #       kline = "GLINE +*@%i 1800 :Open proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
 
+        /* An AKILL example for services with OperServ
+         * Your BOPM must have permission to AKILL for this to work! */
+3C
+#       kline = "PRIVMSG OpenServ :AKILL +3h *@%h Open proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
+       
 	/*
 	 * Text to send on connection, these can be stacked and will be sent in this order
 	 * 
@@ -268,94 +260,109 @@ IRC {
 /*
  * OPM Block defines blacklists and information required to report new proxies
  * to a dns blacklist.  DNS-based blacklists store IP addresses in a DNS zone
- * file.  In the case of opm.blitzed.org, we store the IP addresses of known
- * insecure proxy servers.  By checking against this blacklist, BOPMs are able
- * to ban known proxies without having to scan them all.
- *
- * If you still don't underdstand what a DNSBL is, have a look at
- * http://www.blitzed.org/opm.
+ * file. There are several blacklist that list IP addresses known to be open
+ * proxies or other forms of IRC abuse. By checking against these blacklists,
+ * BOPMs are able to ban known sources of abuse without completely scanning them.
  */
 
 OPM {
 	/*
 	 * Blacklist zones to check IPs against.  If you would rather not
 	 * trust a remotely managed blacklist, you could set up your own, or
-	 * you could comment this out in which case every user will be
-	 * scanned.
-	 *
-	 * If you DO intend to send reports, please contact us first at
-	 * opm-bopm@blitzed.org and let us know what you have set for
-	 * "dnsbl_from" and your server name (or network name if you're
-	 * reporting for a whole network).  Until you do, all reports will be
-	 * bounced.
-	 *
-	 * Those who report should subscribe to the opm-announce mailing list.
-	 * This is an extremely low volume read-only mailing list that we use
-	 * to inform our reporters about important details relating to our
-	 * DNSBL.  You can subscribe from:
-	 *
-	 * http://lists.blitzed.org/listinfo/opm-announce
-	 *
-	 * You may also be interested in opm-talk.  That list is for user
-	 * discussion of our DNSBL service, feature requests etc..  Weekly
-	 * stats about our DNSBL such as how many addresses are in it, who
-	 * reports the most, etc. are also posted there.  You can subscribe
-	 * from:
-	 *
-	 * http://lists.blitzed.org/listinfo/opm-talk
+	 * leave these commented out in which case every user will be
+	 * scanned. The use of at least one open proxy DNSBL is recommended
+         * however.
+         *
+         * Blitzed is not associated with any of these DNSBLs, please check
+         * the policies of each blacklist you use to check you are comfortable
+         * with using them to block access to your server (and that you are
+         * allowed to use them).
 	 */
 
-	blacklist {
-	   /* The DNS name of the blacklist */
-	   name = "opm.blitzed.org";
-	   
-	   /*
-	    * There are only two values that are valid for this
-	    * "A record bitmask" and "A record reply"
-	    * These options affect how the values specified to reply
-	    * below will be interpreted, a bitmask is where the reply
-	    * values are 2^n and more than one is added up, a reply is
-	    * simply where the last octet of the IP is that number.
-	    * If you are not sure then the values set for opm.blitzed.org
-	    * will work without any changes.
-	    */
-	   type = "A record bitmask";
-	   
-	   /* Kline types not set in the proxy types below, we might add
-	    * other proxy types in the future, unless you want to exclude
-	    * specific types of proxies it is recommended you leave this set.
-	    * For DNSBLs that do not contain just open proxies this must be
-	    * disabled (opm.blitzed.org is just an open proxy blacklist).
-	    */
-	   ban_unknown = yes;
-	   
-	   /* The actual values returned by the opm.blitzed.org blacklist
-	    * As documented at http://opm.blitzed.org/info
-	    */
-	   reply {
-	      1 = "WinGate";
-	      2 = "Socks";
-	      4 = "HTTP";
-	      8 = "Router";
-	      16 = "HTTP POST";
-	   };
-	   
-	   /* The kline message sent for this specific blacklist, remember to put
-	    * the removal method in this.
-	    * By default this is commented out the KLINE command in the IRC
-	    * block is used
-	    */
-#	   kline = "KLINE *@%h :Open proxy found on your host, please visit www.blitzed.org/proxy?ip=%i";
-	};
+        /* DroneBL - http://dronebl.org */
+#	blacklist {
+#	   /* The DNS name of the blacklist */
+#	   name = "dnsbl.dronebl.org";
+#	   
+#	   /*
+#	    * There are only two values that are valid for this
+#	    * "A record bitmask" and "A record reply"
+#	    * These options affect how the values specified to reply
+#	    * below will be interpreted, a bitmask is where the reply
+#	    * values are 2^n and more than one is added up, a reply is
+#	    * simply where the last octet of the IP is that number.
+#	    * If you are not sure then the values set for dnsbl.dronebl.org
+#	    * will work without any changes.
+#	    */
+#	   type = "A record reply";
+#	   
+#	   /* Kline types not listed in the reply list below.
+#            *
+#	    * For DNSBLs that are not IRC specific and you just wish to kline
+#            * certain types this can be disabled.
+#	    */
+#	   ban_unknown = yes;
+#	   
+#	   /* The actual values returned by the dnsbl.dronebl.org blacklist
+#	    * As documented at http://www.dronebl.org/howtouse.do */
+#	    */
+#	   reply {
+#              2 = "Sample"; 
+#              3 = "IRC Drone"; 
+#              4 = "Tor"; 
+#              5 = "Bottler"; 
+#              6 = "Unknown spambot or drone";
+#              7 = "DDOS Drone"; 
+#              8 = "SOCKS Proxy"; 
+#              9 = "HTTP Proxy"; 
+#              10 = "ProxyChain"; 
+#              255 = "Unknown"; 
+#	   };
+#	   
+#	   /* The kline message sent for this specific blacklist, remember to put
+#	    * the removal method in this.
+#	    */
+#	   kline = "KLINE *@%h :You have a host listed in the DroneBL. For more information, visit http://dronebl.org/lookup_branded.do?ip=%i&network=Network";
+#	};
 
-	/*
-	 * You can specify multiple DNSBLs.  Some people see "opm.blitzed.org"
-	 * and mindlessly change the "blitzed.org" part to be their own
-	 * domain.  Please don't do this unless you really do run your own
-	 * DNSBL, all you will accomplish is filling your channels with DNS
-	 * error messages.  opm.blitzed.org should be adequate for most
-	 * people.
-	 */
+#        /* ircbl.ahbl.org - see http://ahbl.org/docs/ircbl
+#         * http://oldwww.temp.ahbl.org/docs/ircbl.php */
+#        blacklist {
+#           name = "ircbl.ahbl.org";
+#           type = "A record reply";
+#           ban_unknown = no;
+#           reply {
+#              2 = "Open proxy";
+#           };
+#           kline = "KLINE *@%h :Listed in ircbl.ahbl.org. See http://ahbl.org/removals";
+#        };
+
+         /* tor.dnsbl.sectoor.de - http://www.sectoor.de/tor.php */
+#        blacklist {
+#           name = "tor.dnsbl.sectoor.de";
+#           type = "A record reply";
+#           reply {
+#              1 = "Tor exit server";
+#           };
+#           ban_unknown = no;
+#           kline = "KLINE *@%h :Tor exit server detected. See www.sectoor.de/tor.php?ip=%i";
+#        };
+
+         /* rbl.efnet.org - http://rbl.efnet.org/ */
+#        blacklist {
+#           name = "rbl.efnet.org";
+#           type = "A record reply";
+#           reply {
+#              1 = "Open proxy";
+#              2 = "Trojan spreader";
+#              3 = "Trojan infected client";
+#              4 = "TOR exit server";
+#              5 = "Drones / Flooding";
+#           };
+#           ban_unknown = yes;
+#           kline = "KLINE *@%h :Listed in rbl.efnet.org. See rbl.efnet.org/?i=%i";
+#        };
+
 
 	/* example: NJABL - please read http://www.njabl.org/use.html before
 	 * uncommenting */
@@ -370,7 +377,7 @@ OPM {
 #	};
 
 	/*
-	 * You can report the insecure proxies you find to our DNSBL also!
+	 * You can report the insecure proxies you find to a DNSBL also!
 	 * The remaining directives in this section are only needed if you
 	 * intend to do this.  Reports are sent by email, one email per IP
 	 * address.  The format does support multiple addresses in one email,
@@ -387,8 +394,9 @@ OPM {
 
 	/*
 	 * Email address to send reports TO.
+         * For example DroneBL:
 	 */
-#	dnsbl_to = "bopm@reports.blitzed.org";
+#	dnsbl_to = "bopm-report@dronebl.org";
 
 	/*
 	 * Full path to your sendmail binary.  Even if your system does not

@@ -73,31 +73,51 @@ IRC {
     *
     * You're required to use the following kline_command:
     */
-   kline = "PRIVMSG OperServ :BOPMAKILL ADD +4h *@%h Open Proxy found on your host. Please visit http://opm.blitzed.org/%i";
+   kline = "PRIVMSG OperServ :BOPMAKILL ADD +4h *@%h Open Proxy found on your host. Please visit http://www.blitzed.org/proxy?ip=%i";
 };
 
 
 OPM {
-   /* Our own blacklist.  You're required to use this at least. */
+   /* DroneBL (see http://www.dronebl.org/howtouse.do for details) */
    blacklist {
-      name = "opm.blitzed.org";
-      type = "A record bitmask";
-      ban_unknown = yes;
+      name = "dnsbl.dronebl.org";
+      type = "A record reply";
+      ban_unknown = no;
 		
       reply {
-         1 = "WinGate";
-         2 = "Socks";
-         4 = "HTTP";
-         8 = "Router";
-         16 = "HTTP POST";
+         2 = "Sample"; 
+         3 = "IRC Drone"; 
+         5 = "Bottler"; 
+         6 = "Unknown spambot or drone";
+         7 = "DDOS Drone"; 
+         8 = "SOCKS Proxy"; 
+         9 = "HTTP Proxy"; 
+         10 = "ProxyChain"; 
+         255 = "Unknown"; 
       };
+      kline = "OperServ :BOPMAKILL ADD +4h *@%h Host listed in the DroneBL. For more information visit http://dronebl.org/lookup.do?ip=%i";
+   };
+
+   /* rbl.efnet.org - http://rbl.efnet.org/ */
+   blacklist {
+      name = "rbl.efnet.org";
+      type = "A record reply";
+      reply {
+         1 = "Open proxy";
+         2 = "Trojan spreader";
+         3 = "Trojan infected client";
+         4 = "TOR exit server";
+         5 = "Drones / Flooding";
+      };
+      ban_unknown = yes;
+      kline = "OperServ :BOPMAKILL ADD +4h *@%h Listed in rbl.efnet.org. See http://rbl.efnet.org/?i=%i";
    };
 
    /* You must use a real email address below (that you actually read). */
    dnsbl_from = "yournick@blitzed.org";
 
    /* Don't change this, it's already the correct address. */
-   dnsbl_to = "bopm@reports.blitzed.org";
+   dnsbl_to = "bopm-report@dronebl.org";
 
    /* This is usually correct. */
    sendmail = "/usr/sbin/sendmail";
@@ -172,6 +192,7 @@ scanner {
    protocol = HTTP:8001;
    protocol = HTTP:8081;
    protocol = HTTP:5748;
+   protocol = HTTP:443;
 
    protocol = HTTPPOST:81;
    protocol = HTTPPOST:6588;
@@ -188,11 +209,13 @@ scanner {
    protocol = SOCKS5:1027;
    protocol = SOCKS5:2425;
 
+   protocol = SOCKS4:559;
    protocol = SOCKS4:29992;
    protocol = SOCKS4:38884;
    protocol = SOCKS4:18844;
    protocol = SOCKS4:17771;
    protocol = SOCKS4:31121;
+   protocol = SOCKS4:1182;
 
    protocol = ROUTER:23;
 
