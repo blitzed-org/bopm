@@ -2,9 +2,9 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = src
 
-data_DATA = bopm.conf.sample
+data_DATA = bopm.conf.sample bopm.conf.blitzed
 
-EXTRA_DIST = ChangeLog contrib INSTALL README bopm.conf.sample
+EXTRA_DIST = ChangeLog contrib INSTALL README bopm.conf.sample bopm.conf.blitzed network-bopm
 
 install-data-local:
 	@if test -f $(sysconfdir)/bopm.conf ; then \
