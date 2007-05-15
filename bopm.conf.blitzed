@@ -106,10 +106,9 @@ OPM {
          1 = "Open proxy";
          2 = "Trojan spreader";
          3 = "Trojan infected client";
-         4 = "TOR exit server";
          5 = "Drones / Flooding";
       };
-      ban_unknown = yes;
+      ban_unknown = no;
       kline = "OperServ :BOPMAKILL ADD +4h *@%h Listed in rbl.efnet.org. See http://rbl.efnet.org/?i=%i";
    };
 
