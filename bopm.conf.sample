@@ -238,7 +238,7 @@ IRC {
 
         /* An AKILL example for services with OperServ
          * Your BOPM must have permission to AKILL for this to work! */
-3C
+
 #       kline = "PRIVMSG OpenServ :AKILL +3h *@%h Open proxy found on your host. Please visit www.blitzed.org/proxy?ip=%i for more information.";
        
 	/*
