@@ -305,7 +305,6 @@ OPM {
 #	   
 #	   /* The actual values returned by the dnsbl.dronebl.org blacklist
 #	    * As documented at http://www.dronebl.org/howtouse.do */
-#	    */
 #	   reply {
 #              2 = "Sample"; 
 #              3 = "IRC Drone"; 
