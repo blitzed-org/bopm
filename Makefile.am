@@ -4,7 +4,7 @@ SUBDIRS = src
 
 data_DATA = bopm.conf.sample bopm.conf.blitzed
 
-EXTRA_DIST = ChangeLog contrib INSTALL README bopm.conf.sample bopm.conf.blitzed network-bopm
+EXTRA_DIST = ChangeLog contrib INSTALL README bopm.conf.sample bopm.conf.blitzed network-bopm LICENSE
 
 install-data-local:
 	@if test -f $(sysconfdir)/bopm.conf ; then \
