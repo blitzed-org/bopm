@@ -52,6 +52,9 @@ static struct Command *command_create(unsigned short type, char *param, char *ir
 static void command_free(struct Command *);
 
 static void cmd_check(char *, char *, struct ChannelConf *);
+static void cmd_restart(char *, const struct ChannelConf *);
+static void cmd_die(char *, const struct ChannelConf *);
+static void cmd_help(char *, const struct ChannelConf *);
 static void cmd_stat(char *, char *, struct ChannelConf *);
 static void cmd_fdstat(char *, char *, struct ChannelConf *);
 #if 0
@@ -61,6 +64,10 @@ static void cmd_op(char *, char *, struct ChannelConf *);
 static struct OperCommandHash COMMAND_TABLE[] =
    {
       {"CHECK",  cmd_check  },
+      {"RESTART", cmd_restart },
+      {"KILL",   cmd_die    },
+      {"DIE",    cmd_die    },
+      {"HELP",   cmd_help   },
       {"SCAN",   cmd_check  },
       {"STAT",   cmd_stat   },
       {"STATS",  cmd_stat   },
@@ -370,6 +377,48 @@ static void cmd_stat(char *param, char *source, struct ChannelConf *target)
 
    stats_output(target->name);
 }
+
+
+
+/* cmd_restart
+ *
+ *    Restart the HOPM
+ *
+ */
+static void
+cmd_restart(char *param, const struct ChannelConf *target)
+{
+  main_restart();
+}
+
+
+
+/* cmd_die
+ *
+ *    Kills the bot
+ *
+ */
+static void
+cmd_die(char *param, const struct ChannelConf *target)
+{
+  irc_send("Quit Recieved DIE Command");
+  log_printf("DIE -> Recieved DIE Command");
+  exit(0);
+}
+
+
+
+/* cmd_help
+ *
+ *    Shows a basic, yet useful commands list
+ *
+ */
+static void
+cmd_help(char *param, const struct ChannelConf *target)
+{
+  irc_send("PRIVMSG %s :https://github.com/blitzed-org/bopm/blob/master/README", target->name);
+}
+
 
 
 /* cmd_fdstat
